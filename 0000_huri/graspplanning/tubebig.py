@@ -1,4 +1,6 @@
-import graspplanning.grasp_utils as gu
+import grasp_utils as gu
+import sys
+sys.path.append("..")
 import robothelper as yh
 import numpy as np
 
