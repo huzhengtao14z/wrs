@@ -76,7 +76,7 @@ class LocatorFixed(object):
         elearray = np.zeros((5, 10))
         eleconfidencearray = np.zeros((5, 10))
 
-        tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.remove_outlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
         # transform back to the local frame of the tubestand
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(self.tubestandhomomat), tgtpcdnp)
         if toggledebug:
@@ -105,7 +105,7 @@ class LocatorFixed(object):
         elearray = np.zeros((5, 10))
         eleconfidencearray = np.zeros((5, 10))
 
-        tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.remove_outlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
         # transform back to the local frame of the tubestand
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(self.tubestandhomomat), tgtpcdnp)
         if toggledebug:
@@ -267,7 +267,7 @@ class LocatorFixed(object):
         """
 
         tubestandcm = copy.deepcopy(self.tubestandcm)
-        tubestandcm.sethomomat(homomat)
+        tubestandcm.set_homomat(homomat)
         tubestandcm.setColor(0, .5, .7, 1.9)
 
         return tubestandcm
@@ -304,7 +304,7 @@ class LocatorFixed(object):
                 tubepos_normalized = np.array([self.tubeholecenters[i, j][0], self.tubeholecenters[i, j][1], 5])
                 tubepos = rm.homotransformpoint(tubestand_homomat, tubepos_normalized)
                 tubemat[:3, 3] = tubepos
-                newtubecm.sethomomat(tubemat)
+                newtubecm.set_homomat(tubemat)
                 newtubecm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
                 tubecmlist.append(newtubecm)
 
@@ -357,16 +357,16 @@ if __name__ == '__main__':
     tubepcdnp.reparentTo(yhx.base.render)
     yhx.base.run()
 
-    # homomat = loc.findtubestand_matchonobb(objpcd, toggledebug=False)
+    # homomat = loc.findtubestand_matchonobb(objpcd, toggle_debug=False)
     # tbscm = loc.gentubestand(homomat=homomat)
     # print(homomat)
     # tbscm.reparentTo(yhx.base.render)
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggledebug=True)
+    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
-    # elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
+    # elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggle_debug=False)
     # yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)
-    # rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
+    # rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     # rbtnp.reparentTo(yhx.base.render)
     # pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
     # pcdnp.reparentTo(yhx.base.render)

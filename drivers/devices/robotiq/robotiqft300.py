@@ -51,9 +51,9 @@ class RobotiqFT300Sensor(object):
 
 if __name__ == '__main__':
     import pandaplotutils.pandactrl as pandactrl
-    import robotsim.robots.dualarm.ur3dual as ur3dual
-    import robotsim.robots.singlearm.ur3e.ur3emesh as ur3dualmesh
-    import robotsim.robots.dualarm.ur3dual.ur3dualball as ur3dualball
+    import robot_sim.robots.dualarm.ur3dual as ur3dual
+    import robot_sim.robots.singlearm.ur3e.ur3emesh as ur3dualmesh
+    import robot_sim.robots.dualarm.ur3dual.ur3dualball as ur3dualball
     import manipulation.grip.robotiq85.rtq85 as rtq85
 
     import robotconn.ur3dual as ur3urx
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     # cdchecker = cdck.CollisionChecker(robotmesh)
     cdchecker = cdck.CollisionCheckerBall(robotball)
 
-    start = ur3u.getjnts('rgt')
+    start = ur3u.get_jnt_values('rgt')
     goal = robot.initjnts[3:9]
     # start = [50.0,0.0,-143.0,0.0,0.0,0.0]
     # goal = [-15.0,0.0,-143.0,0.0,0.0,0.0]
@@ -98,11 +98,11 @@ if __name__ == '__main__':
 
     # planner = rrt.RRT(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
     #                   jointlimits = jointlimits, expanddis = 5,
-    #                   robot = robot, cdchecker = cdchecker)
+    #                   robot_s = robot_s, cdchecker = cdchecker)
     # planner = rrtc.RRTConnect(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
-    #           jointlimits = jointlimits, expanddis = 10, robot = robot, cdchecker = cdchecker)
+    #           jointlimits = jointlimits, expanddis = 10, robot_s = robot_s, cdchecker = cdchecker)
     # planner = ddrrt.DDRRT(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
-    #                   jointlimits = jointlimits, goalsamplerate=30, expanddis = 5, robot = robot,
+    #                   jointlimits = jointlimits, goalsamplerate=30, expanddis = 5, robot_s = robot_s,
     #                   cdchecker = cdchecker)
     #
     planner = ddrrtc.DDRRTConnect(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
@@ -120,9 +120,9 @@ if __name__ == '__main__':
         robot.movearmfk(pose, armid = 'rgt')
         robotstick = robotmesh.gensnp(robot = robot)
         robotstick.reparentTo(base.render)
-    ur3u.movejntssgl(path[-1], armid='rgt')
+    ur3u.move_jnts(path[-1], armid='rgt')
 
-    start = ur3u.getjnts('lft')
+    start = ur3u.get_jnt_values('lft')
     goal = robot.initjnts[9:15]
     print(start, goal)
     jointlimits = [[robot.lftarm[1]['rngmin'], robot.lftarm[1]['rngmax']],
@@ -146,10 +146,10 @@ if __name__ == '__main__':
         robot.movearmfk(pose, armid='lft')
         robotstick = robotmesh.gensnp(robot=robot)
         robotstick.reparentTo(base.render)
-    ur3u.movejntssgl(path[-1], armid='lft')
+    ur3u.move_jnts(path[-1], armid='lft')
 
-    ur3u.closegripper(armid = 'lft')
-    ur3u.closegripper(armid = 'rgt')
+    ur3u.close_gripper(armid ='lft')
+    ur3u.close_gripper(armid ='rgt')
 
     while True:
         print(ur3u.recvft(armid = 'rgt')[0])

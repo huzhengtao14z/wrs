@@ -17,11 +17,19 @@ import visualization.panda.anime_info as ani
 
 class World(ShowBase, object):
 
-    def __init__(self, campos=np.array([2.0, 0.5, 2.0]), lookatpos=np.array([0, 0, 0.25]), up=np.array([0, 0, 1]),
-                 fov=40, w=1920, h=1080, lenstype="perspective", toggledebug=False, autocamrotate=False):
+    def __init__(self,
+                 cam_pos=np.array([2.0, 0.5, 2.0]),
+                 lookat_pos=np.array([0, 0, 0.25]),
+                 up=np.array([0, 0, 1]),
+                 fov=40,
+                 w=1920,
+                 h=1080,
+                 lens_type="perspective",
+                 toggle_debug=False,
+                 auto_cam_rotate=False):
         """
-        :param campos:
-        :param lookatpos:
+        :param cam_pos:
+        :param lookat_pos:
         :param fov:
         :param w: width of window
         :param h: height of window
@@ -39,14 +47,14 @@ class World(ShowBase, object):
         # set up lens
         lens = PerspectiveLens()
         lens.setFov(fov)
-        lens.setNearFar(0.001, 50.0)
-        if lenstype == "orthographic":
+        lens.setNearFar(0.001, 5000.0)
+        if lens_type == "orthographic":
             lens = OrthographicLens()
-            lens.setFilmSize(1024, 768)
+            lens.setFilmSize(640, 480)
         # disable the default mouse control
         self.disableMouse()
-        self.cam.setPos(campos[0], campos[1], campos[2])
-        self.cam.lookAt(Point3(lookatpos[0], lookatpos[1], lookatpos[2]), Vec3(up[0], up[1], up[2]))
+        self.cam.setPos(cam_pos[0], cam_pos[1], cam_pos[2])
+        self.cam.lookAt(Point3(lookat_pos[0], lookat_pos[1], lookat_pos[2]), Vec3(up[0], up[1], up[2]))
         self.cam.node().setLens(lens)
         # set up slight
         ## ambient light
@@ -77,11 +85,11 @@ class World(ShowBase, object):
         # self.o3dh = o3dh
         self.rbtmath = rm
         # set up inputmanager
-        self.lookatpos = lookatpos
+        self.lookatpos = lookat_pos
         self.inputmgr = im.InputManager(self, self.lookatpos)
         taskMgr.add(self._interaction_update, "interaction", appendTask=True)
         # set up rotational cam
-        if autocamrotate:
+        if auto_cam_rotate:
             taskMgr.doMethodLater(.1, self._rotatecam_update, "rotate cam")
         # set window size
         props = WindowProperties()
@@ -94,8 +102,9 @@ class World(ShowBase, object):
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
         # set up physics world
+        self.physics_scale=1e3
         self.physicsworld = BulletWorld()
-        self.physicsworld.setGravity(Vec3(0, 0, -9.81))
+        self.physicsworld.setGravity(Vec3(0, 0, -9.81*self.physics_scale))
         taskMgr.add(self._physics_update, "physics", appendTask=True)
         globalbprrender = base.render.attachNewNode("globalbpcollider")
         debugNode = BulletDebugNode('Debug')
@@ -105,18 +114,18 @@ class World(ShowBase, object):
         debugNode.showNormals(True)
         self._debugNP = globalbprrender.attachNewNode(debugNode)
         self._debugNP.show()
-        self.toggledebug = toggledebug
-        if toggledebug:
+        self.toggledebug = toggle_debug
+        if toggle_debug:
             self.physicsworld.setDebugNode(self._debugNP.node())
         self.physicsbodylist = []
         # set up render update (TODO, only for dynamics?)
-        self._autoupdate_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
-        self._autoupdate_robot_list = []
-        taskMgr.add(self._auto_update, "auto_update", appendTask=True)
+        self._internal_update_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
+        self._internal_update_robot_list = []
+        taskMgr.add(self._internal_update, "internal_update", appendTask=True)
         # for remote visualization
-        self._manualupdate_objinfo_list = []  # see anime_info.py
-        self._manualupdate_robotinfo_list = []
-        taskMgr.add(self._manual_update, "manual_update", appendTask=True)
+        self._external_update_objinfo_list = []  # see anime_info.py
+        self._external_update_robotinfo_list = []
+        taskMgr.add(self._external_update, "external_update", appendTask=True)
         # for stationary models
         self._noupdate_model_list = []
 
@@ -132,15 +141,14 @@ class World(ShowBase, object):
         return task.cont
 
     def _physics_update(self, task):
-        dt = globalClock.getDt()
-        self.physicsworld.doPhysics(dt, 20, 1 / 1200)
+        self.physicsworld.doPhysics(globalClock.getDt(), 20, 1/1200)
         return task.cont
 
-    def _auto_update(self, task):
-        for robot in self._autoupdate_robot_list:
+    def _internal_update(self, task):
+        for robot in self._internal_update_robot_list:
             robot.detach()  # TODO gen mesh model?
             robot.attach_to(self)
-        for obj in self._autoupdate_obj_list:
+        for obj in self._internal_update_obj_list:
             obj.detach()
             obj.attach_to(self)
         return task.cont
@@ -162,17 +170,17 @@ class World(ShowBase, object):
         self.cam.lookAt(self.lookatpos[0], self.lookatpos[1], self.lookatpos[2])
         return task.cont
 
-    def _manual_update(self, task):
-        for _manualupdate_robotinfo in self._manualupdate_robotinfo_list:
-            robot_instance = _manualupdate_robotinfo.robot_instance
-            robot_jlc_name = _manualupdate_robotinfo.robot_jlc_name
-            robot_meshmodel = _manualupdate_robotinfo.robot_meshmodel
-            robot_meshmodel_parameter = _manualupdate_robotinfo.robot_meshmodel_parameters
-            robot_path = _manualupdate_robotinfo.robot_path
-            robot_path_counter = _manualupdate_robotinfo.robot_path_counter
+    def _external_update(self, task):
+        for _external_update_robotinfo in self._external_update_robotinfo_list:
+            robot_s = _external_update_robotinfo.robot_s
+            robot_component_name = _external_update_robotinfo.robot_component_name
+            robot_meshmodel = _external_update_robotinfo.robot_meshmodel
+            robot_meshmodel_parameter = _external_update_robotinfo.robot_meshmodel_parameters
+            robot_path = _external_update_robotinfo.robot_path
+            robot_path_counter = _external_update_robotinfo.robot_path_counter
             robot_meshmodel.detach()
-            robot_instance.fk(robot_path[robot_path_counter], component_name=robot_jlc_name)
-            _manualupdate_robotinfo.robot_meshmodel = robot_instance.gen_meshmodel(
+            robot_s.fk(component_name=robot_component_name, jnt_values=robot_path[robot_path_counter])
+            _external_update_robotinfo.robot_meshmodel = robot_s.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],
                 tcp_loc_rotmat=robot_meshmodel_parameter[2],
@@ -180,24 +188,24 @@ class World(ShowBase, object):
                 toggle_jntscs=robot_meshmodel_parameter[4],
                 rgba=robot_meshmodel_parameter[5],
                 name=robot_meshmodel_parameter[6])
-            _manualupdate_robotinfo.robot_meshmodel.attach_to(self)
-            _manualupdate_robotinfo.robot_path_counter += 1
-            if _manualupdate_robotinfo.robot_path_counter >= len(robot_path):
-                _manualupdate_robotinfo.robot_path_counter = 0
-        for _manualupdate_objinfo in self._manualupdate_objinfo_list:
-            obj = _manualupdate_objinfo.obj
-            obj_parameters = _manualupdate_objinfo.obj_parameters
-            obj_path = _manualupdate_objinfo.obj_path
-            obj_path_counter = _manualupdate_objinfo.obj_path_counter
+            _external_update_robotinfo.robot_meshmodel.attach_to(self)
+            _external_update_robotinfo.robot_path_counter += 1
+            if _external_update_robotinfo.robot_path_counter >= len(robot_path):
+                _external_update_robotinfo.robot_path_counter = 0
+        for _external_update_objinfo in self._external_update_objinfo_list:
+            obj = _external_update_objinfo.obj
+            obj_parameters = _external_update_objinfo.obj_parameters
+            obj_path = _external_update_objinfo.obj_path
+            obj_path_counter = _external_update_objinfo.obj_path_counter
             obj.detach()
             obj.set_pos(obj_path[obj_path_counter][0])
             obj.set_rotmat(obj_path[obj_path_counter][1])
             obj.set_rgba(obj_parameters[0])
             obj.attach_to(self)
-            _manualupdate_objinfo.obj_path_counter += 1
-            if _manualupdate_objinfo.obj_path_counter >= len(obj_path):
-                _manualupdate_objinfo.obj_path_counter = 0
-        return task.again
+            _external_update_objinfo.obj_path_counter += 1
+            if _external_update_objinfo.obj_path_counter >= len(obj_path):
+                _external_update_objinfo.obj_path_counter = 0
+        return task.cont
 
     def change_debugstatus(self, toggledebug):
         if self.toggledebug == toggledebug:
@@ -208,65 +216,65 @@ class World(ShowBase, object):
             self.physicsworld.clearDebugNode()
         self.toggledebug = toggledebug
 
-    def attach_autoupdate_obj(self, obj):
+    def attach_internal_update_obj(self, obj):
         """
         :param obj: CollisionModel or (Static)GeometricModel
         :return:
         """
-        self._autoupdate_obj_list.append(obj)
+        self._internal_update_obj_list.append(obj)
 
-    def detach_autoupdate_obj(self, obj):
-        self._autoupdate_obj_list.remove(obj)
+    def detach_internal_update_obj(self, obj):
+        self._internal_update_obj_list.remove(obj)
         obj.detach()
 
-    def clear_autoupdate_obj(self):
-        tmp_autoupdate_obj_list = self._autoupdate_obj_list.copy()
-        self._autoupdate_obj_list = []
-        for obj in tmp_autoupdate_obj_list:
+    def clear_internal_update_obj(self):
+        tmp_internal_update_obj_list = self._internal_update_obj_list.copy()
+        self._internal_update_obj_list = []
+        for obj in tmp_internal_update_obj_list:
             obj.detach()
 
-    def attach_autoupdate_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_instance?
-        self._autoupdate_robot_list.append(robot_meshmodel)
+    def attach_internal_update_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_s?
+        self._internal_update_robot_list.append(robot_meshmodel)
 
-    def detach_autoupdate_robot(self, robot_meshmodel):
-        tmp_autoupdate_robot_list = self._autoupdate_robot_list.copy()
-        self._autoupdate_robot_list = []
-        for robot in tmp_autoupdate_robot_list:
+    def detach_internal_update_robot(self, robot_meshmodel):
+        tmp_internal_update_robot_list = self._internal_update_robot_list.copy()
+        self._internal_update_robot_list = []
+        for robot in tmp_internal_update_robot_list:
             robot.detach()
 
-    def clear_autoupdate_robot(self):
-        for robot in self._autoupdate_robot_list:
-            self.detach_autoupdate_robot(robot)
+    def clear_internal_update_robot(self):
+        for robot in self._internal_update_robot_list:
+            self.detach_internal_update_robot(robot)
 
-    def attach_manualupdate_obj(self, objinfo):
+    def attach_external_update_obj(self, objinfo):
         """
         :param objinfo: anime_info.ObjInfo
         :return:
         """
-        self._manualupdate_objinfo_list.append(objinfo)
+        self._external_update_objinfo_list.append(objinfo)
 
-    def detach_manualupdate_obj(self, obj_info):
-        self._manualupdate_objinfo_list.remove(obj_info)
+    def detach_external_update_obj(self, obj_info):
+        self._external_update_objinfo_list.remove(obj_info)
         obj_info.obj.detach()
 
-    def clear_manualupdate_obj(self):
-        for obj in self._manualupdate_objinfo_list:
-            self.detach_manualupdate_obj(obj)
+    def clear_external_update_obj(self):
+        for obj in self._external_update_objinfo_list:
+            self.detach_external_update_obj(obj)
 
-    def attach_manualupdate_robot(self, robotinfo):
+    def attach_external_update_robot(self, robotinfo):
         """
         :param robotinfo: anime_info.RobotInfo
         :return:
         """
-        self._manualupdate_robotinfo_list.append(robotinfo)
+        self._external_update_robotinfo_list.append(robotinfo)
 
-    def detach_manualupdate_robot(self, robot_info):
-        self._manualupdate_robotinfo_list.remove(robot_info)
+    def detach_external_update_robot(self, robot_info):
+        self._external_update_robotinfo_list.remove(robot_info)
         robot_info.robot_meshmodel.detach()
 
-    def clear_manualupdate_robot(self):
-        for robot in self._manualupdate_robotinfo_list:
-            self.detach_manualupdate_robot(robot)
+    def clear_external_update_robot(self):
+        for robot in self._external_update_robotinfo_list:
+            self.detach_external_update_robot(robot)
 
     def attach_noupdate_model(self, model):
         model.attach_to(self)
@@ -291,7 +299,6 @@ class World(ShowBase, object):
         as lookat changes the rotation of the camera
         :param lookatpos:
         :return:
-
         author: weiwei
         date: 20180606
         """

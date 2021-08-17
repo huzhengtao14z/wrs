@@ -154,15 +154,15 @@ if __name__ == '__main__':
     import basis
     import basis.robot_math as rm
     import visualization.panda.world as wd
-    import modeling.collisionmodel as cm
-    import modeling.geometricmodel as gm
+    import modeling.collision_model as cm
+    import modeling.geometric_model as gm
     import basis.trimesh_generator as tg
     import cProfile as profile
     import pstats
 
     pr = profile.Profile()
     pr.disable()
-    base = wd.World(campos=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
+    base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0], toggle_debug=True)
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnycm = cm.CollisionModel(objpath)
     pr.enable()

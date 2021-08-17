@@ -5,10 +5,10 @@ if __name__ == '__main__':
     yhx = robothelper.RobotHelperX(usereal=True)
     yhx.movetox(yhx.rbt.initrgtjnts, armname="rgt")
     yhx.movetox(yhx.rbt.initlftjnts, armname="lft")
-    # yhx.closegripperx(armname="rgt")
-    # yhx.closegripperx(armname="lft")
-    # yhx.opengripperx(armname="rgt")
-    # yhx.opengripperx(armname="lft")
+    # yhx.closegripperx(arm_name="rgt")
+    # yhx.closegripperx(arm_name="lft")
+    # yhx.opengripperx(arm_name="rgt")
+    # yhx.opengripperx(arm_name="lft")
     lctr = loc.Locator(standtype = "light")
 
     armname = "rgt"
@@ -152,7 +152,7 @@ if __name__ == '__main__':
                                                                                         primitivedistance_final_foward=130,
                                                                                         premitivedistance_final_backward=130,
                                                                                         toggledebug = td)
-        ## for toggledebug, check the collisions between the hand and the tubes
+        ## for toggle_debug, check the collisions between the hand and the tubes
         # for tbcm in collisiontbcmlist:
         #     tbcm.reparentTo(yhx.base.render)
         #     tbcm.setColor(1,0,0,.2)
@@ -201,7 +201,7 @@ if __name__ == '__main__':
             objcmmp = []
             for objhomomat in objhomomatmp:
                 tmpobjcm = copy.deepcopy(ppplanner.objcm)
-                tmpobjcm.sethomomat(objhomomat)
+                tmpobjcm.set_homomat(objhomomat)
                 if tubeid == 1:
                     tmpobjcm.setColor(1, 1, 0, 1)
                 else:

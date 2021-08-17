@@ -51,9 +51,9 @@ class PcdGrab(object):
             else:
                 objpcdmerged = np.vstack((objpcdmerged, objpcd))
 
-            tgtpcdo3d = o3dh.nparray2o3dpcd(objpcdmerged)
-            tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, nb_points=50, radius=10)
-            tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+            tgtpcdo3d = o3dh.nparray_to_o3dpcd(objpcdmerged)
+            tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, nb_points=50, radius=10)
+            tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
 
         return tgtpcdnp
 
@@ -79,12 +79,12 @@ if __name__ == '__main__':
     import manipulation.suction.hlabbig.hlabbig as hlb
 
     rhx = robothelper.RobotHelperX(usereal=True, startworld=True)
-    # rhx.movetox(rhx.rbt.initrgtjnts, armname="rgt")
-    # rhx.movetox(rhx.rbt.initlftjnts, armname="lft")
-    # rhx.closegripperx(armname="rgt")
-    # rhx.closegripperx(armname="lft")
-    # rhx.opengripperx(armname="rgt")
-    # rhx.opengripperx(armname="lft")
+    # rhx.movetox(rhx.robot_s.initrgtjnts, arm_name="rgt")
+    # rhx.movetox(rhx.robot_s.initlftjnts, arm_name="lft")
+    # rhx.closegripperx(arm_name="rgt")
+    # rhx.closegripperx(arm_name="lft")
+    # rhx.opengripperx(arm_name="rgt")
+    # rhx.opengripperx(arm_name="lft")
 
     pg = PcdGrab()
     nppcd = pg.capturecorrectedpcd(pxc=rhx.pxc)
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     effa = hlb.EFFactory()
     freesuctst = fs.Freesuc()
-    reconstructedtrimeshlist, nppcdlist = o3dh.reconstructsurfaces_bp(nppcd, radii=(10,12))
+    reconstructedtrimeshlist, nppcdlist = o3dh.reconstruct_surfaces_bp(nppcd, radii=(10, 12))
     # for i, tmpnppcd in enumerate(nppcdlist):
     #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, pntsize=1.57)
     #     p3dpcd.reparentTo(rhx.base.render)
@@ -138,9 +138,9 @@ if __name__ == '__main__':
             if armjnts is not None:
                 # if i == 1:
                 tmpef = effa.genendeffector()
-                tmpef.sethomomat(homomat)
+                tmpef.set_homomat(homomat)
                 tmpef.reparentTo(rhx.base.render)
-                tmpef.setcolor(1, 1, 1, .3)
+                tmpef.set_rgba(1, 1, 1, .3)
                 pos = homomat[:3,3]
                 rot = homomat[:3,:3]
                 rhx.opengripperx("lft")

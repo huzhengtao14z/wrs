@@ -8,6 +8,7 @@ import operator
 import warnings as wns
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
+import matplotlib.pyplot as plt
 
 # epsilon for testing whether a number is close to zero
 _EPS = numpy.finfo(float).eps * 4.0
@@ -27,21 +28,21 @@ _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
 
 ## rotmat
-def rotmat_from_axangle(axis, theta):
+def rotmat_from_axangle(axis, angle):
     """
     Compute the rodrigues matrix using the given axis and angle
 
     :param axis: 1x3 nparray
-    :param theta:  angle in radian
+    :param angle:  angle in radian
     :return: 3x3 rotmat
     author: weiwei
     date: 20161220
     """
     axis = unit_vector(axis)
-    if theta > 2 * math.pi:
-        theta = theta % 2 * math.pi
-    a = math.cos(theta / 2.0)
-    b, c, d = -axis * math.sin(theta / 2.0)
+    if angle > 2 * math.pi:
+        angle = angle % 2 * math.pi
+    a = math.cos(angle / 2.0)
+    b, c, d = -axis * math.sin(angle / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
     return np.array([[aa + bb - cc - dd, 2.0 * (bc + ad), 2.0 * (bd - ac)],
@@ -76,7 +77,7 @@ def rotmat_from_normal(surfacenormal):
     '''
     rotmat = np.eye(3, 3)
     rotmat[:, 2] = unit_vector(surfacenormal)
-    rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggleunit=True)
+    rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggle_unit=True)
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
 
@@ -98,7 +99,7 @@ def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
     rotmat[:, 0] = unit_vector(facetsecondpoint - facetfirstpoint)
     if np.allclose(rotmat[:, 0], 0):
         wns.warn("The provided facetpoints are the same! An autocomputed vector is used instead...")
-        rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggleunit=True)
+        rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggle_unit=True)
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
 
@@ -140,7 +141,7 @@ def rotmat_between_vectors(v1, v2):
     if np.allclose(theta, 0):
         return np.eye(3)
     if np.allclose(theta, math.pi):  # in this case, the rotation axis is arbitrary; I am using v1 for reference
-        return rotmat_from_axangle(orthogonal_vector(v1, toggleunit=True), theta)
+        return rotmat_from_axangle(orthogonal_vector(v1, toggle_unit=True), theta)
     axis = unit_vector(np.cross(v1, v2))
     return rotmat_from_axangle(axis, theta)
 
@@ -193,6 +194,20 @@ def homomat_from_posrot(pos=np.zeros(3), rot=np.eye(3)):
     homomat[:3, :3] = rot
     homomat[:3, 3] = pos
     return homomat
+
+
+def homomat_from_pos_axanglevec(pos=np.zeros(3), axangle=np.ones(3)):
+    """
+    build a 4x4 nparray homogeneous matrix
+    :param pos: nparray 1x3
+    :param axanglevec: nparray 1x3, correspondent unit vector is rotation direction; length is radian rotation angle
+    :return:
+    author: weiwei
+    date: 20200408
+    """
+    ax, angle = unit_vector(axangle, toggle_length=True)
+    rotmat = rotmat_from_axangle(ax, angle)
+    return homomat_from_posrot(pos, rotmat)
 
 
 def homomat_inverse(homomat):
@@ -259,11 +274,37 @@ def interplate_pos_rotmat(start_pos,
     :param granularity
     :return: a list of 1xn nparray
     """
-    len, vec = unit_vector(start_pos - goal_pos, togglelength=True)
+    len, vec = unit_vector(start_pos - goal_pos, toggle_length=True)
     nval = math.ceil(len / granularity)
+    if nval == 0:
+        nval = 1
     pos_list = np.linspace(start_pos, goal_pos, nval)
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
     return pos_list, rotmat_list
+
+
+def interplate_pos_rotmat_around_circle(circle_center_pos,
+                                        circle_ax,
+                                        radius,
+                                        start_rotmat,
+                                        end_rotmat,
+                                        granularity=.01):
+    """
+    :param circle_center_pos:
+    :param start_rotmat:
+    :param end_rotmat:
+    :param granularity: mm between two key points in the workspace
+    :return:
+    """
+    vec = orthogonal_vector(circle_ax)
+    granularity_radius = granularity / radius
+    nval = math.ceil(math.pi * 2 / granularity_radius)
+    rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, nval)
+    pos_list = []
+    for angle in np.linspace(0, math.pi * 2, nval).tolist():
+        pos_list.append(rotmat_from_axangle(circle_ax, angle).dot(vec * radius) + circle_center_pos)
+    return pos_list, rotmat_list
+
 
 # quaternion
 def quaternion_from_axangle(angle, axis):
@@ -297,7 +338,7 @@ def quaternion_average(quaternionlist, bandwidth=10):
     if bandwidth is not None:
         anglelist = []
         for quaternion in quaternionlist:
-            anglelist.append([quaternion_from_axangle(quaternion)[0]])
+            anglelist.append([quaternion_to_axangle(quaternion)[0]])
         mt = cluster.MeanShift(bandwidth=bandwidth)
         quaternionarray = quaternionarray[np.where(mt.fit(anglelist).labels_ == 0)]
     nquat = quaternionarray.shape[0]
@@ -341,7 +382,7 @@ def skewsymmetric(posvec):
                      [-posvec[1], posvec[0], 0]])
 
 
-def orthogonal_vector(basevec, toggleunit=True):
+def orthogonal_vector(basevec, toggle_unit=True):
     """
     given a vector np.array([a,b,c]),
     this function computes an orthogonal one using np.array([b-c, -a+c, a-c])
@@ -354,7 +395,7 @@ def orthogonal_vector(basevec, toggleunit=True):
     a = basevec[0]
     b = basevec[1]
     c = basevec[2]
-    if toggleunit:
+    if toggle_unit:
         return unit_vector(np.array([b - c, -a + c, a - b]))
     else:
         return np.array([b - c, -a + c, a - b])
@@ -402,7 +443,7 @@ def regulate_angle(lowerbound, upperbound, jntangles):
         return jntangles
 
 
-def unit_vector(vector, togglelength=False):
+def unit_vector(vector, toggle_length=False):
     """
     :param vector: 1-by-3 nparray
     :return: the unit of a vector
@@ -411,11 +452,11 @@ def unit_vector(vector, togglelength=False):
     """
     length = np.linalg.norm(vector)
     if math.isclose(length, 0):
-        if togglelength:
+        if toggle_length:
             return 0.0, np.zeros_like(vector)
         else:
             return np.zeros_like(vector)
-    if togglelength:
+    if toggle_length:
         return length, vector / np.linalg.norm(vector)
     else:
         return vector / np.linalg.norm(vector)
@@ -429,11 +470,23 @@ def angle_between_vectors(v1, v2):
     author: weiwei
     date: 20190504
     """
-    l1, v1_u = unit_vector(v1, togglelength=True)
-    l2, v2_u = unit_vector(v2, togglelength=True)
+    l1, v1_u = unit_vector(v1, toggle_length=True)
+    l2, v2_u = unit_vector(v2, toggle_length=True)
     if l1 == 0 or l2 == 0:
         return None
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
+
+def angle_between_2d_vectors(v1, v2):
+    """
+    return the angle from v1 to v2, with signs
+    :param v1: 2d vector
+    :param v2:
+    :return:
+    author: weiwei
+    date: 20210530
+    """
+    return math.atan2(v2[1] * v1[0] - v2[0] * v1[1], v2[0] * v1[0] + v2[1] * v1[1])
 
 
 def deltaw_between_rotmat(rotmati, rotmatj):
@@ -460,8 +513,8 @@ def deltaw_between_rotmat(rotmati, rotmatj):
 
 
 def cosine_between_vector(v1, v2):
-    l1, v1_u = unit_vector(v1, togglelength=True)
-    l2, v2_u = unit_vector(v2, togglelength=True)
+    l1, v1_u = unit_vector(v1, toggle_length=True)
+    l2, v2_u = unit_vector(v2, toggle_length=True)
     if l1 == 0 or l2 == 0:
         raise Exception("One of the given vector is [0,0,0].")
     return np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)
@@ -601,6 +654,46 @@ def compute_pca(nparray):
     pcv, pcaxmat = np.linalg.eig(ca)
     return pcv, pcaxmat
 
+def transform_data_pcv(data, random_rot=True):
+    """
+    :param data:
+    :param random_rot:
+    :return:
+    author: reuishuang
+    date: 20210706
+    """
+    pcv, pcaxmat = compute_pca(data)
+    inx = sorted(range(len(pcv)), key=lambda k: pcv[k])
+    x_v = pcaxmat[:, inx[2]]
+    y_v = pcaxmat[:, inx[1]]
+    z_v = pcaxmat[:, inx[0]]
+    pcaxmat = np.asarray([y_v, x_v, -z_v]).T
+    if random_rot:
+        pcaxmat = np.dot(rotmat_from_axangle([1, 0, 0], math.radians(5)), pcaxmat)
+        pcaxmat = np.dot(rotmat_from_axangle([0, 1, 0], math.radians(5)), pcaxmat)
+        pcaxmat = np.dot(rotmat_from_axangle([0, 0, 1], math.radians(5)), pcaxmat)
+    transformed_data = np.dot(pcaxmat.T, data.T).T
+    return transformed_data, pcaxmat
+
+def fit_plane(points):
+    """
+    :param points: nx3 nparray
+    :return:
+    """
+    plane_center = points.mean(axis=0)
+    result = np.linalg.svd(points - plane_center)
+    plane_normal = unit_vector(np.cross(result[2][0], result[2][1]))
+    return plane_center, plane_normal
+
+
+def project_to_plane(point, plane_center, plane_normal):
+    dist = abs((point - plane_center).dot(plane_normal))
+    print((point - plane_center).dot(plane_normal))
+    if (point - plane_center).dot(plane_normal) < 0:
+        plane_normal = - plane_normal
+    projected_point = point - dist * plane_normal
+    return projected_point
+
 
 def points_obb(pointsarray, toggledebug=False):
     """
@@ -671,9 +764,23 @@ def random_rgba(toggle_alpha_random=False):
     :return: 
     """
     if not toggle_alpha_random:
-        return np.random.random_sample(3).tolist()+[1]
+        return np.random.random_sample(3).tolist() + [1]
     else:
         return np.random.random_sample(4).tolist()
+
+
+def get_rgba_from_cmap(id):
+    """
+    get rgba from matplotlib cmap "tab20"
+    :param id:
+    :return:
+    author: weiwei
+    date: 20210505
+    """
+    cm_name = 'tab20'
+    cm = plt.get_cmap(cm_name)
+    return cm(id % 20)
+
 
 # The following code is from Gohlke
 #
@@ -2348,3 +2455,12 @@ def _unit_vector(data, axis=None, out=None):
     data /= length
     if out is None:
         return data
+
+
+if __name__ == '__main__':
+    start_pos = np.array([1, 0, 0])
+    start_rotmat = np.eye(3)
+    goal_pos = np.array([2, 0, 0])
+    goal_rotmat = np.eye(3)
+    pos_list, rotmat_list = interplate_pos_rotmat(start_pos, start_rotmat, goal_pos, goal_rotmat, granularity=3)
+    print(pos_list, rotmat_list)

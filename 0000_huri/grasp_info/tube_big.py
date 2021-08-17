@@ -5,13 +5,11 @@ import grasping.annotation.utils as gutil
 
 if __name__ == '__main__':
 
-    import os
-    import basis
-    import robotsim.grippers.yumi_gripper.yumi_gripper as yg
-    import modeling.collisionmodel as cm
+    import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
+    import modeling.collision_model as cm
     import visualization.panda.world as wd
 
-    base = wd.World(campos=[.5, .5, .3], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
     gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='aabb')
     objcm = cm.CollisionModel('../objects/tubebig.stl', cdmesh_type='convex_hull')
     objcm.attach_to(base)
@@ -22,14 +20,14 @@ if __name__ == '__main__':
             gl_hndz = rm.rotmat_from_axangle(np.array([1,0,0]), roll_angle).dot(np.array([0,0,-1]))
             grasp_info_list += gutil.define_grasp_with_rotation(gripper_instance,
                                                                 objcm,
-                                                                gl_jaw_center=np.array([0,0,height]),
-                                                                gl_hndz=gl_hndz,
+                                                                gl_jaw_center_pos=np.array([0, 0, height]),
+                                                                gl_jaw_center_z=gl_hndz,
                                                                 gl_hndx=np.array([1,0,0]),
                                                                 jaw_width=.025,
-                                                                rotation_ax=np.array([0,0,1]))
+                                                                gl_rotation_ax=np.array([0, 0, 1]))
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
-        # gic = gripper_instance.copy()
+        # gic = gripper_s.copy()
         gripper_instance.fix_to(pos, rotmat)
         gripper_instance.jaw_to(jaw_width)
         gripper_instance.gen_meshmodel().attach_to(base)

@@ -6,7 +6,7 @@ import warnings as wns
 
 class NIK(object):
 
-    def __init__(self, robot, component_name, wln_ratio=.15):
+    def __init__(self, robot, component_name, wln_ratio=.05):
         self.rbt = robot
         self.component_name = component_name
         self.jlc_object = self.rbt.manipulator_dict[component_name].jlc
@@ -70,15 +70,15 @@ class NIK(object):
         """
         wtmat = np.ones(self.jlc_object.ndof)
         # min damping interval
-        selection = (jntvalues - self.jmvmin_threshhold < 0)
-        diff_selected = self.jmvmin_threshhold[selection] - jntvalues[selection]
-        wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
+        selection = jntvalues < self.jmvmin_threshhold
+        normalized_diff_at_selected = ((jntvalues - self.jmvmin) / (self.jmvmin_threshhold - self.jmvmin))[selection]
+        wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
         # max damping interval
-        selection = (jntvalues - self.jmvmax_threshhold > 0)
-        diff_selected = jntvalues[selection] - self.jmvmax_threshhold[selection]
-        wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
-        wtmat[jntvalues >= self.jmvmax] = 1e-6
-        wtmat[jntvalues <= self.jmvmin] = 1e-6
+        selection = jntvalues > self.jmvmax_threshhold
+        normalized_diff_at_selected = ((self.jmvmax - jntvalues) / (self.jmvmax - self.jmvmax_threshhold))[selection]
+        wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
+        wtmat[jntvalues >= self.jmvmax] = 0
+        wtmat[jntvalues <= self.jmvmin] = 0
         return np.diag(wtmat)
 
     def manipulability(self, tcp_jntid):
@@ -134,8 +134,8 @@ class NIK(object):
 
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
-        compute the error between the rjlinstance's end and tgt_pos, tgt_rot
-        NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        compute the error between the rjlinstance's end and tgt_pos, tgt_rotmat
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: the position vector of the goal (could be a single value or a list of jntid)
         :param tgt_rot: the rotation matrix of the goal (could be a single value or a list of jntid)
         :param tcp_jntid: a joint ID in the self.tgtjnts
@@ -205,7 +205,7 @@ class NIK(object):
     def num_ik(self,
                tgt_pos,
                tgt_rot,
-               start_conf=None,
+               seed_jnt_values=None,
                tcp_jntid=None,
                tcp_loc_pos=None,
                tcp_loc_rotmat=None,
@@ -214,10 +214,10 @@ class NIK(object):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
-        :param start_conf: the starting configuration used in the numerical iteration
+        :param seed_jnt_values: the starting configuration used in the numerical iteration
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -238,13 +238,13 @@ class NIK(object):
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
         jntvalues_bk = self.jlc_object.get_jnt_values()
-        jntvalues_iter = self.jlc_object.homeconf if start_conf is None else start_conf.copy()
+        jntvalues_iter = self.jlc_object.homeconf if seed_jnt_values is None else seed_jnt_values.copy()
         self.jlc_object.fk(jnt_values=jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
         ws_wtdiagmat = np.diag(self.ws_wtlist)
         if toggle_debug:
             if "jlm" not in dir():
-                import robotsim._kinematics.jlchainmesh as jlm
+                import robot_sim._kinematics.jlchain_mesh as jlm
             if "plt" not in dir():
                 import matplotlib.pyplot as plt
             # jlmgen = jlm.JntLnksMesh()
@@ -349,6 +349,7 @@ class NIK(object):
                     # jsharp = j.T.dot(np.linalg.inv(jjt + damper))
                     # weighted jjt
                     qs_wtdiagmat = self._wln_weightmat(jntvalues_iter)
+                    # WLN
                     winv_j1t = np.linalg.inv(qs_wtdiagmat).dot(j1.T)
                     j1_winv_j1t = j1.dot(winv_j1t)
                     damper = dampercoeff * np.identity(j1_winv_j1t.shape[0])
@@ -425,11 +426,11 @@ class NIK(object):
 
 if __name__ == '__main__':
     import time
-    import robotsim.robots.yumi.yumi as ym
+    import robot_sim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
+    import modeling.geometric_model as gm
 
-    base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     component_name= 'rgt_arm'

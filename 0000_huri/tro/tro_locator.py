@@ -50,7 +50,7 @@ class TLocator(object):
         # tgtpcdnp = tgtpcdnp[np.logical_and(tgtpcdnp[:,2]>40, tgtpcdnp[:,2]<60)]
 
         # 20200425 cluster is further included
-        pcdarraylist, _ = o3dh.clusterpcd(tgtpcdnp)
+        pcdarraylist, _ = o3dh.cluster_pcd(tgtpcdnp)
         tgtpcdnp = max(pcdarraylist, key = lambda x:len(x))
         # for pcdarray in pcdarraylist:
         #     rgb = np.random.rand(3)
@@ -124,7 +124,7 @@ class TLocator(object):
         """
 
         objcm = copy.deepcopy(self.srccm)
-        objcm.sethomomat(homomat)
+        objcm.set_homomat(homomat)
         objcm.setColor(.5,.5,.5,1)
 
         return objcm
@@ -146,11 +146,11 @@ if __name__ == '__main__':
     yhx.base.run()
 
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggledebug=True)
+    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)
-    rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
+    rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     rbtnp.reparentTo(yhx.base.render)
     pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
     pcdnp.reparentTo(yhx.base.render)

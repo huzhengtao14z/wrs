@@ -48,10 +48,10 @@ if __name__ == '__main__':
     import os, math, basis
     import numpy as np
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
-    import modeling.collisionmodel as cm
+    import modeling.geometric_model as gm
+    import modeling.collision_model as cm
 
-    # wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     # objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     # objcm1= cm.CollisionModel(objpath)
     # homomat = np.eye(4)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     # base.run()
 
-    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
     objcm1= cm.CollisionModel(objpath, cdmesh_type='triangles')
     homomat = np.array([[ 5.00000060e-01,  7.00629234e-01,  5.09036899e-01, -3.43725011e-02],

@@ -2,8 +2,8 @@ from motion import smoother as sm
 from motion import checker as ctcb
 from motion import collisioncheckerball as cdck
 from motion.rrt import rrtconnect as rrtc
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 from pandaplotutils import pandactrl
 import manipulation.grip.yumiintegrated.yumiintegrated as yi
 import numpy as np
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     lfthnd = hndfa.genHand()
     robot = yumi.YumiRobot(rgthnd, lfthnd)
     robot.opengripper(armname="rgt")
-    robot.closegripper(armname="lft")
+    robot.close_gripper(armname="lft")
     robotball = yumiball.YumiBall()
     robotmesh = yumimesh.YumiMesh()
     robotnp = robotmesh.genmnp(robot)
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     smoother = sm.Smoother()
 
     robot.goinitpose()
-    # lftjnts = robot.getarmjnts("lft")
-    # rgtjnts =  robot.getarmjnts("rgt")
+    # lftjnts = robot_s.getarmjnts("lft")
+    # rgtjnts =  robot_s.getarmjnts("rgt")
 
     robotreal = yr.YuMiRobot()
     lftjnts = robotreal.left.get_state().joints
@@ -98,12 +98,12 @@ if __name__ == '__main__':
     # rgtp = rgtpose.translation*1000
     # rgtr = rgtpose.rotation
     # base.pggen.plotAxis(base.render, spos=rgtp, srot=rgtr)
-    # robot.movearmfk(rgtjnts, 'rgt')
-    # # robot.movearmfk(lftjnts, 'lft')
-    # robotnp = robotmesh.genmnp(robot)
+    # robot_s.movearmfk(rgtjnts, 'rgt')
+    # # robot_s.movearmfk(lftjnts, 'lft')
+    # robotnp = robotmesh.genmnp(robot_s)
     # robotnp.reparentTo(base.render)
-    # robotball.showcn(robotball.genfullbcndict(robot))
-    # print(cdchecker.isSelfCollided(robot))
+    # robotball.showcn(robotball.genfullbcndict(robot_s))
+    # print(cdchecker.isSelfCollided(robot_s))
     # base.run()
 
     starttreesamplerate = 50
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     rbtstartrot = np.array([[1,0,0],
                         [0,-0.92388,-0.382683],
                         [0,0.382683,-0.92388]]).T
-    # start = robot.numik(rbtstartpos, rbtstartrot, armname=armname)
+    # start = robot_s.numik(rbtstartpos, rbtstartrot, arm_name=arm_name)
     # print(start)
     rbtgoalpos = np.array([300,-200,200])
     rbtgoalrot = np.dot(rm.rodrigues([0,0,1],90),rbtstartrot)

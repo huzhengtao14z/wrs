@@ -150,7 +150,7 @@ def is_collided(objcm_list0, objcm_list1, toggle_contact_points=False, toggle_pl
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         if toggle_contact_points:
-            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint) for cd_entry in chan.getEntries()]
+            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in chan.getEntries()]
             return True, contact_points
         else:
             return True
@@ -163,11 +163,11 @@ if __name__ == '__main__':
     import time
     import basis
     import numpy as np
-    import modeling.collisionmodel as cm
-    import modeling.geometricmodel as gm
+    import modeling.collision_model as cm
+    import modeling.geometric_model as gm
     import visualization.panda.world as wd
 
-    base = wd.World(campos=[.7, .7, .7], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     objcm = cm.CollisionModel(objpath, cdprimit_type='polygons')
     objcm.set_rgba(np.array([.2, .5, 0, 1]))
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     # CollisionTraverser as if it were a colliding object.  However,
     # no implementation for this kind of object has yet been defined
     # to collide with other objects.
-    # wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
     # objcm1 = cm.CollisionModel(objpath, cdprimitive_type='polygons')
     # # homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],

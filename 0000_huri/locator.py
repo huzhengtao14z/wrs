@@ -78,7 +78,7 @@ class Locator(object):
         # tgtpcdnp = tgtpcdnp[np.logical_and(tgtpcdnp[:,2]>40, tgtpcdnp[:,2]<60)]
 
         # 20200425 cluster is further included
-        pcdarraylist, _ = o3dh.clusterpcd(tgtpcdnp)
+        pcdarraylist, _ = o3dh.cluster_pcd(tgtpcdnp)
         tgtpcdnp = max(pcdarraylist, key = lambda x:len(x))
         # for pcdarray in pcdarraylist:
         #     rgb = np.random.rand(3)
@@ -215,7 +215,7 @@ class Locator(object):
         elearray = np.zeros((5, 10))
         eleconfidencearray = np.zeros((5, 10))
 
-        tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.remove_outlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
         # transform back to the local frame of the tubestand
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(tubestand_homomat), tgtpcdnp)
         if toggledebug:
@@ -371,7 +371,7 @@ class Locator(object):
         """
 
         tubestandcm = copy.deepcopy(self.tubestandcm)
-        tubestandcm.sethomomat(homomat)
+        tubestandcm.set_homomat(homomat)
         tubestandcm.setColor(0,.5,.7,1)
 
         return tubestandcm
@@ -426,7 +426,7 @@ class Locator(object):
                 tubepos_normalized = np.array([self.tubeholecenters[i,j][0], self.tubeholecenters[i,j][1], 5])
                 tubepos  = rm.homotransformpoint(tubestand_homomat, tubepos_normalized)
                 tubemat[:3, 3] = tubepos
-                newtubecm.sethomomat(tubemat)
+                newtubecm.set_homomat(tubemat)
                 newtubecm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
                 tubecmlist.append(newtubecm)
 
@@ -469,7 +469,7 @@ if __name__ == '__main__':
     homomat = loc.findtubestand_matchonobb(objpcd, toggledebug=False)
     yhx.startworld()
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggledebug=True)
+    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)

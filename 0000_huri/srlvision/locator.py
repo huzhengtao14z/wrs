@@ -25,7 +25,7 @@ class Locator(object):
             self.tubebigcm = cm.CollisionModel(directory +"/objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
             self.tubesmallcm = cm.CollisionModel(directory +"/objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
 
-        self.tstpcdo3d = o3dh.nparray2o3dpcd(self.tstpcdnp)
+        self.tstpcdo3d = o3dh.nparray_to_o3dpcd(self.tstpcdnp)
         # down x, right y
         tubeholecenters = []
         for x in [-38,-19,0,19,38]:
@@ -52,7 +52,7 @@ class Locator(object):
         # tgtpcdnp = tgtpcdnp[np.logical_and(tgtpcdnp[:,2]>40, tgtpcdnp[:,2]<60)]
 
         inithomomat = self.findtubestand_obb(tgtpcdnp, toggledebug)
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
         inlinnerrmse, homomat = o3dh.registration_icp_ptpt(self.tstpcdo3d, tgtpcdo3d, inithomomat, maxcorrdist=5, toggledebug=toggledebug)
         inithomomatflipped = copy.deepcopy(inithomomat)
         inithomomatflipped[:3,0] = -inithomomatflipped[:3,0]
@@ -75,7 +75,7 @@ class Locator(object):
         date: 20191229osaka
         """
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
         _, homomat = o3dh.registration_ptpln(self.tstpcdo3d, tgtpcdo3d, downsampling_voxelsize=5, toggledebug=toggledebug)
 
         return copy.deepcopy(homomat)
@@ -92,9 +92,9 @@ class Locator(object):
         date: 20191229osaka
         """
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
-        tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, nb_points=50, radius=10)
-        tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
+        tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, nb_points=50, radius=10)
+        tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
 
         # main axes
         tgtpcdnp2d = tgtpcdnp[:,:2] # TODO clip using sensor z
@@ -150,9 +150,9 @@ class Locator(object):
         elearray = np.zeros((5,10))
         eleconfidencearray = np.zeros((5,10))
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
-        tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, downsampling_voxelsize=None, nb_points=90, radius=5)
-        tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
+        tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
         # transform tgtpcdnp back
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(tubestand_homomat), tgtpcdnp)
         if toggledebug:
@@ -298,7 +298,7 @@ class Locator(object):
         """
 
         tubestandcm = copy.deepcopy(self.tubestandcm)
-        tubestandcm.sethomomat(homomat)
+        tubestandcm.set_homomat(homomat)
         tubestandcm.setColor(0,.5,.7,1.9)
 
         return tubestandcm
@@ -335,7 +335,7 @@ class Locator(object):
                 tubepos_normalized = np.array([self.tubeholecenters[i,j][0], self.tubeholecenters[i,j][1], 5])
                 tubepos  = rm.homotransformpoint(tubestand_homomat, tubepos_normalized)
                 tubemat[:3, 3] = tubepos
-                newtubecm.sethomomat(tubemat)
+                newtubecm.set_homomat(tubemat)
                 newtubecm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
                 tubecmlist.append(newtubecm)
 
@@ -368,7 +368,7 @@ if __name__ == '__main__':
             framenp = yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3])
             framenp.reparentTo(yhx.base.render)
             onscreennodepaths[0] = framenp
-            rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
+            rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
             rbtnp.reparentTo(yhx.base.render)
             onscreennodepaths[1] = rbtnp
             pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
@@ -382,9 +382,9 @@ if __name__ == '__main__':
             tubecms = loc.gentubes(elearray, tubestand_homomat=homomat, eleconfidencearray=eleconfidencearray)
             for i, tbcm in enumerate(tubecms):
                 tbcm.reparentTo(yhx.base.render)
-                hmat = tbcm.gethomomat()
+                hmat = tbcm.get_homomat()
                 hmat[:3, 3] -= hmat[:3,2]*50
-                tbcm.sethomomat(hmat)
+                tbcm.set_homomat(hmat)
                 tbcm.showcn()
                 onscreennodepaths[i+4] = tbcm
             return task.again
@@ -394,5 +394,5 @@ if __name__ == '__main__':
     taskMgr.doMethodLater(0.04, estimate, "estimate",
                           extraArgs=[yhx, loc, onscreennodepaths],
                           appendTask=True)
-    yhx.rbtmesh.genmnp(yhx.rbt).reparentTo(base.render)
+    yhx.rbtmesh.genmnp(yhx.robot_s).reparentTo(base.render)
     yhx.base.run()

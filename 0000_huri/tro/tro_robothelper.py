@@ -1,7 +1,7 @@
 import numpy as np
 import utiltools.robotmath as rm
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 import environment.suitayuminotop as yumisetting
 import manipulation.grip.yumiintegrated.yumiintegrated as yi
 from pandaplotutils import pandactrl
@@ -101,7 +101,7 @@ class RobotHelper(object):
             self.rbt.movearmfk(initjnts, armname)
             self.rbtmesh.genmnp(self.rbt).reparentTo(base.render)
             abpos, abrot = self.rbt.getworldpose(relpos, relrot, armname)
-            objcm.sethomomat(self.rm.homobuild(abpos, abrot))
+            objcm.set_homomat(self.rm.homobuild(abpos, abrot))
             objcm.reparentTo(base.render)
             objcm.showcn()
             for obscm in obscmlist:
@@ -111,7 +111,7 @@ class RobotHelper(object):
             self.rbtmesh.genmnp(self.rbt).reparentTo(base.render)
             abpos, abrot = self.rbt.getworldpose(relpos, relrot, armname)
             objcmcopy = copy.deepcopy(objcm)
-            objcmcopy.sethomomat(self.rm.homobuild(abpos, abrot))
+            objcmcopy.set_homomat(self.rm.homobuild(abpos, abrot))
             objcmcopy.reparentTo(base.render)
             objcmcopy.showcn()
             for obscm in obscmlist:
@@ -267,10 +267,10 @@ class RobotHelper(object):
 
         # 1700, -1000, -1000, 300
         self.base = pandactrl.World(camp=[3700, -2300, 1700], lookatpos=[380, -190, 0], autocamrotate=autorotate)
-        # self.base = pandactrl.World(camp=[1200, -700, 700], lookatpos=[380, -190, 0], autocamrotate=autorotate)
-        # self.base = pandactrl.World(camp=[1200, -190, 1000], lookatpos=[380, -190, 0], autocamrotate=autorotate)
+        # self.base = pandactrl.World(camp=[1200, -700, 700], lookat_pos=[380, -190, 0], auto_cam_rotate=autorotate)
+        # self.base = pandactrl.World(camp=[1200, -190, 1000], lookat_pos=[380, -190, 0], auto_cam_rotate=autorotate)
         self.env.reparentTo(self.base.render)
-        # rbtnp = self.rbtmesh.genmnp(self.rbt)
+        # rbtnp = self.rbtmesh.genmnp(self.robot_s)
         # rbtnp.reparentTo(base.render)
         # base.run()
         return self.base
@@ -364,11 +364,11 @@ class RobotHelperX(RobotHelper):
         """
 
         # base = pandactrl.World(camp=[2700, -2000, 2000], lookatp=[0, 0, 500])
-        # rbtnp is the plot for the simulated robot
+        # rbtnp is the plot for the simulated robot_s
         rbtnp = self.rbtmesh.genmnp(self.rbt)
         rbtnp.setColor(1,0,.3,1)
         rbtnp.reparentTo(self.base.render)
-        # rbtxnp is the plot for the real robot
+        # rbtxnp is the plot for the real robot_s
         rbt_rbtx = copy.deepcopy(self.rbt)
         rbt_rbtx.movearmfk(self.getarmjntsx("rgt"), "rgt")
         rbt_rbtx.movearmfk(self.getarmjntsx("lft"), "lft")
@@ -383,14 +383,14 @@ if __name__ == "__main__":
     rhx.gethcimg("lft")
     # rhx.show()
 
-    # rhx.rbt.goinitpose()
-    # print(rhx.pcdchecker.isRobotCollided(rhx.rbt))
+    # rhx.robot_s.goinitpose()
+    # print(rhx.pcdchecker.isRobotCollided(rhx.robot_s))
     rhx.movetox(rhx.rbt.initrgtjnts, armname="rgt")
     rhx.movetox(rhx.rbt.initlftjnts, armname="lft")
-    # rhx.closegripperx(armname="rgt")
-    # rhx.closegripperx(armname="lft")
-    # rhx.opengripperx(armname="rgt")
-    # rhx.opengripperx(armname="lft")
+    # rhx.closegripperx(arm_name="rgt")
+    # rhx.closegripperx(arm_name="lft")
+    # rhx.opengripperx(arm_name="rgt")
+    # rhx.opengripperx(arm_name="lft")
     rhx.show()
     eepos = np.array([300,-100,300])
     eerot = np.array([[0,0,1],[1,0,0],[0,1,0]]).T
@@ -404,49 +404,49 @@ if __name__ == "__main__":
     interpolatedpath = trajobj.piecewiseinterpolation(path, sampling=5)
     rhx.movemotionx(interpolatedpath, armname="rgt")
     rhx.show()
-    # rbtnp = rhx.rbtmesh.genmnp(rhx.rbt)
+    # rbtnp = rhx.rbtmesh.genmnp(rhx.robot_s)
     # rbtnp.reparentTo(rhx.base.render)
     # rhx.base.run()
     # goalpos = np.array([50, -400, 10])
     # goalrot = np.array([[-1,0,0], [0,1,0], [0,0,-1]])
-    # armjnts = rhx.movetoposrot(eepos=goalpos, eerot=goalrot, armname="rgt")
-    # rhx.movetox(armjnts, armname="rgt")
-    # rhx.rbtmesh.genmnp(rhx.rbt).reparentTo(base.render)
-    # rhx.opengripperx(armname="rgt")
-    # rhx.opengripperx(armname="lft")
-    # rhx.moveto(rhx.rbt.initrgtjnts, armname="rgt")
-    # rhx.moveto(rhx.rbt.initlftjnts, armname="lft")
-    # print(yhx.rbt.initrgtjnts)
-    # print(yhx.rbt.initlftjnts)
+    # armjnts = rhx.movetoposrot(eepos=goalpos, eerot=goalrot, arm_name="rgt")
+    # rhx.movetox(armjnts, arm_name="rgt")
+    # rhx.rbtmesh.genmnp(rhx.robot_s).reparentTo(base.render)
+    # rhx.opengripperx(arm_name="rgt")
+    # rhx.opengripperx(arm_name="lft")
+    # rhx.moveto(rhx.robot_s.initrgtjnts, arm_name="rgt")
+    # rhx.moveto(rhx.robot_s.initlftjnts, arm_name="lft")
+    # print(yhx.robot_s.initrgtjnts)
+    # print(yhx.robot_s.initlftjnts)
 
     # eepos = np.array([300,-100,300])
     # eerot = np.array([[0,0,1],[1,0,0],[0,1,0]]).T
-    # armname = "rgt"
-    # armjnts = yhx.movetoposrot(eepos=eepos, eerot=eerot, armname=armname)
-    # yhx.moveto(armjnts, armname)
+    # arm_name = "rgt"
+    # armjnts = yhx.movetoposrot(eepos=eepos, eerot=eerot, arm_name=arm_name)
+    # yhx.moveto(armjnts, arm_name)
 
     # base = pandactrl.World(camp=[2700, -2000, 2000], lookatp=[0, 0, 500])
     # yh = YumiHelper()
-    # lastarmjnts = yh.rbt.initrgtjnts
+    # lastarmjnts = yh.robot_s.initrgtjnts
     # for x in range(200,401,50):
     #     for y in range(-300,301,50):
     #         for z in range(150, 301, 50):
-    #             armjnts = yh.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, armname="rgt")
-    #             if armjnts is not None and not yh.cdchecker.isSelfCollided(yh.rbt):
+    #             armjnts = yh.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, arm_name="rgt")
+    #             if armjnts is not None and not yh.cdchecker.isSelfCollided(yh.robot_s):
     #                 lastarmjnts = armjnts
-    #                 rbtnp = yh.rbtmesh.genmnp(yh.rbt)
+    #                 rbtnp = yh.rbtmesh.genmnp(yh.robot_s)
     #                 rbtnp.reparentTo(base.render)
     # base.run()
 
     # yhx = YumiHelperX()
-    # lastarmjnts = yhx.rbt.initrgtjnts
+    # lastarmjnts = yhx.robot_s.initrgtjnts
     # for x in range(220,451,50):
     #     for y in range(-300,201,50):
     #         for z in range(150, 301, 50):
-    #             armjnts = yhx.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, armname="rgt")
-    #             if armjnts is not None and not yhx.cdchecker.isSelfCollided(yhx.rbt):
+    #             armjnts = yhx.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, arm_name="rgt")
+    #             if armjnts is not None and not yhx.cdchecker.isSelfCollided(yhx.robot_s):
     #
     #                 lastarmjnts = armjnts
-    #                 yhx.moveto(armjnts, armname="rgt")
+    #                 yhx.moveto(armjnts, arm_name="rgt")
 
     # yhx.show()

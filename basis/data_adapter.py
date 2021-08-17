@@ -18,7 +18,7 @@ def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
     """
     if ncolors == 1:
         if nonrandcolor:
-            return [nonrandcolor[0], nonrandcolor[1], nonrandcolor[2]]
+            return [nonrandcolor[0], nonrandcolor[1], nonrandcolor[2], alpha]
         else:
             return [np.random.random(), np.random.random(), np.random.random(), alpha]
     colorarray = []
@@ -132,8 +132,9 @@ def pdquat_to_npmat3(pdquat):
     author: weiwei
     date: 20210109
     """
-    pdmat3 = pdquat * Mat3.identMat()
-    return pdmat3_to_npmat3(pdmat3)
+    tmp_pdmat3 = Mat3()
+    pdquat.extractToMatrix(tmp_pdmat3)
+    return pdmat3_to_npmat3(tmp_pdmat3)
 
 
 def npv3_to_pdv3(npv3):
@@ -220,13 +221,13 @@ def pandageom_from_vfnf(vertices, face_normals, triangles, name='auto'):
     multiplied_verticies = np.empty((len(vertids), 3), dtype=np.float32)
     multiplied_verticies[:] = vertices[vertids]
     vertex_normals = np.repeat(face_normals.astype(np.float32), repeats=3, axis=0)
-    npstr = np.hstack((multiplied_verticies, vertex_normals)).tostring()
+    npstr = np.hstack((multiplied_verticies, vertex_normals)).tobytes()
     vertexdata.modifyArrayHandle(0).setData(npstr)
     # triangles
     primitive = GeomTriangles(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
     multiplied_triangles = np.arange(len(vertids), dtype=np.uint32).reshape(-1,3)
-    primitive.modifyVertices(-1).modifyHandle().setData(multiplied_triangles.tostring())
+    primitive.modifyVertices(-1).modifyHandle().setData(multiplied_triangles.tobytes())
     # make geom
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
@@ -266,10 +267,10 @@ def pandageom_from_vvnf(vertices, vertex_normals, triangles, name=''):
     """
     vertformat = GeomVertexFormat.getV3n3()
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_normals)).astype(np.float32).tostring())
+    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_normals)).astype(np.float32).tobytes())
     primitive = GeomTriangles(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
-    primitive.modifyVertices(-1).modifyHandle().setData(triangles.astype(np.uint32).tostring())
+    primitive.modifyVertices(-1).modifyHandle().setData(triangles.astype(np.uint32).tobytes())
     # make geom
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
@@ -300,22 +301,23 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud geom
     :param vertices:
-    :param rgba_list: 1x4 nparray for all points, or a list of 1x4 nparray for each point (NOT USED, SEE TODO)
+    :param rgba_list: a list with a single 1x4 nparray or with len(vertices) 1x4 nparray
     :param name:
     :return:
     author: weiwei
     date: 20170328, 20210116
     """
-    # TODO unable to set color -> data format problem
     if rgba_list is None:
         # default
-        vertex_rgbas = np.array([[0, 0, 0, 255], ]*len(vertices), dtype=np.uint8)
-    elif isinstance(rgba_list, np.ndarray):
-        vertex_rgbas = np.tile(rgba_list*255, (len(vertices),1), dtype=np.uint8)
-    elif isinstance(rgba_list, list):
+        vertex_rgbas = np.array([[0, 0, 0, 255]]*len(vertices), dtype=np.uint8)
+    elif type(rgba_list) is not list:
+            raise Exception('rgba\_list must be a list!')
+    elif len(rgba_list) == 1:
+        vertex_rgbas = np.tile(np.array(rgba_list[0])*255, (len(vertices),1), dtype=np.uint8)
+    elif len(rgba_list) == len(vertices):
         vertex_rgbas = (np.array(rgba_list)*255).astype(np.uint8)
     else:
-        raise ValueError('rgba_list must be None, np.ndarray, or list!')
+        raise ValueError('rgba_list must be a list of one or len(vertices) 1x4 nparray!')
     vertformat = GeomVertexFormat()
     arrayformat = GeomVertexArrayFormat()
     arrayformat.addColumn(InternalName.getVertex(), 3, GeomEnums.NTFloat32, GeomEnums.CPoint)
@@ -339,7 +341,7 @@ def nodepath_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud nodepath
     :param vertices:
-    :param rgba_list: 1x4 nparray for all points, or nx4 nparray for each point
+    :param rgba_list: a list with a single 1x4 nparray or with len(vertices) 1x4 nparray
     :param name:
     :return:
     author: weiwei
@@ -387,7 +389,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     from panda3d.core import TransparencyAttrib
 
-    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bt = trimesh.load(objpath)
     btch = bt.convex_hull

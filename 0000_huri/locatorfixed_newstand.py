@@ -78,7 +78,7 @@ class LocatorFixed(object):
         elearray = np.zeros((5, 10))
         eleconfidencearray = np.zeros((5, 10))
 
-        tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.remove_outlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
         # transform back to the local frame of the tubestand
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(tubestand_homomat), tgtpcdnp)
         if toggledebug:
@@ -237,7 +237,7 @@ class LocatorFixed(object):
         """
 
         tubestandcm = copy.deepcopy(self.tubestandcm)
-        tubestandcm.sethomomat(homomat)
+        tubestandcm.set_homomat(homomat)
         tubestandcm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
         return tubestandcm
@@ -292,7 +292,7 @@ class LocatorFixed(object):
                 tubepos_normalized = np.array([self.tubeholecenters[i, j][0], self.tubeholecenters[i, j][1], 5])
                 tubepos = rm.homotransformpoint(tubemat, tubepos_normalized)
                 tubemat[:3, 3] = tubepos
-                newtubecm.sethomomat(tubemat)
+                newtubecm.set_homomat(tubemat)
                 newtubecm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
                 tubecmlist.append(newtubecm)
 

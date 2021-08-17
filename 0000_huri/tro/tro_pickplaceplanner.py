@@ -54,7 +54,7 @@ class PickPlacePlanner(object):
 
         objcmcopy = copy.deepcopy(self.objcm)
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
         bk_armjnts_lft = rbt.getarmjnts(armname="lft")
         if rbtarmjnts is None:
@@ -74,7 +74,7 @@ class PickPlacePlanner(object):
         if armname is "lft":
             hndfa = self.rhx.lfthndfa
         # start pose
-        objcmcopy.sethomomat(inithomomat)
+        objcmcopy.set_homomat(inithomomat)
         ikfailedgraspsnum = 0
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
@@ -84,7 +84,7 @@ class PickPlacePlanner(object):
             eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
             eerot = hndmat4[:3, :3]
             hndnew = hndfa.genHand()
-            hndnew.sethomomat(hndmat4)
+            hndnew.set_homomat(hndmat4)
             # hndnew.setjawwidth(predefined_jawwidth)
             hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
             ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -94,12 +94,12 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(0, 1, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -115,7 +115,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .6, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     # bcdchecker.showMeshList(hndnew.cmlist)
@@ -124,7 +124,7 @@ class PickPlacePlanner(object):
                 if toggledebug:
                     hndnew = hndfa.genHand()
                     hndnew.setColor(1, 0, 1, .2)
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndnew.setjawwidth(predefined_jawwidth)
                     hndnew.reparentTo(self.rhx.base.render)
                 # bcdchecker.showMeshList(hndnew.cmlist)
@@ -139,7 +139,7 @@ class PickPlacePlanner(object):
         ikcolliedgraspsnum = 0
         for index in range(len(goalhomomatlist)):
             objmat4 = goalhomomatlist[index]
-            objcmcopy.sethomomat(objmat4)
+            objcmcopy.set_homomat(objmat4)
             tmpresult = []
             for idavailableinit in availablegraspsatinit:
                 predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idavailableinit]
@@ -147,7 +147,7 @@ class PickPlacePlanner(object):
                 eepos = rm.homotransformpoint(objmat4, predefined_fc)[:3]
                 eerot = hndmat4[:3, :3]
                 hndnew = hndfa.genHand()
-                hndnew.sethomomat(hndmat4)
+                hndnew.set_homomat(hndmat4)
                 # hndnew.setjawwidth(predefined_jawwidth)
                 hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
                 ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -157,12 +157,12 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(0, 1, 0, .5)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             tmpresult.append(idavailableinit)
@@ -178,7 +178,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(1, .6, 0, .2)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             hndnew.reparentTo(self.rhx.base.render)
                 else:
@@ -186,7 +186,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, 0, 1, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
             if index == 0:
@@ -202,9 +202,9 @@ class PickPlacePlanner(object):
         #         hndmat4 = np.dot(inithomomat, predefined_homomat)
         #         eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
         #         eerot = hndmat4[:3, :3]
-        #         armjnts = rbt.numik(eepos, eerot, armname)
-        #         rbt.movearmfk(armjnts, armname)
-        #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+        #         armjnts = robot_s.numik(eepos, eerot, arm_name)
+        #         robot_s.movearmfk(armjnts, arm_name)
+        #         rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
         print("IK failed grasps at the goal pose(s): ", ikfailedgraspsnum)
         print("Collision at the goal pose(s): ", ikcolliedgraspsnum)
@@ -239,7 +239,7 @@ class PickPlacePlanner(object):
 
         objcmcopy = copy.deepcopy(self.objcm)
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
         bk_armjnts_lft = rbt.getarmjnts(armname="lft")
         if rbtarmjnts is None:
@@ -259,7 +259,7 @@ class PickPlacePlanner(object):
         if armname is "lft":
             hndfa = self.rhx.lfthndfa
         # start pose
-        objcmcopy.sethomomat(inithomomat)
+        objcmcopy.set_homomat(inithomomat)
         ikfailedgraspsnum = 0
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
@@ -269,7 +269,7 @@ class PickPlacePlanner(object):
             eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
             eerot = hndmat4[:3, :3]
             hndnew = hndfa.genHand()
-            hndnew.sethomomat(hndmat4)
+            hndnew.set_homomat(hndmat4)
             # hndnew.setjawwidth(predefined_jawwidth)
             hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
             ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -279,12 +279,12 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(0, 1, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -300,7 +300,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .6, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     # bcdchecker.showMeshList(hndnew.cmlist)
@@ -309,7 +309,7 @@ class PickPlacePlanner(object):
                 if toggledebug:
                     hndnew = hndfa.genHand()
                     hndnew.setColor(1, 0, 1, .2)
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndnew.setjawwidth(predefined_jawwidth)
                     hndnew.reparentTo(self.rhx.base.render)
                 # bcdchecker.showMeshList(hndnew.cmlist)
@@ -334,7 +334,7 @@ class PickPlacePlanner(object):
             for rotangle in candidateangles:
                 objmat4 = copy.deepcopy(goalhm)
                 objmat4[:3, :3] = np.dot(rm.rodrigues(rotax, rotangle), goalhm[:3, :3])
-                objcmcopy.sethomomat(objmat4)
+                objcmcopy.set_homomat(objmat4)
                 tmpresult = []
                 for idavailableinit in availablegraspsatinit:
                     predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idavailableinit]
@@ -342,7 +342,7 @@ class PickPlacePlanner(object):
                     eepos = rm.homotransformpoint(objmat4, predefined_fc)[:3]
                     eerot = hndmat4[:3, :3]
                     hndnew = hndfa.genHand()
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth,
                                                       jawwidthend=hndnew.jawwidthopen)
                     # hndnew.setjawwidth(predefined_jawwidth)
@@ -353,12 +353,12 @@ class PickPlacePlanner(object):
                             if toggledebug:
                                 hndnew = hndfa.genHand()
                                 hndnew.setColor(0, 1, 0, .5)
-                                hndnew.sethomomat(hndmat4)
+                                hndnew.set_homomat(hndmat4)
                                 hndnew.setjawwidth(predefined_jawwidth)
                                 hndnew.reparentTo(self.rhx.base.render)
                             rbt.movearmfk(armjnts, armname)
                             isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                            # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                            # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                             isobjcollided = False
                             if (not isrbtcollided) and (not isobjcollided):
                                 tmpresult.append(idavailableinit)
@@ -374,7 +374,7 @@ class PickPlacePlanner(object):
                             if toggledebug:
                                 hndnew = hndfa.genHand()
                                 hndnew.setColor(1, .6, 0, .2)
-                                hndnew.sethomomat(hndmat4)
+                                hndnew.set_homomat(hndmat4)
                                 hndnew.setjawwidth(predefined_jawwidth)
                                 hndnew.reparentTo(self.rhx.base.render)
                     else:
@@ -382,7 +382,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(1, 0, 1, .2)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             hndnew.reparentTo(self.rhx.base.render)
                 if len(tmpresult) == 0:
@@ -407,9 +407,9 @@ class PickPlacePlanner(object):
         #         hndmat4 = np.dot(inithomomat, predefined_homomat)
         #         eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
         #         eerot = hndmat4[:3, :3]
-        #         armjnts = rbt.numik(eepos, eerot, armname)
-        #         rbt.movearmfk(armjnts, armname)
-        #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+        #         armjnts = robot_s.numik(eepos, eerot, arm_name)
+        #         robot_s.movearmfk(armjnts, arm_name)
+        #         rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
         print("IK failed grasps at the goal pose(s): ", ikfailedgraspsnum)
         print("Collision at the goal pose(s): ", ikcolliedgraspsnum)
@@ -446,9 +446,9 @@ class PickPlacePlanner(object):
         eepos = rm.homotransformpoint(objhomomat, predefinedhndfc)
         eerot = hndmat4[:3, :3]
         if msc is None:
-            amjnts = self.rhx.rbt.numik(eepos, eerot, armname)
+            amjnts = self.rhx.robot_s.numik(eepos, eerot, armname)
         else:
-            amjnts = self.rhx.rbt.numikmsc(eepos, eerot, msc, armname)
+            amjnts = self.rhx.robot_s.numikmsc(eepos, eerot, msc, armname)
         if amjnts is not None:
             pickmotion = self.rhx.genmoveforwardmotion(primitivedirection_forward, primitivedistance_forward,
                                                        amjnts, obstaclecmlist, armname)
@@ -475,13 +475,13 @@ class PickPlacePlanner(object):
                     userrt=True):
         """
         generate the pick and place motion for the speicified arm
-        the rbt init armjnts must be explicitly specified to avoid wrong robot poses
+        the robot_s init armjnts must be explicitly specified to avoid wrong robot_s poses
 
         :param candidatepredgidlist: candidate predefined grasp id list [int, int, ...]
         :param objinithomomat:
         :param objgoalhomomat:
         :param armname:
-        :param rbtinitarmjnts, rbtgoalarmjnts: [lftarmjnts, rgtarmjnts], initial robot arm will be used if not set
+        :param rbtinitarmjnts, rbtgoalarmjnts: [lftarmjnts, rgtarmjnts], initial robot_s arm will be used if not set
         :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
@@ -509,10 +509,10 @@ class PickPlacePlanner(object):
                     print("The rgt arm must maintain unmoved during generating ppsglmotion for the lft arm.")
                     raise ValueError("")
             else:
-                print("Wrong armname. Must be rgt or lft.")
+                print("Wrong arm_name. Must be rgt or lft.")
                 raise ValueError("")
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         hndfa = self.rhx.rgthndfa if armname is "rgt" else self.rhx.lfthndfa
         predefinedgrasps = self.identityglist_rgt if armname is "rgt" else self.identityglist_lft
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
@@ -567,7 +567,7 @@ class PickPlacePlanner(object):
             absinitrot = objinithomomat[:3, :3]
             absgoalpos = objgoalhomomat[:3, 3]
             absgoalrot = objgoalhomomat[:3, :3]
-            relpos, relrot = self.rhx.rbt.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
+            relpos, relrot = self.rhx.robot_s.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
             if userrt:
                 rrtpathinit = self.rhx.planmotion(initpose, initpick[0], obscmlist, armname)
                 if rrtpathinit is None:
@@ -793,7 +793,7 @@ class PickPlacePlanner(object):
         :param symmetricaxis: a special deal for symmetric objects, use None if not symmetric
         :param nangles: number of angles for the symmetricaxis, will be ignored if symmetricaxis is None
         :param armname:
-        :param rbtinitarmjnts, rbtgoalarmjnts: [rgtsarmjnts, lftarmjnts], initial robot arm will be used if not set
+        :param rbtinitarmjnts, rbtgoalarmjnts: [rgtsarmjnts, lftarmjnts], initial robot_s arm will be used if not set
         :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
@@ -816,7 +816,7 @@ class PickPlacePlanner(object):
 
         objcmcopy = copy.deepcopy(self.objcm)
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
         bk_armjnts_lft = rbt.getarmjnts(armname="lft")
         bk_jawwidth_rgt = rbt.getjawwidth(armname="rgt")
@@ -833,19 +833,19 @@ class PickPlacePlanner(object):
         np = self.rhx.np
         rm = self.rhx.rm
         # start pose
-        objcmcopy.sethomomat(objinithomomat)
+        objcmcopy.set_homomat(objinithomomat)
         ikfailedgraspsnum = 0
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
         for idpre, predefined_grasp in enumerate(predefinedgrasps):
-            # if toggledebug:
+            # if toggle_debug:
             #     availablegraspsatinit.append(idpre)
             predefined_jawwidth, predefined_fc, predefined_homomat = predefined_grasp
             hndmat4 = np.dot(objinithomomat, predefined_homomat)
             eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
             eerot = hndmat4[:3, :3]
             hndnew = hndfa.genHand()
-            hndnew.sethomomat(hndmat4)
+            hndnew.set_homomat(hndmat4)
             # hndnew.setjawwidth(predefined_jawwidth)
             hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
             ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -855,19 +855,19 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(0, 1, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
                             rbtmg.genmnp(rbt, drawhand=False, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 self.rhx.base.render)
                             pass
-                        # if not toggledebug:
+                        # if not toggle_debug:
                         #     availablegraspsatinit.append(idpre)
                         availablegraspsatinit.append(idpre)
                     elif (not isobjcollided):
@@ -880,7 +880,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .6, 0, .7)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     # bcdchecker.showMeshList(hndnew.cmlist)
@@ -889,7 +889,7 @@ class PickPlacePlanner(object):
                 if toggledebug:
                     hndnew = hndfa.genHand()
                     hndnew.setColor(1, .5, .5, .7)
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndnew.setjawwidth(predefined_jawwidth)
                     hndnew.reparentTo(self.rhx.base.render)
                 # bcdchecker.showMeshList(hndnew.cmlist)
@@ -921,14 +921,14 @@ class PickPlacePlanner(object):
         for rotangle in candidateangles:
             objmat4 = copy.deepcopy(objgoalhomomat)
             objmat4[:3, :3] = np.dot(rm.rodrigues(rotax, rotangle), objgoalhomomat[:3, :3])
-            objcmcopy.sethomomat(objmat4)
+            objcmcopy.set_homomat(objmat4)
             for idavailableinit in availablegraspsatinit:
                 predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idavailableinit]
                 hndmat4 = np.dot(objmat4, predefined_homomat)
                 eepos = rm.homotransformpoint(objmat4, predefined_fc)[:3]
                 eerot = hndmat4[:3, :3]
                 hndnew = hndfa.genHand()
-                hndnew.sethomomat(hndmat4)
+                hndnew.set_homomat(hndmat4)
                 hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
                 # hndnew.setjawwidth(predefined_jawwidth)
                 ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -938,12 +938,12 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(0, 1, 0, .5)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             # hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             finalsharedgrasps.append(idavailableinit)
@@ -951,7 +951,7 @@ class PickPlacePlanner(object):
                                 rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False,
                                              rgbargt=[0, 1, 0, .5]).reparentTo(
                                     self.rhx.base.render)
-                                # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+                                # rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
                                 # # toggle the following one in case both the common start and goal shall be rendered
                                 # hndmat4 = np.dot(objinithomomat, predefined_homomat)
                                 # # hndnew = hndfa.genHand()
@@ -961,16 +961,16 @@ class PickPlacePlanner(object):
                                 # # hndnew.reparentTo(self.rhx.base.render)
                                 # eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                                 # eerot = hndmat4[:3, :3]
-                                # armjnts = rbt.numik(eepos, eerot, armname)
-                                # rbt.movearmfk(armjnts, armname)
-                                # rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
+                                # armjnts = robot_s.numik(eepos, eerot, arm_name)
+                                # robot_s.movearmfk(armjnts, arm_name)
+                                # rbtmg.genmnp(robot_s, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 #     self.rhx.base.render)
                                 # # base.run()
-                                # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+                                # rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
                                 pass
                         elif (not isobjcollided):
                             if toggledebug:
-                                # rbtmg.genmnp(rbt, drawhand=False, togglejntscoord=False, toggleendcoord=False,
+                                # rbtmg.genmnp(robot_s, drawhand=False, togglejntscoord=False, toggleendcoord=False,
                                 #              rgbargt=[1, 0, 1, .5]).reparentTo(self.rhx.base.render)
                                 pass
                     else:
@@ -978,7 +978,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(1, .6, 0, .7)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             # hndnew.reparentTo(self.rhx.base.render)
                 else:
@@ -986,7 +986,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .5, .5, .7)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         # hndnew.reparentTo(self.rhx.base.render)
             print("IK failed grasps at the goal pose: ", ikfailedgraspsnum)
@@ -1005,15 +1005,15 @@ class PickPlacePlanner(object):
                 resultinghomomat = copy.deepcopy(objmat4)
                 resultinghomomat[:3, 3] = resultinghomomat[:3, 3] + resultinghomomat[:3,
                                                                     2] * 5  # move 5mm up, do not move until end
-                # if toggledebug:
+                # if toggle_debug:
                 #     for idsharedgrasps in finalsharedgrasps:
                 #         predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idsharedgrasps]
                 #         hndmat4 = np.dot(objinithomomat, predefined_homomat)
                 #         eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                 #         eerot = hndmat4[:3, :3]
-                #         armjnts = rbt.numik(eepos, eerot, armname)
-                #         rbt.movearmfk(armjnts, armname)
-                #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+                #         armjnts = robot_s.numik(eepos, eerot, arm_name)
+                #         robot_s.movearmfk(armjnts, arm_name)
+                #         rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
                 if rbtinitarmjnts is not None and rbtgoalarmjnts is not None:
                     if armname is "rgt":
@@ -1025,7 +1025,7 @@ class PickPlacePlanner(object):
                             print("The rgt arm must maintain unmoved during generating ppsglmotion for the lft arm.")
                             raise ValueError("")
                     else:
-                        print("Wrong armname. Must be rgt or lft.")
+                        print("Wrong arm_name. Must be rgt or lft.")
                         raise ValueError("")
                 if rbtinitarmjnts is not None:
                     rbt.movearmfk(rbtinitarmjnts[0], armname="rgt")
@@ -1073,7 +1073,7 @@ class PickPlacePlanner(object):
                             hndmat4 = np.dot(objinithomomat, predefinedhandhomomat)
                             eepos = rm.homotransformpoint(objinithomomat, predefinedhndfc)
                             eerot = hndmat4[:3, :3]
-                            amjnts = self.rhx.rbt.numik(eepos, eerot, armname)
+                            amjnts = self.rhx.robot_s.numik(eepos, eerot, armname)
                             rbt.movearmfk(armjnts, armname="rgt")
                             if amjnts is not None:
                                 pickmotion = self.rhx.genmoveforwardmotion(primitivedirection_init_forward,
@@ -1101,14 +1101,14 @@ class PickPlacePlanner(object):
                             hndmat4 = np.dot(objinithomomat, predefinedhandhomomat)
                             eepos = rm.homotransformpoint(objinithomomat, predefinedhndfc)
                             eerot = hndmat4[:3, :3]
-                            amjnts = self.rhx.rbt.numikmsc(eepos, eerot, initpickup[1][-1], armname)
+                            amjnts = self.rhx.robot_s.numikmsc(eepos, eerot, initpickup[1][-1], armname)
                             rbt.movearmfk(armjnts, armname="rgt")
                             if amjnts is not None:
                                 pickmotion = self.rhx.genmoveforwardmotion(primitivedirection_init_forward,
                                                                            primitivedistance_init_foward,
                                                                            amjnts, armname)
                                 if pickmotion is None:
-                                    # rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False, rgbargt=np.array([1, 0, 0, .7])).reparentTo(self.rhx.base.render)
+                                    # rbtmg.genmnp(robot_s, togglejntscoord=False, toggleendcoord=False, rgbargt=np.array([1, 0, 0, .7])).reparentTo(self.rhx.base.render)
                                     if candidatepredgid == finalsharedgrasps[-1]:
                                         base.run()
                             rbt.movearmfk(rbt.initrgtjnts, armname="rgt")
@@ -1120,7 +1120,7 @@ class PickPlacePlanner(object):
                     absinitrot = objinithomomat[:3, :3]
                     absgoalpos = resultinghomomat[:3, 3]
                     absgoalrot = resultinghomomat[:3, :3]
-                    relpos, relrot = self.rhx.rbt.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
+                    relpos, relrot = self.rhx.robot_s.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
                     if userrt:
                         rrtpathinit = self.rhx.planmotion(initpose, initpick[0], obscmlist, armname)
                         if rrtpathinit is None:
@@ -1387,7 +1387,7 @@ class PickPlacePlanner(object):
                                     p3dh.genlinesegnodepath([thispos, nxtpos], colors=[1, 0, 1, 1],
                                                             thickness=3.7).reparentTo(base.render)
                                 objcp = copy.deepcopy(self.objcm)
-                                objcp.sethomomat(objmsmp[i][j])
+                                objcp.set_homomat(objmsmp[i][j])
                                 objcp.setColor(1, 1, 0, 1)
                                 objcp.reparentTo(base.render)
                         base.run()
@@ -1405,7 +1405,7 @@ class PickPlacePlanner(object):
                     print("The shared grasps failed at symmetric angle " + str(rotangle) + ", trying the next...")
                     continue
 
-        # if toggledebug:
+        # if toggle_debug:
         #     base.run()
         print("No feasible motion between two key poses!")
         return [None, None, None]
@@ -1429,7 +1429,7 @@ class PickPlacePlanner(object):
         jawwidthmp = []
         objmp = []
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         rm = self.rhx.rm
 
         for elemp in motionpath:
@@ -1468,7 +1468,7 @@ class PickPlacePlanner(object):
         jawwidthmp = []
         objmp = []
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         rm = self.rhx.rm
         bk_armjnts = rbt.getarmjnts(armname=armname)
 

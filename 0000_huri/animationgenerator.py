@@ -8,8 +8,8 @@ def animationgen(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_doestimat
     create an animation with space
 
     :param base:
-    :param rbt: robotsim/robot/robot.py
-    :param rbtmg: robotsim/robot/robotmesh.py
+    :param robot_s: robot_sim/robot_s/robot_s.py
+    :param rbtmg: robot_sim/robot_s/robotmesh.py
     :param numikmsmp: multisectional numikrms [waist, [left6], [right6]], ...
     :param jawwidthmsmp: multisectional jawwidth [leftwidth, rightwidth], ...
     :param objmsmp: object multisectional motion sequence
@@ -50,23 +50,23 @@ def animationgen(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_doestimat
                 return task.done
             rgtarmjnts = numikmpactive[0][motionpathcounter[0]][1].tolist()
             lftarmjnts = numikmpactive[0][motionpathcounter[0]][2].tolist()
-            rhx.rbt.movealljnts([numikmpactive[0][motionpathcounter[0]][0], 0, 0] + rgtarmjnts + lftarmjnts)
+            rhx.robot_s.movealljnts([numikmpactive[0][motionpathcounter[0]][0], 0, 0] + rgtarmjnts + lftarmjnts)
             rgtjawwidth = jawwidthmpactive[0][motionpathcounter[0]][0]
             lftjawwidth = jawwidthmpactive[0][motionpathcounter[0]][1]
             # print rgtjawwidth, lftjawwidth
-            rhx.rbt.opengripper(armname='rgt', jawwidth=rgtjawwidth)
-            rhx.rbt.opengripper(armname='lft', jawwidth=lftjawwidth)
-            rbtmnp[0] = rhx.rbtmesh.genmnp(rhx.rbt)
+            rhx.robot_s.opengripper(armname='rgt', jawwidth=rgtjawwidth)
+            rhx.robot_s.opengripper(armname='lft', jawwidth=lftjawwidth)
+            rbtmnp[0] = rhx.rbtmesh.genmnp(rhx.robot_s)
             rbtmnp[0].reparentTo(rhx.base.render)
             objmnp[0] = objmpactive[0][motionpathcounter[0]]
             objmnp[0].reparentTo(rhx.base.render)
-            objmnp[0].showlocalframe()
+            objmnp[0].show_loc_frame()
             for idother, other in enumerate(othersmpactive[0][motionpathcounter[0]]):
                 # tmpother = copy.copy(other)
                 other.reparentTo(rhx.base.render)
                 othersmnp[0][idother] = other
             motionpathcounter[0] += 1
-            rhx.rbt.goinitpose()
+            rhx.robot_s.goinitpose()
         else:
             motionpathcounter[0] = 0
             return task.again
@@ -145,8 +145,8 @@ def animationgen_cont(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_does
     _cont means there is no need for pressing "space"
 
     :param base:
-    :param rbt: robotsim/robot/robot.py
-    :param rbtmg: robotsim/robot/robotmesh.py
+    :param robot_s: robot_sim/robot_s/robot_s.py
+    :param rbtmg: robot_sim/robot_s/robotmesh.py
     :param numikmsmp: multisectional numikrms [waist, [left6], [right6]], ...
     :param jawwidthmsmp: multisectional jawwidth [leftwidth, rightwidth], ...
     :param objmsmp: object multisectional motion sequence
@@ -187,23 +187,23 @@ def animationgen_cont(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_does
                 return task.done
             rgtarmjnts = numikmpactive[0][motionpathcounter[0]][1].tolist()
             lftarmjnts = numikmpactive[0][motionpathcounter[0]][2].tolist()
-            rhx.rbt.movealljnts([numikmpactive[0][motionpathcounter[0]][0], 0, 0] + rgtarmjnts + lftarmjnts)
+            rhx.robot_s.movealljnts([numikmpactive[0][motionpathcounter[0]][0], 0, 0] + rgtarmjnts + lftarmjnts)
             rgtjawwidth = jawwidthmpactive[0][motionpathcounter[0]][0]
             lftjawwidth = jawwidthmpactive[0][motionpathcounter[0]][1]
             # print rgtjawwidth, lftjawwidth
-            rhx.rbt.opengripper(armname='rgt', jawwidth=rgtjawwidth)
-            rhx.rbt.opengripper(armname='lft', jawwidth=lftjawwidth)
-            rbtmnp[0] = rhx.rbtmesh.genmnp(rhx.rbt)
+            rhx.robot_s.opengripper(armname='rgt', jawwidth=rgtjawwidth)
+            rhx.robot_s.opengripper(armname='lft', jawwidth=lftjawwidth)
+            rbtmnp[0] = rhx.rbtmesh.genmnp(rhx.robot_s)
             rbtmnp[0].reparentTo(rhx.base.render)
             objmnp[0] = objmpactive[0][motionpathcounter[0]]
             objmnp[0].reparentTo(rhx.base.render)
-            objmnp[0].showlocalframe()
+            objmnp[0].show_loc_frame()
             for idother, other in enumerate(othersmpactive[0][motionpathcounter[0]]):
                 # tmpother = copy.copy(other)
                 other.reparentTo(rhx.base.render)
                 othersmnp[0][idother] = other
             motionpathcounter[0] += 1
-            rhx.rbt.goinitpose()
+            rhx.robot_s.goinitpose()
         else:
             motionpathcounter[0] = 0
             return task.again

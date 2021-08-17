@@ -5,8 +5,8 @@ import manipulation.grip.yumiintegrated.yumiintegrated as yi
 import manipulation.grip.freegrip as freegrip
 import environment.collisionmodel as cm
 import environment.suitayuminotop as yumisetting
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 import copy
 import motion.collisioncheckerball as cdball
 import environment.bulletcdhelper as bch
@@ -36,7 +36,7 @@ if __name__=='__main__':
     robotmesh = yumimesh.YumiMesh()
     pcdchecker = cdball.CollisionCheckerBall(robotball)
     bcdchecker = bch.MCMchecker(toggledebug=True)
-    # robot.opengripper(armname=armname)
+    # robot_s.opengripper(arm_name=arm_name)
     robotnp = robotmesh.genmnp(robot)
     # robotnp.reparentTo(base.render)
 

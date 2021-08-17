@@ -1,8 +1,8 @@
 from motion import smoother as sm
 from motion import checker as ctcb
 from motion import collisioncheckerball as cdck
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 from pandaplotutils import pandactrl
 import manipulation.grip.yumiintegrated.yumiintegrated as yi
 import numpy as np
@@ -39,7 +39,7 @@ rgthnd = hndfa.genHand()
 lfthnd = hndfa.genHand()
 robot = yumi.YumiRobot(rgthnd, lfthnd)
 robot.opengripper(armname="rgt")
-robot.closegripper(armname="lft")
+robot.close_gripper(armname="lft")
 robotball = yumiball.YumiBall()
 robotmesh = yumimesh.YumiMesh()
 robotnp = robotmesh.genmnp(robot)
@@ -121,7 +121,7 @@ taskMgr.doMethodLater(0.05, update, "update",
                       extraArgs=[path, objst, objlt, counter, tubemnplist, objtsdpos],
                       appendTask=True)
 
-# robot.goinitpose()
+# robot_s.goinitpose()
 # starttreesamplerate = 50
 # endtreesamplerate = 50
 # rbtstartpos = np.array([250,-250,200])
@@ -130,34 +130,34 @@ taskMgr.doMethodLater(0.05, update, "update",
 #                     [0,0.382683,-0.92388]]).T
 # rbtgoalpos = np.array([300,0,100])
 # rbtgoalrot = np.dot(rm.rodrigues([0,0,1],-120),rbtstartrot)
-# start = robot.numik(rbtstartpos, rbtstartrot, armname=armname)
+# start = robot_s.numik(rbtstartpos, rbtstartrot, arm_name=arm_name)
 # print(start)
-# goal = robot.numik(rbtgoalpos, rbtgoalrot, armname=armname)
+# goal = robot_s.numik(rbtgoalpos, rbtgoalrot, arm_name=arm_name)
 # print(goal)
 # planner = rrtc.RRTConnect(start=start, goal=goal, ctcallback=ctcallback,
 #                               starttreesamplerate=starttreesamplerate,
 #                               endtreesamplerate=endtreesamplerate, expanddis=7,
-#                               maxiter=2000, maxtime=100.0)
-# robot.movearmfk(start, armname)
-# robotnp = robotmesh.genmnp(robot)
+#                               max_iter=2000, max_time=100.0)
+# robot_s.movearmfk(start, arm_name)
+# robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
-# robot.movearmfk(goal, armname)
-# robotnp = robotmesh.genmnp(robot)
+# robot_s.movearmfk(goal, arm_name)
+# robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
-# robotball.showcn(robotball.genfullbcndict(robot))
+# robotball.showcn(robotball.genfullbcndict(robot_s))
 # # base.run()
 # [path, sampledpoints] = planner.planning(obscmlist+tubecmlist)
-# path = smoother.pathsmoothing(path, planner, maxiter=100)
+# path = smoother.pathsmoothing(path, planner, max_iter=100)
 # print(path)
-# def update(rbtmnp, motioncounter, robot, path, armname, robotmesh, robotball, task):
+# def update(rbtmnp, motioncounter, robot_s, path, arm_name, robotmesh, robotball, task):
 #     if motioncounter[0] < len(path):
 #         if rbtmnp[0] is not None:
 #             rbtmnp[0].detachNode()
 #             rbtmnp[1].detachNode()
 #         pose = path[motioncounter[0]]
-#         robot.movearmfk(pose, armname)
-#         rbtmnp[0] = robotmesh.genmnp(robot)
-#         bcndict = robotball.genfullactivebcndict(robot)
+#         robot_s.movearmfk(pose, arm_name)
+#         rbtmnp[0] = robotmesh.genmnp(robot_s)
+#         bcndict = robotball.genfullactivebcndict(robot_s)
 #         rbtmnp[1] = robotball.showcn(bcndict)
 #         rbtmnp[0].reparentTo(base.render)
 #         motioncounter[0] += 1
@@ -168,6 +168,6 @@ taskMgr.doMethodLater(0.05, update, "update",
 # rbtmnp = [None, None]
 # motioncounter = [0]
 # taskMgr.doMethodLater(0.05, update, "update",
-#                       extraArgs=[rbtmnp, motioncounter, robot, path, armname, robotmesh, robotball],
+#                       extraArgs=[rbtmnp, motioncounter, robot_s, path, arm_name, robotmesh, robotball],
 #                       appendTask=True)
 base.run()

@@ -27,7 +27,7 @@ class HandoverPlanner(object):
             self.objname = obj.name
             self.objcm = obj
         self.rhx = rhx
-        self.rbt = rhx.rbt
+        self.rbt = rhx.robot_s
         self.retractdistance = retractdistance
         self.bcdchecker = bch.MCMchecker(toggledebug=False)
         with open(os.path.join(rhx.root, "grasp" + rhx.rgthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
@@ -241,7 +241,7 @@ class HandoverPlanner(object):
             handtmp = self.rgthndfa.genHand()
         else:
             handtmp = self.lfthndfa.genHand()
-        handtmp.sethomomat(homomat)
+        handtmp.set_homomat(homomat)
         handtmp.setjawwidth(handtmp.jawwidthopen)
         iscollided = self.bcdchecker.isMeshListMeshListCollided(handtmp.cmlist, obstaclecmlist)
 
