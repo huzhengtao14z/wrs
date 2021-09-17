@@ -7,6 +7,7 @@ import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur3.ur3 as ur
 import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq
+import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as hnde
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -128,6 +129,9 @@ class UR3Dual(ri.RobotInterface):
         self.lft_hnd = rtq.Robotiq85(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
                                      rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
+        # self.lft_hnd = hnde.RobotiqHE(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+        #                              rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
+        #                              enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body_jl')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([.0, -.258485281374, 1.61051471863])  # right from robot_s view
