@@ -168,14 +168,14 @@ class SDA5F(ri.RobotInterface):
         super().fk(component_name, jnt_values)
         # examine length
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
-                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
+                raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
             update_component(component_name, jnt_values)
         elif component_name == 'both_arm':
-            if (jnt_values.size != 12):
-                raise ValueError("A 1x12 npdarrays must be specified to move both arm!")
-            update_component('lft_arm', jnt_values[0:6])
-            update_component('rgt_arm', jnt_values[6:12])
+            if (jnt_values.size != 14):
+                raise ValueError("A 1x14 npdarrays must be specified to move both arm!")
+            update_component('lft_arm', jnt_values[0:7])
+            update_component('rgt_arm', jnt_values[7:14])
         elif component_name == 'all':
             raise NotImplementedError
         else:
