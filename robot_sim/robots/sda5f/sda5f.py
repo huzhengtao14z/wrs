@@ -7,6 +7,7 @@ import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.sia5.sia5 as sia
 import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq
+import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqe
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -49,9 +50,13 @@ class SDA5F(ri.RobotInterface):
         # lft hand offset (if needed)
         self.lft_hnd_offset = np.zeros(3)
         lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_tcp_to_gl(loc_pos=self.lft_hnd_offset)
-        self.lft_hnd = rtq.Robotiq85(pos=lft_hnd_pos,
+        # self.lft_hnd = rtq.Robotiq85(pos=lft_hnd_pos,
+        #                              rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
+        #                              enable_cc=False)
+        self.lft_hnd = rtqe.RobotiqHE(pos=lft_hnd_pos,
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
+
         # right side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(1), name='rgt_body_jl')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([0.045, 0, 0.7296])  # right from robot_s view
@@ -77,7 +82,10 @@ class SDA5F(ri.RobotInterface):
         self.rgt_hnd_offset = np.zeros(3)
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_tcp_to_gl(loc_pos=self.rgt_hnd_offset)
         # TODO replace using copy
-        self.rgt_hnd = rtq.Robotiq85(pos=rgt_hnd_pos,
+        # self.rgt_hnd = rtq.Robotiq85(pos=rgt_hnd_pos,
+        #                              rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
+        #                              enable_cc=False)
+        self.rgt_hnd = rtqe.RobotiqHE(pos=rgt_hnd_pos,
                                      rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # tool center point
@@ -137,6 +145,14 @@ class SDA5F(ri.RobotInterface):
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
+    def get_hnd_on_manipulator(self, manipulator_name):
+        if manipulator_name == 'rgt_arm':
+            return self.rgt_hnd
+        elif manipulator_name == 'lft_arm':
+            return self.lft_hnd
+        else:
+            raise ValueError("The given jlc does not have a hand!")
+
     def fk(self, component_name, jnt_values):
         """
         :param jnt_values: 1x7 or 1x14 nparray
@@ -151,7 +167,7 @@ class SDA5F(ri.RobotInterface):
             # inline function for update objects in hand
             if component_name == 'rgt_arm':
                 oih_info_list = self.rgt_oih_infos
-            elif component_name == 'lft_arm':
+            else :
                 oih_info_list = self.lft_oih_infos
             for obj_info in oih_info_list:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -257,8 +273,7 @@ class SDA5F(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
+        self.lft_hnd.gen_meshmodel(
                                    toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
@@ -268,8 +283,7 @@ class SDA5F(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
+        self.rgt_hnd.gen_meshmodel(
                                    toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)

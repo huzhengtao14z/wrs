@@ -12,33 +12,40 @@ import modeling.geometric_model as gm
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
 import robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
 import robot_sim.robots.sda5f.sda5f as sda5
+import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xarm
 import motion.probabilistic.rrt_connect as rrtc
+import hupackage.hupackage as hu
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 1, 3], w=960,
                     h=540, lookat_pos=[0, 0, 1.1])
     gm.gen_frame().attach_to(base)
 
-    object = cm.CollisionModel("./objects/bunnysim.stl")
-    object.set_pos(np.array([1.05, -.3, 1.3]))
+    object = cm.CollisionModel("./objects/tubebig.stl")
+    object.set_pos(np.array([0.800, -.500, 0.700]))
     object.set_rgba([.5, .7, .3, 1])
     object.attach_to(base)
-    component_name = 'rgt_arm'
+    component_name = 'arm'
     # robot_instance = ur3d.UR3Dual()
-    robot_instance = ur3ed.UR3EDual()
+    # robot_instance = ur3ed.UR3EDual()
     # robot_instance = sda5.SDA5F()
-    start_hnd_pos = np.array([0.8, -0.5, 1.3])
+    robot_instance = xarm.XArm7YunjiMobile()
+
+    start_hnd_pos = np.array([0.3, -0.6, 0.800])
     start_hnd_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    goal_hnd_pos = np.array([0.8, -0.5, 1.25])
+    goal_hnd_pos = np.array([0.3, -0.601, 1.0])
     goal_hnd_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     start_jntsangle = robot_instance.ik(component_name, start_hnd_pos, start_hnd_rotmat)
     goal_jntsangle  = robot_instance.ik(component_name, goal_hnd_pos,  goal_hnd_rotmat)
+
+    hu.debugpos(start_hnd_pos, start_hnd_rotmat, base)
     robot_instance.fk(component_name, start_jntsangle)
     # gm.gen_frame(pos=start_hnd_pos, rotmat=start_hnd_rotmat).attach_to(base)
     # gm.gen_frame(pos=goal_hnd_pos, rotmat=goal_hnd_rotmat).attach_to(base)
-    # robot_meshmodel = robot_instance.gen_meshmodel(tcp_loc_pos=start_hnd_pos, tcp_loc_rotmat=start_hnd_rotmat)
-
-    # robot_meshmodel.attach_to(base)
+    robot_meshmodel = robot_instance.gen_meshmodel(tcp_loc_pos=start_hnd_pos, tcp_loc_rotmat=start_hnd_rotmat)
+    robot_instance.gen_meshmodel()
+    robot_meshmodel.attach_to(base)
+    # base.run()
     rrtc_planner = rrtc.RRTConnect(robot_instance)
     path = rrtc_planner.plan(start_conf=start_jntsangle,
                              goal_conf=goal_jntsangle,
