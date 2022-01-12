@@ -18,7 +18,7 @@ class RobotiqHE(gp.GripperInterface):
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base_lft_finger')
         self.lft.jnts[1]['loc_pos'] = np.array([-.025, .0, .11])
         self.lft.jnts[1]['type'] = 'prismatic'
-        self.lft.jnts[1]['motion_rng'] = [0, .025]
+        self.lft.jnts[1]['motion_rng'] = [0, .03]
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['loc_pos'] = np.zeros(3)
@@ -31,6 +31,7 @@ class RobotiqHE(gp.GripperInterface):
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger')
         self.rgt.jnts[1]['loc_pos'] = np.array([.025, .0, .11])
         self.rgt.jnts[1]['type'] = 'prismatic'
+        self.rgt.jnts[1]['motion_rng'] = [0, -.03]
         self.rgt.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger2_cvt.stl")
@@ -90,9 +91,12 @@ class RobotiqHE(gp.GripperInterface):
             raise ValueError("The motion_val parameter is out of range!")
 
     def jaw_to(self, jawwidth):
-        if jawwidth > .05:
+        if jawwidth > .06:
             raise ValueError("The jawwidth parameter is out of range!")
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
+
+    def get_jawwidth(self):
+        return 0.05-2*self.lft.jnts[1]['motion_val']
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -159,11 +163,13 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = RobotiqHE(enable_cc=True)
-    grpr.jaw_to(.05)
+    grpr.jaw_to(.03)
+    print(grpr.get_jawwidth())
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
     grpr.show_cdmesh()
     grpr.show_cdprimit()
+
     base.run()

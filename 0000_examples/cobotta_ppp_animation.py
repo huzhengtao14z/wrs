@@ -24,6 +24,7 @@ obgl_start_homomat = rm.homomat_from_posrot(object_holder_gl_pos, object_holder_
 object_holder.set_pos(object_holder_gl_pos)
 object_holder.set_rotmat(object_holder_gl_rotmat)
 gm.gen_frame().attach_to(object_holder)
+
 object_holder_copy = object_holder.copy()
 object_holder_copy.attach_to(base)
 # object holder goal

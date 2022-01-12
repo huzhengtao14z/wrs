@@ -205,6 +205,83 @@ class UR3EDual(ri.RobotInterface):
         else:
             raise NotImplementedError
 
+    def jaw_to(self, hnd_name='rgt_hnd', jawwidth=0.0):
+        '''
+        :param hnd_name:
+        :param jawwidth:
+        :added by hu
+        :return:
+        '''
+        if hnd_name == "rgt_hnd":
+            self.rgt_hnd.jaw_to(jawwidth)
+        else:
+            self.lft_hnd.jaw_to(jawwidth)
+
+    def hold(self, hnd_name, objcm, jawwidth=None):
+        """
+        the objcm is added as a part of the robot_s to the cd checker
+        :param jawwidth:
+        :param objcm:
+        :return:
+        """
+        if hnd_name not in self.hnd_dict:
+            raise ValueError("Hand name does not exist!")
+        if jawwidth is not None:
+            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+
+        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
+        if hnd_name == "rgt_arm" or "rgt_hnd":
+            intolist = [self.rgt_arm.lnks[0],
+                        self.rgt_arm.lnks[1],
+                        self.rgt_arm.lnks[2],
+                        self.rgt_arm.lnks[3],
+                        self.rgt_arm.lnks[4]]
+            self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        else:
+            intolist = [self.lft_arm.lnks[0],
+                        self.lft_arm.lnks[1],
+                        self.lft_arm.lnks[2],
+                        self.lft_arm.lnks[3],
+                        self.lft_arm.lnks[4]]
+            self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        return rel_pos, rel_rotmat
+
+    def get_oih_list(self, hnd_name):
+        return_list = []
+        if hnd_name == "rgt_arm" or "rgt_hnd":
+            oih_infos = self.rgt_oih_infos
+        else:
+            oih_infos = self.lft_oih_infos
+        for obj_info in oih_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
+            return_list.append(objcm)
+        return return_list
+
+    def release(self, hnd_name, objcm, jawwidth=None):
+        """
+        the objcm is added as a part of the robot_s to the cd checker
+        :param jawwidth:
+        :param objcm:
+        :return:
+        """
+        if hnd_name not in self.hnd_dict:
+            raise ValueError("Hand name does not exist!")
+        if jawwidth is not None:
+            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+        if hnd_name == "rgt_arm" or "rgt_hnd":
+            for obj_info in self.rgt_oih_infos:
+                if obj_info['collisionmodel'] is objcm:
+                    self.cc.delete_cdobj(obj_info)
+                    self.rgt_oih_infos.remove(obj_info)
+        else:
+            for obj_info in self.lft_oih_infos:
+                if obj_info['collisionmodel'] is objcm:
+                    self.cc.delete_cdobj(obj_info)
+                    self.lft_oih_infos.remove(obj_info)
+                break
+
     def gen_stickmodel(self,
                        tcp_jntid=None,
                        tcp_loc_pos=None,
@@ -285,7 +362,6 @@ class UR3EDual(ri.RobotInterface):
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(mm_collection)
         return mm_collection
-
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
