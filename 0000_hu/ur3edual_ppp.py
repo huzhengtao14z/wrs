@@ -15,9 +15,8 @@ import robot_sim.robots.sda5f.sda5f as sda5
 import motion.probabilistic.rrt_connect as rrtc
 import manipulation.pick_place_planner as ppp
 
-
 if __name__ == '__main__':
-    #world
+    # world
     base = wd.World(cam_pos=[2, 1, 3], w=960,
                     h=540, lookat_pos=[0, 0, 1.1])
     gm.gen_frame().attach_to(base)
@@ -42,13 +41,12 @@ if __name__ == '__main__':
     object_goal.set_rotmat(object_goal_rotmat)
     object_goal.attach_to(base)
 
-
     # robot_instance = ur3d.UR3Dual()
     robot = ur3ed.UR3EDual()
     # robot_instance = sda5.SDA5F()
     component_name = 'rgt_arm'
 
-    rrtc= rrtc.RRTConnect(robot)
+    rrtc = rrtc.RRTConnect(robot)
     ppp = ppp.PickPlacePlanner(robot)
 
     grasp_info_list = gpa.load_pickle_file('tubebig', './', 'graspdata/hnde_tubebig.pickle')
@@ -57,19 +55,24 @@ if __name__ == '__main__':
     start_conf = robot.get_jnt_values(component_name)
     conf_list, jawwidth_list, objpose_list = \
         ppp.gen_pick_and_place_motion(hnd_name=hand_name,
-                                        objcm=object,
-                                        grasp_info_list=grasp_info_list,
-                                        start_conf=start_conf,
-                                        end_conf=start_conf,
-                                        goal_homomat_list=[object_start_homomat, object_goal_homomat],
-                                        approach_direction_list=[None, np.array([0, 0, -1])],
-                                        approach_distance_list=[.05] * 1 ,
-                                        depart_direction_list=[np.array([0, 0, 1]), None],
-                                        depart_distance_list=[.05] * 1)
+                                      objcm=object,
+                                      grasp_info_list=grasp_info_list,
+                                      start_conf=start_conf,
+                                      end_conf=start_conf,
+                                      goal_homomat_list=[object_start_homomat, object_goal_homomat,
+                                                         object_start_homomat],
+                                      approach_direction_list=[None, np.array([0, 0, -1]), None],
+                                      approach_distance_list=[.05] * 3,
+                                      depart_direction_list=[np.array([0, 0, 1]), None, None],
+                                      depart_distance_list=[.05] * 3)
+    # if conf_list is None:
+    #     exit(-1)
     robot_attached_list = []
     object_attached_list = []
     counter = [0]
-    testNode = [None, None, None]
+    textNode = [None, None, None]
+
+
     # base.run()
     def update(robot,
                object_box,
@@ -78,7 +81,7 @@ if __name__ == '__main__':
                obj_path,
                robot_attached_list,
                object_attached_list,
-               counter,
+               counter, textNode,
                task):
         if counter[0] >= len(robot_path):
             counter[0] = 0
@@ -90,8 +93,8 @@ if __name__ == '__main__':
             robot_attached_list.clear()
             object_attached_list.clear()
         pose = robot_path[counter[0]]
-        robot.fk(manipulator_name, pose)
-        robot.jaw_to(hand_name, jawwidth_path[counter[0]])
+        robot.fk(hand_name, pose)
+        # robot.jaw_to(hand_name, jawwidth_path[counter[0]])
         robot_meshmodel = robot.gen_meshmodel()
         robot_meshmodel.attach_to(base)
         robot_attached_list.append(robot_meshmodel)
@@ -124,7 +127,6 @@ if __name__ == '__main__':
             pos=(1.6, 0.8),
             align=TextNode.ALeft)
 
-
         return task.again
 
 
@@ -136,7 +138,7 @@ if __name__ == '__main__':
                                      objpose_list,
                                      robot_attached_list,
                                      object_attached_list,
-                                     counter,testNode],
+                                     counter, textNode],
                           appendTask=True)
     # base.run()
     #
@@ -163,7 +165,6 @@ if __name__ == '__main__':
     #         pos=(1.6, 0.8),
     #         align=TextNode.ALeft)
     #     return task.again
-
 
     cam_view_text = OnscreenText(
         text="Camera View: ",

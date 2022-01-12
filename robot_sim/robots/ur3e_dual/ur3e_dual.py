@@ -89,8 +89,8 @@ class UR3EDual(ri.RobotInterface):
         # component map
         self.manipulator_dict['rgt_arm'] = self.rgt_arm
         self.manipulator_dict['lft_arm'] = self.lft_arm
-        self.manipulator_dict['rgt_hnd'] = self.rgt_arm # specify which hand is a gripper installed to
-        self.manipulator_dict['lft_hnd'] = self.lft_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['rgt_hnd'] = self.rgt_arm  # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_hnd'] = self.lft_arm  # specify which hand is a gripper installed to
         self.hnd_dict['rgt_hnd'] = self.rgt_hnd
         self.hnd_dict['lft_hnd'] = self.lft_hnd
         self.hnd_dict['rgt_arm'] = self.rgt_hnd
@@ -124,6 +124,36 @@ class UR3EDual(ri.RobotInterface):
 
     def enable_cc(self):
         super().enable_cc()
+        self.cc.add_cdlnks(self.lft_body, [0, ])
+        self.cc.add_cdlnks(self.lft_arm, [0, 1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.lft_hnd.lft, [0, 1])
+        self.cc.add_cdlnks(self.lft_hnd.rgt, [1])
+        self.cc.add_cdlnks(self.rgt_arm, [0, 1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.rgt_hnd.lft, [0, 1])
+        self.cc.add_cdlnks(self.rgt_hnd.rgt, [1])
+
+        activelist = [
+            self.lft_arm.lnks[0],
+            self.lft_arm.lnks[1],
+            self.lft_arm.lnks[2],
+            self.lft_arm.lnks[3],
+            self.lft_arm.lnks[4],
+            self.lft_arm.lnks[5],
+            self.lft_arm.lnks[6],
+            self.lft_hnd.lft.lnks[0],
+            self.lft_hnd.lft.lnks[1],
+            self.lft_hnd.rgt.lnks[1],
+            self.rgt_arm.lnks[0],
+            self.rgt_arm.lnks[1],
+            self.rgt_arm.lnks[2],
+            self.rgt_arm.lnks[3],
+            self.rgt_arm.lnks[4],
+            self.rgt_arm.lnks[5],
+            self.rgt_arm.lnks[6],
+            self.rgt_hnd.lft.lnks[0],
+            self.rgt_hnd.lft.lnks[1],
+            self.rgt_hnd.rgt.lnks[1]]
+        self.cc.set_active_cdlnks(activelist)
         # raise NotImplementedError
 
     def move_to(self, pos, rotmat):
@@ -363,6 +393,7 @@ class UR3EDual(ri.RobotInterface):
             objcm.copy().attach_to(mm_collection)
         return mm_collection
 
+
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
@@ -375,4 +406,6 @@ if __name__ == '__main__':
     u3ed_meshmodel.attach_to(base)
     # u3ed_meshmodel.show_cdprimit()
     u3ed.gen_stickmodel().attach_to(base)
+    # object = cm.CollisionModel("C:\\Users\\WRS\\Desktop\\wrs-main\\0000_examples\\objects\\bowl.stl")
+    # u3ed.hold("rgt_arm", object)
     base.run()
