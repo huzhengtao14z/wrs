@@ -39,11 +39,18 @@ if __name__ == '__main__':
         cylinder = cm.gen_cylinder(radius=0.001, height=height, section=30, homomat=rot4)
         return cylinder
 
-    cylinder1 = cylinder_link_start_end(start,end)
+    def capsule_link_start_end(start, end):
+        start = start
+        end = end
+        thickness = 0.001
+        cylinder = cm.gen_capsule(spos=start, epos=end, thickness = 0.001, section=[5, 5])
+        return cylinder
+
+    cylinder1 = capsule_link_start_end(start,end)
     cylinder1.attach_to(base)
     start = np.array([0.010, 0.01, .010])
     end = np.array([0.00, 0.010, 0.01])
-    cylinder2 = cylinder_link_start_end(start, end)
+    cylinder2 = capsule_link_start_end(start, end)
     cylinder2.attach_to(base)
 
     # cylinder1 = cm.CollisionModel(cylinder1)

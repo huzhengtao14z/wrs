@@ -352,6 +352,17 @@ def gen_cylinder(radius=0.1, height= 0.2, section = 100, homomat= np.eye(4), rgb
     cld_cm = CollisionModel(cld_sgm)
     return cld_cm
 
+def gen_capsule(spos=(0,0,0), epos= (0,0,0.01), section = [100, 100], thickness = 0.001, rgba = (1,1,0,1)):
+    """
+    :param extent:
+    :param homomat:
+    :return:
+    author: hu
+    date: 20220113
+    """
+    cld_sgm = gm.gen_capsule(spos=spos, epos= epos, section = section, thickness= thickness, rgba = rgba)
+    cld_cm = CollisionModel(cld_sgm)
+    return cld_cm
 
 def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
     """

@@ -535,7 +535,7 @@ def gen_cylinder(radius=0.1, height= 0.2, section = 100, homomat= np.eye(4), rgb
     cld_sgm.set_rgba(rgba=rgba)
     return cld_sgm
 
-def gen_capsule(spos=spos, epos= epos, section = section, homomat= np.eye(4), rgba = (1,1,0,1)):
+def gen_capsule(spos=(0,0,0), epos= (0,0,0.01), section = [100, 100], thickness=0.005, rgba = (1,1,0,1)):
     """
     :param extent:
     :param homomat:
@@ -543,7 +543,8 @@ def gen_capsule(spos=spos, epos= epos, section = section, homomat= np.eye(4), rg
     author: hu
     date: 20220113
     """
-    cld_trm = trihelper.gen_capsule(spos=spos, epos= epos, section = section, homomat= homomat)
+    cld_trm = trihelper.gen_roundstick(spos=spos, epos=epos, thickness=thickness, count=section)
+    # cld_trm = trihelper.gen_capsule(spos=spos, epos= epos, section = section, homomat= homomat)
     cld_sgm = StaticGeometricModel(cld_trm)
     cld_sgm.set_rgba(rgba=rgba)
     return cld_sgm
