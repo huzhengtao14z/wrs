@@ -15,7 +15,7 @@ class IncrementalNIK(object):
                           start_tcp_rotmat,
                           goal_tcp_pos,
                           goal_tcp_rotmat,
-                          obstacle_list=[],
+                          obstacle_list,
                           granularity=0.03,
                           seed_jnt_values=None,
                           toggle_debug=False):
@@ -39,6 +39,7 @@ class IncrementalNIK(object):
                                                          goal_tcp_rotmat,
                                                          granularity=granularity)
         jnt_values_list = []
+        obstacle_list = obstacle_list
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):

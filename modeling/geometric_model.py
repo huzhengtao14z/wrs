@@ -507,7 +507,7 @@ def gen_dashstick(spos=np.array([0, 0, 0]),
     return dashstick_sgm
 
 
-def gen_box(extent=np.array([1, 1, 1]),
+def gen_box(extent=np.array([.1, .1, .1]),
             homomat=np.eye(4),
             rgba=[1, 0, 0, 1]):
     """
@@ -521,6 +521,32 @@ def gen_box(extent=np.array([1, 1, 1]),
     box_sgm = StaticGeometricModel(box_trm)
     box_sgm.set_rgba(rgba=rgba)
     return box_sgm
+
+def gen_cylinder(radius=0.1, height= 0.2, section = 100, homomat= np.eye(4), rgba = (1,1,0,1)):
+    """
+    :param extent:
+    :param homomat:
+    :return:
+    author: hu
+    date: 20220113
+    """
+    cld_trm = trihelper.gen_cylinder(radius=radius, height= height, section = section, homomat= homomat)
+    cld_sgm = StaticGeometricModel(cld_trm)
+    cld_sgm.set_rgba(rgba=rgba)
+    return cld_sgm
+
+def gen_capsule(spos=spos, epos= epos, section = section, homomat= np.eye(4), rgba = (1,1,0,1)):
+    """
+    :param extent:
+    :param homomat:
+    :return:
+    author: hu
+    date: 20220113
+    """
+    cld_trm = trihelper.gen_capsule(spos=spos, epos= epos, section = section, homomat= homomat)
+    cld_sgm = StaticGeometricModel(cld_trm)
+    cld_sgm.set_rgba(rgba=rgba)
+    return cld_sgm
 
 
 def gen_dumbbell(spos=np.array([0, 0, 0]),

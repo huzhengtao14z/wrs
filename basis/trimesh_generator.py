@@ -20,6 +20,15 @@ def gen_box(extent=np.array([1, 1, 1]), homomat=np.eye(4)):
     """
     return tp.Box(box_extents=extent, box_transform=homomat)
 
+def gen_cylinder(radius=0.01, height = 0.1, section = 100, homomat = np.eye(4)):
+    """
+    :param extent: x, y, z (origin is 0)
+    :param homomat: rotation and translation
+    :return: a Trimesh object (Primitive)
+    author: hu
+    date: 20220113osaka
+    """
+    return tp.Cylinder(radius=radius, height =height, sections = section, homomat=homomat)
 
 def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, type="rect", sections=8):
     """
@@ -76,6 +85,24 @@ def gen_roundstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickne
         rotmat = rm.rotmat_between_vectors(np.array([0, 0, 1]), epos - spos)
     homomat = rm.homomat_from_posrot(pos, rotmat)
     return tp.Capsule(height=height, radius=thickness / 2.0, count=count, homomat=homomat)
+
+def gen_capsule(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), radius=0.005, count=[8, 8]):
+    """
+    :param spos:
+    :param epos:
+    :param thickness:
+    :return: a Trimesh object (Primitive)
+    author: weiwei
+    date: 20191228osaka
+    """
+    pos = spos
+    height = np.linalg.norm(epos - spos)
+    if np.allclose(height, 0):
+        rotmat = np.eye(3)
+    else:
+        rotmat = rm.rotmat_between_vectors(np.array([0, 0, 1]), epos - spos)
+    homomat = rm.homomat_from_posrot(pos, rotmat)
+    return tp.Capsule(height=height, radius=radius, count=count, homomat=homomat)
 
 
 def gen_dashstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, lsolid=None, lspace=None,

@@ -323,6 +323,10 @@ class CollisionModel(gm.GeometricModel):
     def copy(self):
         return CollisionModel(self)
 
+    # def objpdnp(self):
+    #     # read-only property
+    #     return self._objpdnp
+
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
     """
@@ -335,6 +339,18 @@ def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 
     box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
     box_cm = CollisionModel(box_sgm)
     return box_cm
+
+def gen_cylinder(radius=0.1, height= 0.2, section = 100, homomat= np.eye(4), rgba = (1,1,0,1)):
+    """
+    :param extent:
+    :param homomat:
+    :return:
+    author: hu
+    date: 20220113
+    """
+    cld_sgm = gm.gen_cylinder(radius=radius, height= height, section = section, homomat= homomat, rgba = rgba)
+    cld_cm = CollisionModel(cld_sgm)
+    return cld_cm
 
 
 def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):

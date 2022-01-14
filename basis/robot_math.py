@@ -281,8 +281,10 @@ def interplate_pos_rotmat(start_pos,
     """
     len, vec = unit_vector(start_pos - goal_pos, toggle_length=True)
     nval = math.ceil(len / granularity)
-    if nval == 0:
-        nval = 1
+    # if nval == 0:
+    #     nval = 1
+    if nval < 2:
+        nval = 2
     pos_list = np.linspace(start_pos, goal_pos, nval)
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
     return pos_list, rotmat_list
