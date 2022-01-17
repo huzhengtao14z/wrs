@@ -68,7 +68,7 @@ def gen_rectstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
     return tp.Cylinder(height=height, radius=thickness / 2.0, sections=sections, homomat=homomat)
 
 
-def gen_roundstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, count=[8, 8]):
+def gen_roundstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), radius = 0.005, count=[8, 8]):
     """
     :param spos:
     :param epos:
@@ -84,7 +84,7 @@ def gen_roundstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickne
     else:
         rotmat = rm.rotmat_between_vectors(np.array([0, 0, 1]), epos - spos)
     homomat = rm.homomat_from_posrot(pos, rotmat)
-    return tp.Capsule(height=height, radius=thickness / 2.0, count=count, homomat=homomat)
+    return tp.Capsule(height=height, radius=radius, count=count, homomat=homomat)
 
 def gen_capsule(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), radius=0.005, count=[8, 8]):
     """

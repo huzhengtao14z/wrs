@@ -43,13 +43,13 @@ if __name__ == '__main__':
         start = start
         end = end
         thickness = 0.001
-        cylinder = cm.gen_capsule(spos=start, epos=end, thickness = 0.001, section=[5, 5])
+        cylinder = cm.gen_capsule(spos=start, epos=end, radius = 0.0005, section=[5, 5])
         return cylinder
 
     cylinder1 = capsule_link_start_end(start,end)
     cylinder1.attach_to(base)
-    start = np.array([0.010, 0.01, .010])
-    end = np.array([0.00, 0.010, 0.01])
+    start = np.array([0.020, 0.02, .010])
+    end = np.array([0.00, 0.020, 0.02])
     cylinder2 = capsule_link_start_end(start, end)
     cylinder2.attach_to(base)
 
@@ -57,9 +57,9 @@ if __name__ == '__main__':
     # cylinder2 = cm.CollisionModel(cylinder2)
     # checker = gi.GripperInterface()
     # answer = checker.is_mesh_collided([cylinder2,cylinder1])
-    collision_checker = cc.CollisionChecker()
+    # collision_checker = cc.CollisionChecker()
 
-    answer = robot_instance.is_collided(obstacle_list = [cylinder2, cylinder1])
+    answer = cylinder1.is_mcdwith(objcm_list=[cylinder2])
     print(answer)
     def update(textNode, task):
         if textNode[0] is not None:
