@@ -1,4 +1,7 @@
 import math
+
+import trimesh
+
 import visualization.panda.world as wd
 import modeling.collision_model as cm
 import grasping.planning.antipodal as gpa
@@ -9,6 +12,7 @@ from panda3d.core import TextNode
 import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as gm
+import trimesh.boolean as tb
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
 import robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
 import robot_sim.robots.sda5f.sda5f as sda5
@@ -77,6 +81,7 @@ class Node(object):
         self.node_infos = {}
         self.node_matrix_infos = {}
         self.origin_offset = 0.001
+        self.height = 0.05
         for y in range(self.grid.get_wid()):
             for x in range(self.grid.get_len()):
                 #id = f"{x}-{y}"
@@ -105,9 +110,9 @@ class Node(object):
                 matrix_id_infos["top"] = self.node_infos[id]["rgt"] + np.array([-self.origin_offset, 0, 0])
                 matrix_id_infos["bottom"] = self.node_infos[id]["lft"] + np.array([self.origin_offset, 0, 0])
                 matrix_id_infos["center1"] = self.node_infos[id]["up"] + np.array([0, -self.origin_offset, 0])
-                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + np.array([0, 0, 0.005-self.origin_offset])
+                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + np.array([0, 0, self.height-self.origin_offset])
                 matrix_id_infos["center3"] = self.node_infos[id]["down"] + np.array([0, self.origin_offset, 0])
-                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + np.array([0, 0, -0.005+self.origin_offset])
+                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + np.array([0, 0, -self.height+self.origin_offset])
             elif self.node_infos[id]["parity"] == "odd-even":
                 matrix_id_infos["top"] = self.node_infos[id]["rgt"] + np.array([-self.origin_offset, 0, 0])
                 matrix_id_infos["bottom"] = self.node_infos[id]["lft"] + np.array([self.origin_offset, 0, 0])
@@ -118,25 +123,25 @@ class Node(object):
 
                 matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (
                             self.node_infos[id]["up"] - self.node_infos[id]["origin"] + np.array(
-                        [0, -self.origin_offset, 0.005 - self.origin_offset])) / 1.414
+                        [0, -self.origin_offset, self.height - self.origin_offset])) / 1.414
                 matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
                             self.node_infos[id]["down"] - self.node_infos[id]["origin"] + np.array(
-                        [0, self.origin_offset, 0.005 - self.origin_offset])) / 1.414
+                        [0, self.origin_offset, self.height - self.origin_offset])) / 1.414
                 matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
                             self.node_infos[id]["down"] - self.node_infos[id]["origin"] + np.array(
-                        [0, self.origin_offset, -0.005 + self.origin_offset])) / 1.414
+                        [0, self.origin_offset, -self.height + self.origin_offset])) / 1.414
                 matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
                             self.node_infos[id]["up"] - self.node_infos[id]["origin"] + np.array(
-                        [0, -self.origin_offset, -0.005 + self.origin_offset])) / 1.414
+                        [0, -self.origin_offset, -self.height + self.origin_offset])) / 1.414
 
 
             elif self.node_infos[id]["parity"] == "even-odd":
                 matrix_id_infos["top"] = self.node_infos[id]["up"] + np.array([0, -self.origin_offset, 0])
                 matrix_id_infos["bottom"] = self.node_infos[id]["down"] + np.array([0, self.origin_offset, 0])
-                matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"] + np.array([-self.origin_offset, 0, 0.005-self.origin_offset]))/ 1.414
-                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (self.node_infos[id]["lft"] - self.node_infos[id]["origin"] + np.array([self.origin_offset, 0, 0.005 -self.origin_offset])) / 1.414
-                matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (self.node_infos[id]["lft"] - self.node_infos[id]["origin"] + np.array([self.origin_offset, 0, -0.005 +self.origin_offset])) / 1.414
-                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"] + np.array([-self.origin_offset, 0, -0.005 + self.origin_offset])) / 1.414
+                matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"] + np.array([-self.origin_offset, 0, self.height-self.origin_offset]))/ 1.414
+                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (self.node_infos[id]["lft"] - self.node_infos[id]["origin"] + np.array([self.origin_offset, 0, self.height -self.origin_offset])) / 1.414
+                matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (self.node_infos[id]["lft"] - self.node_infos[id]["origin"] + np.array([self.origin_offset, 0, -self.height +self.origin_offset])) / 1.414
+                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"] + np.array([-self.origin_offset, 0, -self.height + self.origin_offset])) / 1.414
 
                 # matrix_id_infos["center1"] = self.node_infos[id]["origin"] + np.array([-(0.005-self.origin_offset)/1.414, 0, (0.005-self.origin_offset)/1.414])
                 # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + np.array([-(0.005-self.origin_offset)/1.414, 0, -(0.005-self.origin_offset)/1.414])
@@ -149,7 +154,7 @@ class Node(object):
 
 
 class Element(object):
-    def __init__(self, node, radius = 0.0002, manualset = False):
+    def __init__(self, node, radius = 0.01, manualset = False):
         # self.construct()
         self.radius = radius
         if manualset:
@@ -170,132 +175,110 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
+                # self.get_stl()
 
     def construct(self):
-        t_c1 = capsule_link_start_end(self.t, self.c1, self.radius)
-        t_c2 = capsule_link_start_end(self.t, self.c2, self.radius)
-        t_c3 = capsule_link_start_end(self.t, self.c3, self.radius)
-        t_c4 = capsule_link_start_end(self.t, self.c4, self.radius)
-        b_c1 = capsule_link_start_end(self.b, self.c1, self.radius)
-        b_c2 = capsule_link_start_end(self.b, self.c2, self.radius)
-        b_c3 = capsule_link_start_end(self.b, self.c3, self.radius)
-        b_c4 = capsule_link_start_end(self.b, self.c4, self.radius)
-        c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius)
-        c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
-        c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
-        c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
-        t_c1.attach_to(base)
-        t_c2.attach_to(base)
-        t_c3.attach_to(base)
-        t_c4.attach_to(base)
-        b_c1.attach_to(base)
-        b_c2.attach_to(base)
-        b_c3.attach_to(base)
-        b_c4.attach_to(base)
-        c1_c2.attach_to(base)
-        c2_c3.attach_to(base)
-        c3_c4.attach_to(base)
-        c4_c1.attach_to(base)
+        # self.bar_list = []
+        # self.bar_list.append()
+        self.t_c1 = capsule_link_start_end(self.t, self.c1, self.radius)
+        self.t_c2 = capsule_link_start_end(self.t, self.c2, self.radius)
+        self.t_c3 = capsule_link_start_end(self.t, self.c3, self.radius)
+        self.t_c4 = capsule_link_start_end(self.t, self.c4, self.radius)
+        self.b_c1 = capsule_link_start_end(self.b, self.c1, self.radius)
+        self.b_c2 = capsule_link_start_end(self.b, self.c2, self.radius)
+        self.b_c3 = capsule_link_start_end(self.b, self.c3, self.radius)
+        self.b_c4 = capsule_link_start_end(self.b, self.c4, self.radius)
+        self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius)
+        self.c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
+        self.c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
+        self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
+        self.t_c1.attach_to(base)
+        self.t_c2.attach_to(base)
+        self.t_c3.attach_to(base)
+        self.t_c4.attach_to(base)
+        self.b_c1.attach_to(base)
+        self.b_c2.attach_to(base)
+        self.b_c3.attach_to(base)
+        self.b_c4.attach_to(base)
+        self.c1_c2.attach_to(base)
+        self.c2_c3.attach_to(base)
+        self.c3_c4.attach_to(base)
+        self.c4_c1.attach_to(base)
+
+    def get_stl(self):
+        t_c1_objtrm = self.t_c1.objtrm
+        t_c2_objtrm = self.t_c2.objtrm
+        t_c3_objtrm = self.t_c3.objtrm
+        t_c4_objtrm = self.t_c4.objtrm
+        b_c1_objtrm = self.b_c1.objtrm
+        b_c2_objtrm = self.b_c2.objtrm
+        b_c3_objtrm = self.b_c3.objtrm
+        b_c4_objtrm = self.b_c4.objtrm
+        c1_c2_objtrm = self.c1_c2.objtrm
+        c2_c3_objtrm = self.c2_c3.objtrm
+        c3_c4_objtrm = self.c3_c4.objtrm
+        c4_c1_objtrm = self.c4_c1.objtrm
+
+        t_c1_objtrm.export("space_boolean/t_c1.stl")
+        t_c2_objtrm.export("space_boolean/t_c2.stl")
+        t_c3_objtrm.export("space_boolean/t_c3.stl")
+        t_c4_objtrm.export("space_boolean/t_c4.stl")
+        b_c1_objtrm.export("space_boolean/b_c1.stl")
+        b_c2_objtrm.export("space_boolean/b_c2.stl")
+        b_c3_objtrm.export("space_boolean/b_c3.stl")
+        b_c4_objtrm.export("space_boolean/b_c4.stl")
+        c1_c2_objtrm.export("space_boolean/c1_c2.stl")
+        c2_c3_objtrm.export("space_boolean/c2_c3.stl")
+        c3_c4_objtrm.export("space_boolean/c3_c4.stl")
+        c4_c1_objtrm.export("space_boolean/c4_c1.stl")
+
+        t_c1_objtrm_temp = trimesh.load("space_boolean/t_c1.stl")
+
+        t_c2_objtrm_temp = trimesh.load("space_boolean/t_c2.stl")
+        # temp = tb.union([t_c1_objtrm, t_c2_objtrm],engine="blender")
+        t_c3_objtrm_temp = trimesh.load("space_boolean/t_c3.stl")
+        # temp = tb.union([temp, t_c3_objtrm], engine="blender")
+        t_c4_objtrm_temp = trimesh.load("space_boolean/t_c4.stl")
+        # temp = tb.union([temp, t_c4_objtrm], engine="blender")
+        b_c1_objtrm_temp = trimesh.load("space_boolean/b_c1.stl")
+        # temp = tb.union([temp, b_c1_objtrm], engine="blender")
+        b_c2_objtrm_temp = trimesh.load("space_boolean/b_c2.stl")
+        # temp = tb.union([temp, b_c2_objtrm ], engine="blender")
+        b_c3_objtrm_temp = trimesh.load("space_boolean/b_c3.stl")
+        # temp = tb.union([temp, b_c3_objtrm], engine="blender")
+        b_c4_objtrm_temp = trimesh.load("space_boolean/b_c4.stl")
+        # temp = tb.union([temp, b_c4_objtrm], engine="blender")
+        c1_c2_objtrm_temp = trimesh.load("space_boolean/c1_c2.stl")
+        # temp = tb.union([temp, c1_c2_objtrm], engine="blender")
+        c2_c3_objtrm_temp = trimesh.load("space_boolean/c2_c3.stl")
+        # temp = tb.union([temp, c2_c3_objtrm], engine="blender")
+        c3_c4_objtrm_temp = trimesh.load("space_boolean/c3_c4.stl")
+        # temp = tb.union([temp, c3_c4_objtrm], engine="blender")
+        c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
+        # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
+
+        temp = tb.union([t_c1_objtrm_temp, t_c2_objtrm_temp, t_c3_objtrm_temp, t_c4_objtrm_temp, b_c1_objtrm_temp, b_c2_objtrm_temp, b_c3_objtrm_temp, b_c4_objtrm_temp],
+                                     engine="blender")
+        temp.export("space_boolean/element.stl")
+        cm.CollisionModel("space_boolean/element.stl").attach_to(base)
+
+
 if __name__ == '__main__':
     base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960,
                     h=540, lookat_pos=[0, 0, 0.0])
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
-    # position_dict_00 = {"top": np.array([ 0.004,  0.000,  0.000]),
-    #                  "bottom": np.array([-0.004,  0.000,  0.000]),
-    #                 "center1": np.array([ 0.000,  0.004,  0.000]),
-    #                 "center2": np.array([ 0.000,  0.000,  0.004]),
-    #                 "center3": np.array([ 0.000, -0.004,  0.000]),
-    #                 "center4": np.array([ 0.000,  0.000, -0.004]),
-    #                 }
-    # position_dict_01 = {"top": np.array([0.009, 0.000, 0.000]),
-    #                     "bottom": np.array([0.001, 0.000, 0.000]),
-    #                     "center1": np.array([0.005, 0.004/1.414, 0.004/1.414]),
-    #                     "center2": np.array([0.005, 0.004/1.414,-0.004/1.414]),
-    #                     "center3": np.array([0.005, -0.004/1.414,-0.004/1.414]),
-    #                     "center4": np.array([0.005, -0.004/1.414, 0.004/1.414]),
-    #                     }
-    interval = 0.005
+    interval = 0.05
     len_num = 3
     wid_num = 3
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
-    # for y in range(len_num):
-    #     for x in range(wid_num):
-    #         if x ==0 and y ==0:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.010, 0, 0.000])
-    #         elif x ==1 and y ==0:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.006, 0, 0.000])
-    #         elif x ==3 and y ==0:
-    #             matrix[y][x] = matrix[y][x]+np.array([0.006, 0, 0.000])
-    #         elif x ==4 and y ==0:
-    #             matrix[y][x] = matrix[y][x]+np.array([0.010, 0, 0.000])
-    #
-    #         elif x ==0 and y ==1:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.004, 0, 0.000])
-    #         elif x ==1 and y ==1:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.002, 0, 0.000])
-    #         elif x ==3 and y ==1:
-    #             matrix[y][x] = matrix[y][x]+np.array([0.002, 0, 0.000])
-    #         elif x ==4 and y ==1:
-    #             matrix[y][x] = matrix[y][x]+np.array([0.004, 0, 0.000])
-    #
-    #         elif x ==0 and y ==3:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.004, 0, 0.000])
-    #         elif x ==1 and y ==3:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.002, 0, 0.000])
-    #         elif x ==3 and y ==3:
-    #             matrix[y][x] = matrix[y][x]+np.array([+0.002, 0, 0.000])
-    #         elif x ==4 and y ==3:
-    #             matrix[y][x] = matrix[y][x]+np.array([+0.004, 0, 0.000])
-    #
-    #         elif x ==0 and y ==4:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.010, 0, 0.000])
-    #         elif x ==1 and y ==4:
-    #             matrix[y][x] = matrix[y][x]+np.array([-0.006, 0, 0.000])
-    #         elif x ==3 and y ==4:
-    #             matrix[y][x] = matrix[y][x]+np.array([+0.006, 0, 0.000])
-    #         elif x ==4 and y ==4:
-    #             matrix[y][x] = matrix[y][x]+np.array([+0.010, 0, 0.000])
-
-
 
     grid = Grid(np.array(matrix), interval)
     node = Node(grid)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
         element = Element(matrix_infos[key])
-
-
-
-
-    # print(matrix)
-    # node_origin_00 = np.array([0.000, 0.000, 0.000])
-    # node_origin_10 = np.array([0.005, 0.000, 0.000])
-    # node_origin_20 = np.array([0.010, 0.000, 0.000])
-    # node_origin_30 = np.array([0.015, 0.000, 0.000])
-    # node_origin_40 = np.array([0.020, 0.000, 0.000])
-    # node_origin_50 = np.array([0.025, 0.000, 0.000])
-    # node_origin_60 = np.array([0.030, 0.000, 0.000])
-    # node_origin_70 = np.array([0.035, 0.000, 0.000])
-    # node_00 = Node(node_origin_00, "even")
-    # node_10 = Node(node_origin_10, "odd")
-    # node_20 = Node(node_origin_20, "even")
-    # node_30 = Node(node_origin_30, "odd")
-    # node_40 = Node(node_origin_40, "even")
-    # node_50 = Node(node_origin_50, "odd")
-    # node_60 = Node(node_origin_60, "even")
-    # node_70 = Node(node_origin_70, "odd")
-    # element_00 = Element(node_00)
-    # element_10 = Element(node_10)
-    # element_20 = Element(node_20)
-    # element_30 = Element(node_30)
-    # element_40 = Element(node_40)
-    # element_50 = Element(node_50)
-    # element_60 = Element(node_60)
-    # element_70 = Element(node_70)
-
-
-
+        # element.get_stl()
 
 
     def update(textNode, task):

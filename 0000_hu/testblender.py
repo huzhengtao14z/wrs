@@ -52,11 +52,19 @@ def capsule_link_start_end(start, end, radius = 0.0003):
     cylinder = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[5, 5])
     return cylinder
 
-a = capsule_link_start_end(start = np.array([0,0,0]), end = np.array([0,0,0.01]))
-a_vertices = a.objtrm.vertices
-a_face_normals = a.objtrm.face_normals
-a_vertex_normals = a.objtrm.face_normals
-a_faces = a.objtrm.faces
+capsule_1 = capsule_link_start_end(start = np.array([0,0,0]), end = np.array([0,0,0.1]))
+capsule_2 = capsule_link_start_end(start = np.array([0,0,0]), end = np.array([0,0.2,0]))
+a_vertices = capsule_1.objtrm.vertices
+a_face_normals = capsule_1.objtrm.face_normals
+a_vertex_normals = capsule_1.objtrm.face_normals
+a_faces = capsule_1.objtrm.faces
+
+capsule_1.objtrm.export("capsule_1.stl")
+capsule_2.objtrm.export("capsule_2.stl")
+capsule_3 = tb.union([capsule_1.objtrm, capsule_2.objtrm], engine="blender")
+capsule_3.export("capsule_3.stl")
+capsule_3_wrsmesh = cm.CollisionModel("capsule_3.stl").attach_to(base)
+
 a_sub = trimesh.Trimesh(p).convex_hull
 a_cm = cm.CollisionModel(a_sub)
 b_sub = trimesh.Trimesh(m).convex_hull
@@ -70,6 +78,8 @@ a_trimesh = tri.load("a_sub.stl")
 b_trimesh = tri.load("b_sub.stl")
 c = tb.union([a_trimesh, b_trimesh], engine="blender")
 c.export("c_sub.stl")
+# c_wrsmesh = cm.CollisionModel("c_sub.stl").attach_to(base)
+# c = gm.GeometricModel(c_wrsmesh).attach_to(base)
 # tel.export_stl_ascii(a_mesh)
 # a_mesh.export('a_mesh_1.stl')
 # print("a", a)
