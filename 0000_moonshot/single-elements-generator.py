@@ -20,6 +20,7 @@ import motion.probabilistic.rrt_connect as rrtc
 import robot_sim._kinematics.collision_checker as cc
 import robot_sim.end_effectors.grippers.gripper_interface as gi
 # import robot_sim.
+import os
 def capsule_link_start_end(start, end, radius = 0.0003):
     start = start
     end = end
@@ -75,13 +76,13 @@ class Grid(object):
         #     gm.gen_stick(self.position_matrix[0][x], self.position_matrix[-1][x], thickness = thickness).attach_to(base)
 
 class Node(object):
-    def __init__(self, grid):
+    def __init__(self, grid, height = 0.05, origin_offset = 0.001):
         self.grid = grid
         self.origin_pos_dict = {}
         self.node_infos = {}
         self.node_matrix_infos = {}
-        self.origin_offset = 0.001
-        self.height = 0.05
+        self.origin_offset = origin_offset
+        self.height = height
         for y in range(self.grid.get_wid()):
             for x in range(self.grid.get_len()):
                 #id = f"{x}-{y}"
@@ -154,9 +155,10 @@ class Node(object):
 
 
 class Element(object):
-    def __init__(self, node, radius = 0.01, manualset = False):
+    def __init__(self, node, radius = 0.01, manualset = False, id = None):
         # self.construct()
         self.radius = radius
+        self.id = id
         if manualset:
             self.t = node["top"]
             self.b = node["bottom"]
@@ -175,7 +177,7 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
-                # self.get_stl()
+                self.get_stl()
 
     def construct(self):
         # self.bar_list = []
@@ -219,18 +221,21 @@ class Element(object):
         c3_c4_objtrm = self.c3_c4.objtrm
         c4_c1_objtrm = self.c4_c1.objtrm
 
-        t_c1_objtrm.export("space_boolean/t_c1.stl")
-        t_c2_objtrm.export("space_boolean/t_c2.stl")
-        t_c3_objtrm.export("space_boolean/t_c3.stl")
-        t_c4_objtrm.export("space_boolean/t_c4.stl")
-        b_c1_objtrm.export("space_boolean/b_c1.stl")
-        b_c2_objtrm.export("space_boolean/b_c2.stl")
-        b_c3_objtrm.export("space_boolean/b_c3.stl")
-        b_c4_objtrm.export("space_boolean/b_c4.stl")
-        c1_c2_objtrm.export("space_boolean/c1_c2.stl")
-        c2_c3_objtrm.export("space_boolean/c2_c3.stl")
-        c3_c4_objtrm.export("space_boolean/c3_c4.stl")
-        c4_c1_objtrm.export("space_boolean/c4_c1.stl")
+        this_dir, this_filename = os.path.split(__file__)
+        file = f"{this_dir}/space_boolean/{self.id}-"
+
+        t_c1_objtrm.export(f"{file}t_c1.stl")
+        t_c2_objtrm.export(f"{file}t_c2.stl")
+        t_c3_objtrm.export(f"{file}t_c3.stl")
+        t_c4_objtrm.export(f"{file}t_c4.stl")
+        b_c1_objtrm.export(f"{file}b_c1.stl")
+        b_c2_objtrm.export(f"{file}b_c2.stl")
+        b_c3_objtrm.export(f"{file}b_c3.stl")
+        b_c4_objtrm.export(f"{file}b_c4.stl")
+        c1_c2_objtrm.export(f"{file}c1_c2.stl")
+        c2_c3_objtrm.export(f"{file}c2_c3.stl")
+        c3_c4_objtrm.export(f"{file}c3_c4.stl")
+        c4_c1_objtrm.export(f"{file}c4_c1.stl")
 
         t_c1_objtrm_temp = trimesh.load("space_boolean/t_c1.stl")
 
@@ -257,10 +262,10 @@ class Element(object):
         c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
         # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
 
-        temp = tb.union([t_c1_objtrm_temp, t_c2_objtrm_temp, t_c3_objtrm_temp, t_c4_objtrm_temp, b_c1_objtrm_temp, b_c2_objtrm_temp, b_c3_objtrm_temp, b_c4_objtrm_temp],
-                                     engine="blender")
-        temp.export("space_boolean/element.stl")
-        cm.CollisionModel("space_boolean/element.stl").attach_to(base)
+        # temp = tb.union([t_c1_objtrm_temp, t_c2_objtrm_temp, t_c3_objtrm_temp, t_c4_objtrm_temp, b_c1_objtrm_temp, b_c2_objtrm_temp, b_c3_objtrm_temp, b_c4_objtrm_temp],
+        #                              engine="blender")
+        # temp.export(f"{file}element.stl")
+        # cm.CollisionModel("space_boolean/element.stl").attach_to(base)
 
 
 if __name__ == '__main__':
@@ -268,18 +273,17 @@ if __name__ == '__main__':
                     h=540, lookat_pos=[0, 0, 0.0])
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
-    interval = 0.05
+    interval = 0.007
     len_num = 3
     wid_num = 3
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
 
     grid = Grid(np.array(matrix), interval)
-    node = Node(grid)
+    node = Node(grid, height=0.007, origin_offset=0.0012)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key])
+        element = Element(matrix_infos[key], radius=0.0007, id = key)
         # element.get_stl()
-
 
     def update(textNode, task):
         if textNode[0] is not None:
