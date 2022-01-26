@@ -25,7 +25,17 @@ def capsule_link_start_end(start, end, radius = 0.0003):
     start = start
     end = end
     radius = radius
-    cylinder = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[5, 5])
+    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[5, 5])
+    return capsule
+
+def cylinder_link_start_end(start, end,  radius = 0.0003):
+    start = start
+    end = end
+    height = np.linalg.norm(end - start, ord = 2, axis = 0, keepdims=True)[0]
+    vector = rm.unit_vector(end - start)
+    rot3 = rm.rotmat_between_vectors(np.array([0,0,1]),vector)
+    rot4 = rm.homomat_from_posrot(pos = start, rot = rot3)
+    cylinder = cm.gen_cylinder(radius=radius, height=height, section=30, homomat=rot4)
     return cylinder
 
 class Grid(object):
@@ -56,7 +66,7 @@ class Grid(object):
     def show(self, thickness = 0.0003):
         for y in range(self.wid_num):
             for x in range(self.len_num):
-                gm.gen_sphere(pos = self.position_matrix[y][x], radius = 0.0006, rgba=(0,0,0,1)).attach_to(base)
+                gm.gen_sphere(pos = self.position_matrix[y][x], radius = 0.0003, rgba=(0,0,0,1)).attach_to(base)
                 if x == self.len_num - 1 and y < self.wid_num - 1:
                     print("check")
                     gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1],
@@ -159,6 +169,7 @@ class Element(object):
         # self.construct()
         self.radius = radius
         self.id = id
+        self.parity = node["parity"]
         if manualset:
             self.t = node["top"]
             self.b = node["bottom"]
@@ -167,7 +178,7 @@ class Element(object):
             self.c3 = node["center3"]
             self.c4 = node["center4"]
         else:
-            if node["parity"] == "space":
+            if self.parity == "space":
                 pass
             else:
                 self.t = node["top"]
@@ -194,6 +205,7 @@ class Element(object):
         self.c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
         self.c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
         self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
+
         self.t_c1.attach_to(base)
         self.t_c2.attach_to(base)
         self.t_c3.attach_to(base)
@@ -206,6 +218,10 @@ class Element(object):
         self.c2_c3.attach_to(base)
         self.c3_c4.attach_to(base)
         self.c4_c1.attach_to(base)
+
+        if self.parity == "even-even":
+            self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 2*self.radius)
+            self.stage.attach_to(base)
 
     def get_stl(self):
         t_c1_objtrm = self.t_c1.objtrm
@@ -262,6 +278,11 @@ class Element(object):
         c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
         # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
 
+        if self.parity == "even-even":
+            stage_objtrm = self.stage.objtrm
+            stage_objtrm.export(f"{file}stage.stl")
+
+
         # temp = tb.union([t_c1_objtrm_temp, t_c2_objtrm_temp, t_c3_objtrm_temp, t_c4_objtrm_temp, b_c1_objtrm_temp, b_c2_objtrm_temp, b_c3_objtrm_temp, b_c4_objtrm_temp],
         #                              engine="blender")
         # temp.export(f"{file}element.stl")
@@ -273,16 +294,16 @@ if __name__ == '__main__':
                     h=540, lookat_pos=[0, 0, 0.0])
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
-    interval = 0.007
+    interval = 0.006
     len_num = 3
     wid_num = 3
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
 
     grid = Grid(np.array(matrix), interval)
-    node = Node(grid, height=0.007, origin_offset=0.0012)
+    node = Node(grid, height=0.006, origin_offset=0.001)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0007, id = key)
+        element = Element(matrix_infos[key], radius=0.0006, id = key)
         # element.get_stl()
 
     def update(textNode, task):
