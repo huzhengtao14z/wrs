@@ -12,7 +12,6 @@ from panda3d.core import TextNode
 import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as gm
-import hupackage.hupackage as hu
 import trimesh.boolean as tb
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
 import robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
@@ -44,11 +43,12 @@ class Grid(object):
         self.position_matrix = position_matrix
         self.wid_num = position_matrix.shape[0]
         self.len_num = position_matrix.shape[1]
-        # print(self.len_num, self.wid_num)
+        print(self.len_num, self.wid_num)
         self.defaut_dis = defaut_dis
         self.show()
     def get_origin(self, x, y):
         if 0<= x < self.len_num and 0<= y < self.wid_num:
+            # print(x,y)
             return self.position_matrix[y][x]
         elif x<0 and 0<= y < self.wid_num:
             return self.position_matrix[y][0]+np.array([-self.defaut_dis, 0, 0])
@@ -58,10 +58,6 @@ class Grid(object):
             return self.position_matrix[0][x]+np.array([0, -self.defaut_dis, 0])
         elif y>=self.wid_num and 0<= x < self.len_num:
             return self.position_matrix[y-1][x]+np.array([0, self.defaut_dis, 0])
-        elif x<0 and y<0:
-            return self.position_matrix[0][0]+np.array([-self.defaut_dis, -self.defaut_dis, 0])
-        elif x>self.len_num and y>self.wid_num:
-            return self.position_matrix[0][0]+np.array([self.defaut_dis, self.defaut_dis, 0])
     def get_wid(self):
         return self.wid_num
     def get_len(self):
@@ -72,7 +68,7 @@ class Grid(object):
             for x in range(self.len_num):
                 gm.gen_sphere(pos = self.position_matrix[y][x], radius = 0.0003, rgba=(0,0,0,1)).attach_to(base)
                 if x == self.len_num - 1 and y < self.wid_num - 1:
-                    # print("check")
+                    print("check")
                     gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1],
                                  thickness=thickness).attach_to(base)
                 elif y == self.wid_num - 1 and x < self.len_num-1:
@@ -115,116 +111,53 @@ class Node(object):
                 id_infos["lft"] = self.grid.get_origin(x- 1, y )
                 id_infos["rgt"] = self.grid.get_origin(x+ 1, y )
                 id_infos["parity"] = parity
-                normal = - hu.normal_from_3point(self.grid.get_origin(x - 1, y), self.grid.get_origin(x + 1, y), self.grid.get_origin(x - 1, y - 1))
-                id_infos["height"] = self.grid.get_origin(x, y) + normal * self.height
-                # id_infos["height"] = self.grid.get_origin(x, y) - rm.unit_vector(self.grid.get_origin(x + 1, y) - self.grid.get_origin(x - 1, y)) * self.height
-                id_infos["low"] = self.grid.get_origin(x, y) - normal * self.height
-                # print("height", id_infos["height"])
-                # print("low", id_infos["low"])
                 self.node_infos[f"{x}-{y}"]=id_infos
-            id_infos = {}
-            id_infos["height"] = self.grid.get_origin(self.grid.get_len(), y) + np.array([0,0,self.height])
-            id_infos["low"] = self.grid.get_origin(self.grid.get_len(), y) + np.array([0,0, -self.height])
-            id_infos["origin"] = self.grid.get_origin(self.grid.get_len(), y )
-            id_infos["parity"] = "space"
-            self.node_infos[f"{self.grid.get_len()}-{y}"] = id_infos
-            id_infos = {}
-            id_infos["height"] = self.grid.get_origin(-1, y) + np.array([0, 0, self.height])
-            id_infos["low"] = self.grid.get_origin(-1, y) + np.array([0, 0, -self.height])
-            id_infos["origin"] = self.grid.get_origin(-1, y)
-            id_infos["parity"] = "space"
-            self.node_infos[f"{-1}-{y}"] = id_infos
         self.generate_matrix()
     def generate_matrix(self):
         for id in self.node_infos.keys():
             matrix_id_infos = {}
             matrix_id_infos["parity"] = self.node_infos[id]["parity"]
-            matrix_id_infos["origin"] = self.node_infos[id]["origin"]
             if self.node_infos[id]["parity"] == "even-even":
-                matrix_id_infos["top"] = self.node_infos[id]["rgt"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["rgt"]) * self.origin_offset
-                matrix_id_infos["bottom"] = self.node_infos[id]["lft"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["lft"]) * self.origin_offset
-                matrix_id_infos["center1"] = self.node_infos[id]["up"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["up"]) * self.origin_offset
-                matrix_id_infos["center2"] = self.node_infos[id]["height"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["height"]) * self.origin_offset
-                matrix_id_infos["center3"] = self.node_infos[id]["down"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["down"]) * self.origin_offset
-                matrix_id_infos["center4"] = self.node_infos[id]["low"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["low"]) * self.origin_offset
-
+                matrix_id_infos["top"] = self.node_infos[id]["rgt"] + np.array([-self.origin_offset, 0, 0])
+                matrix_id_infos["bottom"] = self.node_infos[id]["lft"] + np.array([self.origin_offset, 0, 0])
+                matrix_id_infos["center1"] = self.node_infos[id]["up"] + np.array([0, -self.origin_offset, 0])
+                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + np.array([0, 0, self.height-self.origin_offset])
+                matrix_id_infos["center3"] = self.node_infos[id]["down"] + np.array([0, self.origin_offset, 0])
+                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + np.array([0, 0, -self.height+self.origin_offset])
             elif self.node_infos[id]["parity"] == "odd-even":
-                matrix_id_infos["top"] = self.node_infos[id]["rgt"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["rgt"]) * self.origin_offset
-                matrix_id_infos["bottom"] = self.node_infos[id]["lft"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["lft"]) * self.origin_offset
+                matrix_id_infos["top"] = self.node_infos[id]["rgt"] + np.array([-self.origin_offset, 0, 0])
+                matrix_id_infos["bottom"] = self.node_infos[id]["lft"] + np.array([self.origin_offset, 0, 0])
+                # matrix_id_infos["center1"] = self.node_infos[id]["up"] + np.array([0, -(0.005-self.origin_offset)/1.414, (0.005-self.origin_offset)/1.414])
+                # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + np.array([0, -(0.005-self.origin_offset)/1.414, (0.005-self.origin_offset)/1.414])
+                # matrix_id_infos["center3"] = self.node_infos[id]["down"] + np.array([0, (0.005-self.origin_offset)/1.414, -(0.005-self.origin_offset)/1.414])
+                # matrix_id_infos["center4"] = self.node_infos[id]["origin"] + np.array([0, (0.005-self.origin_offset)/1.414, -(0.005-self.origin_offset)/1.414])
 
-                matrix_id_infos["center1"] = self.node_infos[id]["origin"]+((self.node_infos[id]["up"] - self.node_infos[id]["origin"])
-                        + (self.node_infos[id]["height"]-self.node_infos[id]["origin"]))/ 1.414
+                matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (
+                            self.node_infos[id]["up"] - self.node_infos[id]["origin"] + np.array(
+                        [0, -self.origin_offset, self.height - self.origin_offset])) / 1.414
                 matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
-                            (self.node_infos[id]["down"] - self.node_infos[id]["origin"])
-                            + (self.node_infos[id]["height"] - self.node_infos[id]["origin"])) / 1.414
+                            self.node_infos[id]["down"] - self.node_infos[id]["origin"] + np.array(
+                        [0, self.origin_offset, self.height - self.origin_offset])) / 1.414
                 matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
-                            (self.node_infos[id]["down"] - self.node_infos[id]["origin"])
-                            + (self.node_infos[id]["low"] - self.node_infos[id]["origin"])) / 1.414
+                            self.node_infos[id]["down"] - self.node_infos[id]["origin"] + np.array(
+                        [0, self.origin_offset, -self.height + self.origin_offset])) / 1.414
                 matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
-                            (self.node_infos[id]["up"] - self.node_infos[id]["origin"])
-                            + (self.node_infos[id]["low"] - self.node_infos[id]["origin"])) / 1.414
+                            self.node_infos[id]["up"] - self.node_infos[id]["origin"] + np.array(
+                        [0, -self.origin_offset, -self.height + self.origin_offset])) / 1.414
 
-                xy_list = id.split("-")
-                x = int(xy_list[0])
-                y = int(xy_list[1])
-                # matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["up"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x+1}-{y}"]["height"] - self.node_infos[f"{x+1}-{y}"]["origin"])/ 1.414
-                # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
-                #             self.node_infos[id]["down"] - self.node_infos[id]["origin"]) / 1.414 + (
-                #                                          self.node_infos[f"{x - 1}-{y}"]["height"] -
-                #                                          self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-                # matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
-                #         self.node_infos[id]["down"] - self.node_infos[id]["origin"]) / 1.414 + (
-                #                                      self.node_infos[f"{x - 1}-{y}"]["low"] -
-                #                                      self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-                # matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
-                #         self.node_infos[id]["up"] - self.node_infos[id]["origin"]) / 1.414 + (
-                #                                      self.node_infos[f"{x - 1}-{y}"]["low"] -
-                #                                      self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
 
             elif self.node_infos[id]["parity"] == "even-odd":
-                matrix_id_infos["top"] = self.node_infos[id]["up"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["up"]) * self.origin_offset
-                matrix_id_infos["bottom"] = self.node_infos[id]["down"] + rm.unit_vector(
-                    self.node_infos[id]["origin"] - self.node_infos[id]["down"]) * self.origin_offset
+                matrix_id_infos["top"] = self.node_infos[id]["up"] + np.array([0, -self.origin_offset, 0])
+                matrix_id_infos["bottom"] = self.node_infos[id]["down"] + np.array([0, self.origin_offset, 0])
+                matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"] + np.array([-self.origin_offset, 0, self.height-self.origin_offset]))/ 1.414
+                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (self.node_infos[id]["lft"] - self.node_infos[id]["origin"] + np.array([self.origin_offset, 0, self.height -self.origin_offset])) / 1.414
+                matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (self.node_infos[id]["lft"] - self.node_infos[id]["origin"] + np.array([self.origin_offset, 0, -self.height +self.origin_offset])) / 1.414
+                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"] + np.array([-self.origin_offset, 0, -self.height + self.origin_offset])) / 1.414
 
-                # matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (
-                #             (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"])
-                #             + (self.node_infos[id]["height"] - self.node_infos[id]["origin"])) / 1.414
-                # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
-                #         (self.node_infos[id]["lft"] - self.node_infos[id]["origin"])
-                #         + (self.node_infos[id]["height"] - self.node_infos[id]["origin"])) / 1.414
-                # matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
-                #         (self.node_infos[id]["lft"] - self.node_infos[id]["origin"])
-                #         + (self.node_infos[id]["low"] - self.node_infos[id]["origin"])) / 1.414
-                # matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
-                #         (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"])
-                #         + (self.node_infos[id]["low"] - self.node_infos[id]["origin"])) / 1.414
-
-                xy_list = id.split("-")
-                x = int(xy_list[0])
-                y = int(xy_list[1])
-                print(x, y)
-                matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x+1}-{y}"]["height"] - self.node_infos[f"{x+1}-{y}"]["origin"])/ 1.414
-                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
-                            self.node_infos[id]["lft"] - self.node_infos[id]["origin"]) / 1.414 + (
-                                                         self.node_infos[f"{x - 1}-{y}"]["height"] -
-                                                         self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-                matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
-                        self.node_infos[id]["lft"] - self.node_infos[id]["origin"]) / 1.414 + (
-                                                     self.node_infos[f"{x - 1}-{y}"]["low"] -
-                                                     self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
-                        self.node_infos[id]["rgt"] - self.node_infos[id]["origin"]) / 1.414 + (
-                                                     self.node_infos[f"{x + 1}-{y}"]["low"] -
-                                                     self.node_infos[f"{x + 1}-{y}"]["origin"]) / 1.414
+                # matrix_id_infos["center1"] = self.node_infos[id]["origin"] + np.array([-(0.005-self.origin_offset)/1.414, 0, (0.005-self.origin_offset)/1.414])
+                # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + np.array([-(0.005-self.origin_offset)/1.414, 0, -(0.005-self.origin_offset)/1.414])
+                # matrix_id_infos["center3"] = self.node_infos[id]["origin"] + np.array([(0.005-self.origin_offset)/1.414, 0, -(0.005-self.origin_offset)/1.414])
+                # matrix_id_infos["center4"] = self.node_infos[id]["origin"] + np.array([(0.005-self.origin_offset)/1.414, 0, (0.005-self.origin_offset)/1.414])
             else:
                 pass
 
@@ -232,15 +165,11 @@ class Node(object):
 
 
 class Element(object):
-    def __init__(self, node, radius = 0.01, manualset = False, id = None, cut = None):
+    def __init__(self, node, radius = 0.01, manualset = False, id = None):
         # self.construct()
         self.radius = radius
         self.id = id
         self.parity = node["parity"]
-        if cut:
-            a = cm.gen_sphere(node["origin"], radius = 0.001)
-            if a.is_mcdwith(objcm_list=cut):
-                self.parity = "space"
         if manualset:
             self.t = node["top"]
             self.b = node["bottom"]
@@ -292,7 +221,7 @@ class Element(object):
 
         if self.parity == "even-even":
             self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 2*self.radius)
-            # self.stage.attach_to(base)
+            self.stage.attach_to(base)
 
     def get_stl(self):
         t_c1_objtrm = self.t_c1.objtrm
@@ -363,44 +292,15 @@ if __name__ == '__main__':
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 30
-    wid_num = 30
+    len_num = 5
+    wid_num = 5
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
 
-    # for y in range(len_num):
-    #     for x in range(wid_num):
-    #         if x ==1 :
-    #             matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
-    #         elif x ==2:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.002])
-    #         elif x ==3:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.003])
-    #         elif x ==4:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.004])
-    #         elif x ==5:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.004])
-    #         elif x == 6:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.004])
-    #         elif x == 7:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.003])
-    #         elif x == 8:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.002])
-    #         elif x == 9:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.003+0.001])
-
-    c1 = cm.gen_box(extent=[.006*16, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*14.5,0.006*4.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
-    c2 = cm.gen_box(extent=[.006*16, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*14.5,0.005*29.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
-    # c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
-    #            rgba=[0, 0, 0, 0.2])
-    # c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
-    cut_list = [c1, c2]
-    for model in cut_list:
-        model.attach_to(base)
     grid = Grid(np.array(matrix), interval)
     node = Node(grid, height=0.006, origin_offset=0.001)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list)
+        element = Element(matrix_infos[key], radius=0.0006, id = key)
         # element.get_stl()
 
     def update(textNode, task):
