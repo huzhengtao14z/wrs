@@ -259,7 +259,7 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
-                # self.get_stl()
+                self.get_stl()
 
     def construct(self):
         # self.bar_list = []
@@ -292,7 +292,7 @@ class Element(object):
 
         if self.parity == "even-even":
             self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 2*self.radius)
-            # self.stage.attach_to(base)
+            self.stage.attach_to(base)
 
     def get_stl(self):
         t_c1_objtrm = self.t_c1.objtrm
@@ -363,8 +363,8 @@ if __name__ == '__main__':
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 30
-    wid_num = 30
+    len_num = 10
+    wid_num = 10
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
 
     # for y in range(len_num):
@@ -372,30 +372,49 @@ if __name__ == '__main__':
     #         if x ==1 :
     #             matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
     #         elif x ==2:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.002])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
     #         elif x ==3:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.003])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
     #         elif x ==4:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.004])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
     #         elif x ==5:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.004])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.011])
     #         elif x == 6:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.004])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
     #         elif x == 7:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.003])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
     #         elif x == 8:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.002])
+    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
     #         elif x == 9:
     #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.003+0.001])
+            # if x ==11 :
+            #     matrix[y][x] = matrix[y][x]+np.array([0, 0, -0.003-0.001])
+            # elif x ==12:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.005-0.005])
+            # elif x ==13:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.006-0.008])
+            # elif x ==14:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0065-0.010])
+            # elif x ==15:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0068-0.011])
+            # elif x ==16:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0065-0.010])
+            # elif x == 17:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.006-0.008])
+            # elif x == 18:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.005-0.005])
+            # elif x == 19:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.003-0.001])
 
-    c1 = cm.gen_box(extent=[.006*16, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*14.5,0.006*4.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
-    c2 = cm.gen_box(extent=[.006*16, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*14.5,0.005*29.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
+    # c1 = cm.gen_box(extent=[.006*16, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*14.5,0.006*4.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
+    # c2 = cm.gen_box(extent=[.006*16, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*14.5,0.005*29.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
     # c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
     #            rgba=[0, 0, 0, 0.2])
     # c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
-    cut_list = [c1, c2]
-    for model in cut_list:
-        model.attach_to(base)
+    # cut_list = [c1, c2]
+    cut_list = []
+    # for model in cut_list:
+    #     model.attach_to(base)
     grid = Grid(np.array(matrix), interval)
     node = Node(grid, height=0.006, origin_offset=0.001)
     matrix_infos = node.node_matrix_infos
