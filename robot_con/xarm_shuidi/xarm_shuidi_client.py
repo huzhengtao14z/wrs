@@ -4,7 +4,7 @@ import time
 import numpy as np
 import robot_con.xarm_shuidi.xarm_shuidi_pb2 as aa_msg
 import robot_con.xarm_shuidi.xarm_shuidi_pb2_grpc as aa_rpc
-import motion.trajectory.piecewisepoly as pwp
+import motion.trajectory.piecewisepoly_toppra as pwp
 
 
 class XArmShuidiClient(object):
@@ -17,7 +17,7 @@ class XArmShuidiClient(object):
         if component_name == "arm":
             return self.arm_get_jnt_values()
 
-    def move_jnts(self, component_name, jnt_values, time_interval=1):
+    def move_jnts(self, component_name, jnt_values, method='linear', max_jntspeed=math.pi):
         """
         TODO: use xarm function to get faster
         author: weiwei
@@ -29,14 +29,19 @@ class XArmShuidiClient(object):
             if np.allclose(jnt_values, current_jnt_values, atol=1e-5):
                 print("The robot's configuration is the same as the given one!")
                 return
-            self.arm_move_jspace_path(path=[self.arm_get_jnt_values(), jnt_values])
+            self.arm_move_jspace_path(path=[self.arm_get_jnt_values(), jnt_values], method=method,
+                                      max_jntspeed=max_jntspeed)
 
     def arm_get_jnt_values(self):
         jntvalues_msg = self.stub.arm_get_jnt_values(aa_msg.Empty())
         jnt_values = np.frombuffer(jntvalues_msg.data, dtype=np.float64)
         return jnt_values
 
-    def arm_move_jspace_path(self, path, max_jntspeed=math.pi, start_frame_id=1, toggle_debug=False):
+    def arm_move_jspace_path(self,
+                             path,
+                             max_jntvel=None,
+                             max_jntacc=None,
+                             start_frame_id=1):
         """
         TODO: make speed even
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
@@ -47,29 +52,9 @@ class XArmShuidiClient(object):
         if not path or path is None:
             raise ValueError("The given is incorrect!")
         control_frequency = .005
-        tpply = pwp.PiecewisePoly(method='linear')
-        interpolated_path, interpolated_spd, interpolated_acc, interpolated_x = \
-            tpply.interpolate_by_max_spdacc(path=path,
-                                            control_frequency=control_frequency,
-                                            max_jnt_spd=max_jntspeed)
-        if toggle_debug:
-            import matplotlib.pyplot as plt
-            # plt.plot(interplated_path)
-            plt.subplot(311)
-            for i in range(len(path)):
-                plt.axvline(x=i)
-            plt.plot(interpolated_path)
-            plt.subplot(312)
-            for i in range(len(path)):
-                plt.axvline(x=i)
-            plt.plot(interpolated_spd)
-            plt.subplot(313)
-            for i in range(len(path)):
-                plt.axvline(x=i)
-            plt.plot(interpolated_acc)
-            plt.show()
-            import pickle
-            pickle.dump([interpolated_path, interpolated_spd, interpolated_acc], open("interpolated_traj.pkl", "wb"))
+        tpply = pwp.PiecewisePolyTOPPRA()
+        interpolated_path = tpply.interpolate_by_max_spdacc(path=path, control_frequency=control_frequency,
+                                                            max_jntvel=max_jntvel, max_jntacc=max_jntacc)
         interpolated_path = interpolated_path[start_frame_id:]
         path_msg = aa_msg.Path(length=len(interpolated_path),
                                njnts=len(interpolated_path[0]),
@@ -110,15 +95,15 @@ class XArmShuidiClient(object):
         while time_interval > 0:
             speed_msg = aa_msg.Speed(linear_velocity=linear_speed,
                                      angular_velocity=angular_speed)
-            try:
-                return_value = self.stub.agv_move(speed_msg)
-                if return_value == aa_msg.Status.ERROR:
-                    print("Something went wrong with the server!! Try again!")
-                    raise Exception()
-                time_interval = time_interval - .5
-                time.sleep(.3)
-            except Exception:
-                pass
+            # try:
+            return_value = self.stub.agv_move(speed_msg)
+            if return_value == aa_msg.Status.ERROR:
+                print("Something went wrong with the server!!")
+                continue
+            time_interval = time_interval - .5
+            time.sleep(.3)
+            # except Exception:
+            #     pass
 
 
 if __name__ == "__main__":
@@ -136,7 +121,7 @@ if __name__ == "__main__":
     rbt_s.jaw_to(jawwidth=jawwidth)
     rbt_s.gen_meshmodel().attach_to(base)
     # base.run()
-    # rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_interval=5)
+    # rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_intervals=5)
     agv_linear_speed = .2
     agv_angular_speed = .5
     arm_linear_speed = .02
@@ -263,7 +248,7 @@ if __name__ == "__main__":
         #     rbt_s.fk(jnt_values=new_jnt_values)
         #     toc = time.time()
         #     start_frame_id = math.ceil((toc - tic) / .01)
-        #     rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_interval=.1, start_frame_id=start_frame_id)
+        #     rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_intervals=.1, start_frame_id=start_frame_id)
 
 # path = [[0, 0, 0, 0, 0, 0, 0]]wwwwwwwwwwww
 # rbt_x.move_jspace_path(path)

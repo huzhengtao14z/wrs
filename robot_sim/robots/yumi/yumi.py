@@ -6,7 +6,7 @@ import modeling.model_collection as mc
 import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.irb14050.irb14050 as ya
-import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
+import robot_sim.end_effectors.gripper.yumi_gripper.yumi_gripper as yg
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -358,9 +358,9 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is 'lft_arm':
+        if component_name == 'lft_arm':
             arm = self.lft_arm
-        elif component_name is 'rgt_arm':
+        elif component_name == 'rgt_arm':
             arm = self.rgt_arm
         hnd_pos = arm.jnts[-1]['gl_posq']
         hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
@@ -379,9 +379,9 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is 'lft_arm':
+        if component_name == 'lft_arm':
             arm = self.lft_arm
-        elif component_name is 'rgt_arm':
+        elif component_name == 'rgt_arm':
             arm = self.rgt_arm
         hnd_pos = arm.jnts[-1]['gl_posq']
         hnd_rotmat = arm.jnts[-1]['gl_rotmatq']

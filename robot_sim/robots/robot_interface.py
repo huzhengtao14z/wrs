@@ -68,6 +68,12 @@ class RobotInterface(object):
     def manipulability(self, component_name='arm'):
         return self.manipulator_dict[component_name].manipulability()
 
+    def manipulability_axmat(self, component_name='arm', type="translational"):
+        return self.manipulator_dict[component_name].manipulability_axmat(type=type)
+
+    def jacobian(self, component_name='arm'):
+        return self.manipulator_dict[component_name].jacobian()
+
     def rand_conf(self, component_name):
         return self.manipulator_dict[component_name].rand_conf()
 

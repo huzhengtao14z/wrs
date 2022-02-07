@@ -5,7 +5,7 @@ import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
-import robot_sim.end_effectors.grippers.cobotta_gripper.cobotta_gripper as cbtg
+import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
 import robot_sim.robots.robot_interface as ri
 
 
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     tgt_pos = np.array([.25, .2, .15])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2/ 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # base.run()
     component_name = 'arm'

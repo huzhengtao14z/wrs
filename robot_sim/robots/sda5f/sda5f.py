@@ -6,7 +6,7 @@ import modeling.model_collection as mc
 import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.sia5.sia5 as sia
-import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq
+import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -257,9 +257,7 @@ class SDA5F(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
-                                   toggle_tcpcs=False,
+        self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
@@ -268,9 +266,7 @@ class SDA5F(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
-                                   toggle_tcpcs=False,
+        self.rgt_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
