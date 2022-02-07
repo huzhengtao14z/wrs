@@ -175,6 +175,21 @@ class Node(object):
                 xy_list = id.split("-")
                 x = int(xy_list[0])
                 y = int(xy_list[1])
+
+                matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["up"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x+1}-{y}"]["up"] - self.node_infos[f"{x+1}-{y}"]["origin"])/ 1.414
+                matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
+                            self.node_infos[id]["down"] - self.node_infos[id]["origin"]) / 1.414 + (
+                                                         self.node_infos[f"{x - 1}-{y}"]["up"] -
+                                                         self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
+                matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
+                        self.node_infos[id]["down"] - self.node_infos[id]["origin"]) / 1.414 + (
+                                                     self.node_infos[f"{x - 1}-{y}"]["low"] -
+                                                     self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
+                matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
+                        self.node_infos[id]["up"] - self.node_infos[id]["origin"]) / 1.414 + (
+                                                     self.node_infos[f"{x + 1}-{y}"]["low"] -
+                                                     self.node_infos[f"{x + 1}-{y}"]["origin"]) / 1.414
+
                 # matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["up"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x+1}-{y}"]["height"] - self.node_infos[f"{x+1}-{y}"]["origin"])/ 1.414
                 # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
                 #             self.node_infos[id]["down"] - self.node_infos[id]["origin"]) / 1.414 + (
@@ -211,7 +226,6 @@ class Node(object):
                 xy_list = id.split("-")
                 x = int(xy_list[0])
                 y = int(xy_list[1])
-                print(x, y)
                 matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (self.node_infos[id]["rgt"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x+1}-{y}"]["height"] - self.node_infos[f"{x+1}-{y}"]["origin"])/ 1.414
                 matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
                             self.node_infos[id]["lft"] - self.node_infos[id]["origin"]) / 1.414 + (
@@ -259,7 +273,7 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
-                self.get_stl()
+                # self.get_stl()
 
     def construct(self):
         # self.bar_list = []
@@ -360,33 +374,46 @@ class Element(object):
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960, h=540, lookat_pos=[0, 0, 0.0])
-    gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
+    # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 10
-    wid_num = 10
+    len_num = 9
+    wid_num = 9
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
+    # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.006,0.006,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.0065,0.0065,0.0065,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.0068,0.0068,0.0068,0.0068,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.0065,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.006,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
+    #                          [0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003]])
+    offset_matrix = [[[0, 0, 0.008*math.sqrt(abs(8*8-(x-4.5)*(x-4.5)-(y-4.5)*(y-4.5)))] for x in range(len_num)] for y in range(wid_num)]
+    for y in range(len_num):
+        for x in range(wid_num):
+            matrix[y][x] = matrix[y][x] + offset_matrix[y][x]
+            # if x ==1 :
+            #     matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
+            # elif x ==2:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
+            # elif x ==3:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
+            # elif x ==4:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
+            # elif x ==5:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.011])
+            # elif x == 6:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
+            # elif x == 7:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
+            # elif x == 8:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
+            # elif x == 9:
+            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.003+0.001])
 
-    # for y in range(len_num):
-    #     for x in range(wid_num):
-    #         if x ==1 :
-    #             matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
-    #         elif x ==2:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
-    #         elif x ==3:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
-    #         elif x ==4:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
-    #         elif x ==5:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.011])
-    #         elif x == 6:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
-    #         elif x == 7:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
-    #         elif x == 8:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
-    #         elif x == 9:
-    #             matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.003+0.001])
+
+
             # if x ==11 :
             #     matrix[y][x] = matrix[y][x]+np.array([0, 0, -0.003-0.001])
             # elif x ==12:
@@ -412,6 +439,7 @@ if __name__ == '__main__':
     #            rgba=[0, 0, 0, 0.2])
     # c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
     # cut_list = [c1, c2]
+    gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
     cut_list = []
     # for model in cut_list:
     #     model.attach_to(base)
