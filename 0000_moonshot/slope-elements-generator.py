@@ -188,7 +188,7 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
-                # self.get_stl()
+                self.get_stl()
 
     def construct(self):
         # self.bar_list = []
