@@ -22,11 +22,11 @@ import robot_sim._kinematics.collision_checker as cc
 import robot_sim.end_effectors.grippers.gripper_interface as gi
 # import robot_sim.
 import os
-def capsule_link_start_end(start, end, radius = 0.0003):
+def capsule_link_start_end(start, end, radius = 0.0003, rgba = (1,1,0,1)):
     start = start
     end = end
     radius = radius
-    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[5, 5])
+    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[5, 5],  rgba = rgba)
     return capsule
 
 def cylinder_link_start_end(start, end,  radius = 0.0003):
@@ -207,9 +207,18 @@ class Node(object):
                 #         self.node_infos[id]["up"] - self.node_infos[id]["origin"]) / 1.414 + (
                 #                                      self.node_infos[f"{x - 1}-{y}"]["low"] -
                 #                                      self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-
+                def cpt_vertice(center, neighber_a, neighber_b, offset):
+                    vec_a = neighber_a -center
+                    vec_b = neighber_b -center
+                    direct_a = rm.unit_vector(vec_a)
+                    direct_b = rm.unit_vector(vec_b)
+                    vec_a_offset = (vec_a - (direct_a * offset)) / 1.414
+                    vec_b_offset = (vec_b - (direct_b * offset)) / 1.414
+                    vertice = center + vec_a_offset + vec_b_offset
+                    return vertice
                 matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (
                         self.node_infos[id]["up"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x}-{y}"]["height"] - self.node_infos[f"{x}-{y}"]["origin"])/ 1.414
+                # matrix_id_infos["center1"] = cpt_vertice(self.node_infos[id]["origin"], neighber_a, neighber_b, offset)
                 matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
                             self.node_infos[id]["down"] - self.node_infos[id]["origin"]) / 1.414 + (
                                                          self.node_infos[f"{x - 1}-{y}"]["height"] -
@@ -306,10 +315,10 @@ class Element(object):
         self.b_c2 = capsule_link_start_end(self.b, self.c2, self.radius)
         self.b_c3 = capsule_link_start_end(self.b, self.c3, self.radius)
         self.b_c4 = capsule_link_start_end(self.b, self.c4, self.radius)
-        self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius)
+        self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius, (0,0,1,1))
         self.c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
         self.c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
-        self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
+        self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius, (1,0,0,1))
 
         self.t_c1.attach_to(base)
         self.t_c2.attach_to(base)
@@ -328,19 +337,31 @@ class Element(object):
             self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 1.5*self.radius)
             self.stage.attach_to(base)
         elif self.parity == "even-odd":
-            self.pillar_a_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
-                                                 self.radius)
-            self.pillar_a_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
-                                                      self.c4 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
-                                                       self.radius)
+            # self.pillar_a_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+            #                                      self.radius+0.0001)
+            # self.pillar_a_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
+            #                                           self.c4 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+            #                                            self.radius+0.0001)
+            self.pillar_a_1 = cylinder_link_start_end(self.c3,
+                                                      self.c3 + np.array([0, 0, -(0.005 - 0.006 * 0.707) - 0.0006]),
+                                                      self.radius + 0.0001)
+            self.pillar_a_2 = cylinder_link_start_end(self.c4 ,
+                                                      self.c4 + np.array([0, 0, -(0.005 - 0.006 * 0.707) - 0.0006]),
+                                                      self.radius + 0.0001)
             self.pillar_a_1.attach_to(base)
             self.pillar_a_2.attach_to(base)
         elif self.parity == "odd-even":
-            self.pillar_b_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
-                                                 self.radius)
-            self.pillar_b_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
-                                                    self.c4 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
-                                                    self.radius)
+            # self.pillar_b_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+            #                                      self.radius)
+            # self.pillar_b_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
+            #                                         self.c4 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+            #                                         self.radius)
+            self.pillar_b_1 = cylinder_link_start_end(self.c3,
+                                                      self.c3 + np.array([0, 0, -(0.005 - 0.006 * 0.707) - 0.0006]),
+                                                      self.radius + 0.0001)
+            self.pillar_b_2 = cylinder_link_start_end(self.c4,
+                                                      self.c4 + np.array([0, 0, -(0.005 - 0.006 * 0.707) - 0.0006]),
+                                                      self.radius + 0.0001)
             self.pillar_b_1.attach_to(base)
             self.pillar_b_2.attach_to(base)
 
@@ -359,7 +380,8 @@ class Element(object):
         c4_c1_objtrm = self.c4_c1.objtrm
 
         this_dir, this_filename = os.path.split(__file__)
-        file = f"{this_dir}/space_boolean/{self.id}-"
+        # file = f"{this_dir}/space_boolean/{self.id}-"
+        file = f"{this_dir}/5-5/{self.id}-"
 
         t_c1_objtrm.export(f"{file}t_c1.stl")
         t_c2_objtrm.export(f"{file}t_c2.stl")
@@ -436,12 +458,12 @@ if __name__ == '__main__':
     #                          [0.006,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
     #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
     #                          [0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003]])
-    # offset_matrix = [[[0, 0, 0.008*math.sqrt(abs(8*8-(x-4.5)*(x-4.5)-(y-4.5)*(y-4.5)))] for x in range(len_num)] for y in range(wid_num)]
-    # for y in range(len_num):
-    #     for x in range(wid_num):
-    #         matrix[y][x] = matrix[y][x] + offset_matrix[y][x]
+    offset_matrix = [[[0, 0, 0.008*math.sqrt(abs(8*8-(x-4.5)*(x-4.5)-(y-4.5)*(y-4.5)))] for x in range(len_num)] for y in range(wid_num)]
+    for y in range(len_num):
+        for x in range(wid_num):
+            matrix[y][x] = matrix[y][x] + offset_matrix[y][x]
 
-
+            #
             # if x ==1 :
             #     matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
             # elif x ==2:
@@ -487,9 +509,21 @@ if __name__ == '__main__':
     c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
                rgba=[0, 0, 0, 0.2])
     c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
-    cut_list = [c1, c2]
+
+    c1 = cm.gen_box(extent=[.006 * 20, 0.006 * 30, .001], homomat=rm.homomat_from_posrot([0.006 * 19, 0.006 * 4.5, 0],
+                                                                                          rm.rotmat_from_axangle(
+                                                                                              [0, 0, 1],
+                                                                                              0 * np.pi / 2)),
+                                                                                                rgba=[0, 0, 0, 0.2])
+    c2 = cm.gen_box(extent=[.006 * 3, 0.006 * 3, .001], homomat=rm.homomat_from_posrot([0.006 * 4, 0.006 * 12, 0],
+                                                                                         rm.rotmat_from_axangle(
+                                                                                             [0, 0, 1],
+                                                                                             0 * np.pi / 2)),
+                    rgba=[0, 0, 0, 0.2])
+    cut_list = [c1]
+    # cut_list = [c1]
     gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
-    cut_list = []
+    # cut_list = []
     for model in cut_list:
         model.attach_to(base)
     grid = Grid(np.array(matrix), interval)
