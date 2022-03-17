@@ -158,14 +158,14 @@ def facets(mesh):
 
     def facets_nx():
         graph_parallel = nx.from_edgelist(face_idx[parallel])
-        facets_idx = np.array([list(i) for i in nx.connected_components(graph_parallel)])
+        facets_idx = np.array([list(i) for i in nx.connected_components(graph_parallel)], dtype=object)
         #### commented by weiwei
         # should also return the single triangles
         facets_idx_extra = copy.deepcopy(facets_idx.tolist())
         for item in range(mesh.faces.shape[0]):
             if item not in [i for subitem in facets_idx.tolist() for i in subitem]:
                 facets_idx_extra.append([item])
-        return np.array(facets_idx_extra)
+        return np.array(facets_idx_extra, dtype=object)
         # return facets_idx
 
     def facets_gt():

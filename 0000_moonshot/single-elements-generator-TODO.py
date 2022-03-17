@@ -48,7 +48,6 @@ class Grid(object):
         self.position_matrix = position_matrix
         self.wid_num = position_matrix.shape[1]
         self.len_num = position_matrix.shape[0]
-        # print(self.len_num, self.wid_num)
         self.defaut_dis = defaut_dis
         self.show()
     def get_origin(self, x, y):
@@ -125,23 +124,10 @@ class Node(object):
                 id_infos["parity"] = parity
                 normal = - hu.normal_from_3point(self.grid.get_origin(x - 1, y), self.grid.get_origin(x + 1, y), self.grid.get_origin(x - 1, y - 1))
                 id_infos["height"] = self.grid.get_origin(x, y) + normal * self.height
-                # id_infos["height"] = self.grid.get_origin(x, y) - rm.unit_vector(self.grid.get_origin(x + 1, y) - self.grid.get_origin(x - 1, y)) * self.height
                 id_infos["low"] = self.grid.get_origin(x, y) - normal * self.height
-                # print("height", id_infos["height"])
-                # print("low", id_infos["low"])
+
                 self.node_infos[f"{x}-{y}"]=id_infos
-            # id_infos = {}
-            # id_infos["height"] = self.grid.get_origin(self.grid.get_len(), y) + np.array([0,0,self.height])
-            # id_infos["low"] = self.grid.get_origin(self.grid.get_len(), y) + np.array([0,0, -self.height])
-            # id_infos["origin"] = self.grid.get_origin(self.grid.get_len(), y )
-            # id_infos["parity"] = "space"
-            # self.node_infos[f"{self.grid.get_len()}-{y}"] = id_infos
-            # id_infos = {}
-            # id_infos["height"] = self.grid.get_origin(-1, y) + np.array([0, 0, self.height])
-            # id_infos["low"] = self.grid.get_origin(-1, y) + np.array([0, 0, -self.height])
-            # id_infos["origin"] = self.grid.get_origin(-1, y)
-            # id_infos["parity"] = "space"
-            # self.node_infos[f"{-1}-{y}"] = id_infos
+
         self.generate_matrix()
     def generate_matrix(self):
         for y in range(2, self.grid.get_wid() - 2):
@@ -201,21 +187,6 @@ class Node(object):
                     matrix_id_infos["center4"] = self.node_infos[id]["origin"] + cpt_vec(
                         self.node_infos[f"{x+1}-{y}"]["low"], self.node_infos[f"{x}-{y}"]["origin"],
                         self.origin_offset)
-
-                    # matrix_id_infos["center1"] = self.node_infos[id]["origin"] + (
-                    #         self.node_infos[id]["rgt"] - self.node_infos[id]["origin"])/ 1.414 + (self.node_infos[f"{x+1}-{y}"]["height"] - self.node_infos[f"{x+1}-{y}"]["origin"])/ 1.414
-                    # matrix_id_infos["center2"] = self.node_infos[id]["origin"] + (
-                    #             self.node_infos[id]["lft"] - self.node_infos[id]["origin"]) / 1.414 + (
-                    #                                          self.node_infos[f"{x - 1}-{y}"]["height"] -
-                    #                                          self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-                    # matrix_id_infos["center3"] = self.node_infos[id]["origin"] + (
-                    #         self.node_infos[id]["lft"] - self.node_infos[id]["origin"]) / 1.414 + (
-                    #                                      self.node_infos[f"{x - 1}-{y}"]["low"] -
-                    #                                      self.node_infos[f"{x - 1}-{y}"]["origin"]) / 1.414
-                    # matrix_id_infos["center4"] = self.node_infos[id]["origin"] + (
-                    #         self.node_infos[id]["rgt"] - self.node_infos[id]["origin"]) / 1.414 + (
-                    #                                      self.node_infos[f"{x + 1}-{y}"]["low"] -
-                    #                                      self.node_infos[f"{x + 1}-{y}"]["origin"]) / 1.414
                 else:
                     pass
 
@@ -264,10 +235,10 @@ class Element(object):
         self.b_c2 = capsule_link_start_end(self.b, self.c2, self.radius)
         self.b_c3 = capsule_link_start_end(self.b, self.c3, self.radius)
         self.b_c4 = capsule_link_start_end(self.b, self.c4, self.radius)
-        self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius, (0,0,1,1))
+        self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius)
         self.c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
         self.c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
-        self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius, (1,0,0,1))
+        self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
 
         self.t_c1.attach_to(base)
         self.t_c2.attach_to(base)

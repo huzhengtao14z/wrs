@@ -151,6 +151,8 @@ class StaticGeometricModel(object):
             self._objpdnp.reparentTo(obj.objpdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)
+        elif isinstance(obj, NodePath):
+            self._objpdnp.reparentTo(obj)
         else:
             print(
                 "Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
