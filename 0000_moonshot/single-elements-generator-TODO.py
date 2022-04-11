@@ -254,7 +254,7 @@ class Element(object):
         self.c4_c1.attach_to(base)
         if self.support:
             if self.parity == "even-even":
-                self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 1.5*self.radius)
+                self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 2.1*self.radius)
                 self.stage.attach_to(base)
 
             elif self.parity == "even-odd":
@@ -265,10 +265,10 @@ class Element(object):
                 #                                            self.radius+0.0001)
                 self.pillar_a_1 = cylinder_link_start_end(self.c3,
                                                           np.array([self.c3[0],self.c3[1],-0.0056]),
-                                                          self.radius *1.5)
+                                                          self.radius *2.1)
                 self.pillar_a_2 = cylinder_link_start_end(self.c4 ,
                                                           np.array([self.c4[0],self.c4[1],-0.0056]),
-                                                          self.radius *1.5)
+                                                          self.radius *2.1)
                 self.pillar_a_1.attach_to(base)
                 self.pillar_a_2.attach_to(base)
 
@@ -280,10 +280,10 @@ class Element(object):
                 #                                         self.radius)
                 self.pillar_b_1 = cylinder_link_start_end(self.c3,
                                                           np.array([self.c3[0],self.c3[1],-0.0056]),
-                                                          self.radius *1.5)
+                                                          self.radius *2.1)
                 self.pillar_b_2 = cylinder_link_start_end(self.c4,
                                                           np.array([self.c4[0],self.c4[1],-0.0056]),
-                                                          self.radius *1.5)
+                                                          self.radius *2.1)
                 self.pillar_b_1.attach_to(base)
                 self.pillar_b_2.attach_to(base)
         else:
@@ -371,10 +371,10 @@ if __name__ == '__main__':
     # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    # len_num = 33
-    # wid_num = 33
-    len_num =9
-    wid_num = 9
+    len_num = 37
+    wid_num = 37
+    # len_num =9
+    # wid_num = 9
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
     # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
     #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
@@ -431,23 +431,23 @@ if __name__ == '__main__':
             # elif x == 19:
             #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.003-0.001])
 
-    c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*16,0.006*4.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
-    c2 = cm.gen_box(extent=[.006*18.5, 0.006*12, .001], homomat=rm.homomat_from_posrot([0.006*16,0.006*27,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
+    c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
+    c2 = cm.gen_box(extent=[.006*18.5, 0.006*12, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*29,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
     c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
                rgba=[0, 0, 0, 0.2])
     c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
 
-    c1 = cm.gen_box(extent=[.006 * 20, 0.006 * 30, .001], homomat=rm.homomat_from_posrot([0.006 * 19, 0.006 * 4.5, 0],
-                                                                                          rm.rotmat_from_axangle(
-                                                                                              [0, 0, 1],
-                                                                                              0 * np.pi / 2)),
-                                                                                                rgba=[0, 0, 0, 0.2])
-    c2 = cm.gen_box(extent=[.006 * 3, 0.006 * 3, .001], homomat=rm.homomat_from_posrot([0.006 * 4, 0.006 * 12, 0],
-                                                                                         rm.rotmat_from_axangle(
-                                                                                             [0, 0, 1],
-                                                                                             0 * np.pi / 2)),
-                    rgba=[0, 0, 0, 0.2])
-    cut_list = [c1]
+    # c1 = cm.gen_box(extent=[.006 * 20, 0.006 * 30, .001], homomat=rm.homomat_from_posrot([0.006 * 19, 0.006 * 4.5, 0],
+    #                                                                                       rm.rotmat_from_axangle(
+    #                                                                                           [0, 0, 1],
+    #                                                                                           0 * np.pi / 2)),
+    #                                                                                             rgba=[0, 0, 0, 0.2])
+    # c2 = cm.gen_box(extent=[.006 * 3, 0.006 * 3, .001], homomat=rm.homomat_from_posrot([0.006 * 4, 0.006 * 12, 0],
+    #                                                                                      rm.rotmat_from_axangle(
+    #                                                                                          [0, 0, 1],
+    #                                                                                          0 * np.pi / 2)),
+    #                 rgba=[0, 0, 0, 0.2])
+    cut_list = [c1,c2]
     # cut_list = [c1]
     gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
     # cut_list = []

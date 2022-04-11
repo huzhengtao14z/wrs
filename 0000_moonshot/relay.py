@@ -6,7 +6,6 @@ import codecs
 
 def serial_ports():
     """ Lists serial port names
-
         :raises EnvironmentError:
             On unsupported or unknown platforms
         :returns:
@@ -15,13 +14,11 @@ def serial_ports():
     if sys.platform.startswith('win'):
         ports = ['COM%s' % (i + 1) for i in range(256)]
     elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
-        # this excludes your current terminal "/dev/tty"
         ports = glob.glob('/dev/tty[A-Za-z]*')
     elif sys.platform.startswith('darwin'):
         ports = glob.glob('/dev/tty.*')
     else:
         raise EnvironmentError('Unsupported platform')
-
     result = []
     for port in ports:
         try:
@@ -45,7 +42,6 @@ def serial_alive(port=None):
     return port_status
 
 def bitstring_to_bytes(s):
-
     v = int(s, 2)
     if v == 0:
         return bytes.fromhex(s)

@@ -56,7 +56,7 @@ class FreeholdContactpairs(object):
         self.objtrimesh = self.objcm.objtrm #trimesh the STL files\
         self.objcm.set_rgba((.5, .7, .3, 0.3))
         self.objcm.set_scale((0.001,0.001,0.001))
-        self.objcm.attach_to(base)
+        # self.objcm.attach_to(base)
         # gm.gen_frame().attach_to(self.objcm)
         print("check faces","there are",len(self.objtrimesh.faces),self.objtrimesh.faces)
         print("check facets", "there are",len(self.objtrimesh.facets()),self.objtrimesh.facets())
@@ -366,11 +366,11 @@ if __name__=='__main__':
 
     this_dir, this_filename = os.path.split(__file__)
     base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960, h=540, lookat_pos=[0, 0, 0.0])
-    gm.gen_frame(length=1).attach_to(base)
+    # gm.gen_frame(length=1).attach_to(base)
     # base = wd.World(cam_pos=[600, 300, 900], w=960, h=540, lookat_pos=[0, 0, 0.0])
     a = np.array([[-1, -0, 0.],[-0, -0, -1.],[-0, -1, 0]])
     # gm.gen_frame(rotmat=a).attach_to(base)
-    objpath = os.path.join(this_dir, "objects", "test_long.STL")
+    objpath = os.path.join(this_dir, "objects", "hex-l.STL")
     freehold = FreeholdContactpairs(objpath)
     freehold.planHoldpairs()
     # freehold.showFacetsPair(base = base, id =0)
@@ -378,6 +378,14 @@ if __name__=='__main__':
     freehold.getCoordinate()
     freehold.gettwoend()
     # freehold.showCoodinate(id =0)
+
+    fixturepath = os.path.join(this_dir, "objects", "v.STL")
+    fixturecm = cm.CollisionModel(fixturepath)
+    fixturecm.set_rgba((1, 1, .1, 1))
+    fixturecm.set_scale((0.001, 0.001, 0.001))
+    fixturecm.set_pos((-0.001, -0.001, -0.050))
+    fixturecm.attach_to(base)
+
     from direct.gui.OnscreenText import OnscreenText
 
     counter=[0]
@@ -385,11 +393,11 @@ if __name__=='__main__':
     def update(textNode, obj_show_node, counter, task):
         if base.inputmgr.keymap['space'] is True:
             print("space")
-            time.sleep(0.5)
+            # time.sleep(0.5)
             if counter[0] >= len(freehold.placementRotMat):
                 counter[0] = 0
             if obj_show_node[0] is not None:
-                obj_show_node[0].detach()
+                # obj_show_node[0].detach()
                 obj_show_node[1].detachNode()
                 obj_show_node[2].detachNode()
                 obj_show_node[3].detachNode()
@@ -397,14 +405,22 @@ if __name__=='__main__':
             obj_show_node[0].set_scale((0.001, 0.001, 0.001))
             obj_show_node[0].set_rgba((0, 191 / 255, 1, 0.5))
             obj_show_node[0].set_homomat(freehold.placementRotMat[counter[0]])
-            obj_show_node[0].attach_to(base)
+            # obj_show_node[0].attach_to(base)
             obj_show_node[1] = NodePath("com")
             obj_show_node[2] = NodePath("vertice")
             obj_show_node[3] = NodePath("normal")
-            gm.gen_sphere(pos = freehold.placementCoM[counter[0]]).attach_to(obj_show_node[1])
+
+
+
+            if obj_show_node[0].is_mcdwith(fixturecm):
+                obj_show_node[0].set_rgba((1, 0, 0, 0.5))
+            else:
+                obj_show_node[0].attach_to(base)
+
+            # gm.gen_sphere(pos = freehold.placementCoM[counter[0]]).attach_to(obj_show_node[1])
             obj_show_node[1].reparentTo(base.render)
-            for vertace in freehold.placementVertices[counter[0]]:
-                gm.gen_sphere(pos=vertace, radius=0.005).attach_to(obj_show_node[2])
+            # for vertace in freehold.placementVertices[counter[0]]:
+            #     gm.gen_sphere(pos=vertace, radius=0.005).attach_to(obj_show_node[2])
             obj_show_node[2].reparentTo(base.render)
             for i, normal in enumerate(freehold.placementNormals[counter[0]]):
                 print(normal)
