@@ -353,8 +353,8 @@ if __name__ == '__main__':
 
     onscreennodepaths = [None]*100
     def estimate(yhx, lctr, onscreennodepaths, task):
-        if yhx.base.inputmgr.keyMap['space'] is True:
-            yhx.base.inputmgr.keyMap['space'] = False
+        if yhx.base.inputmgr.keymap['space'] is True:
+            yhx.base.inputmgr.keymap['space'] = False
             for idosnp, onscreennp in enumerate(onscreennodepaths):
                 if onscreennp is not None:
                     onscreennp.removeNode()

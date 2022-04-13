@@ -104,21 +104,21 @@ class FreeholdContactpairs(object):
         self.largeface_normals = []
         self.largeface_vertices = []
         # plan contact pairs
-        self.holdpairs = []
-        self.holdpairsnum = None
-        self.holdingpairsnormals = []
-        self.holdingpairscenters = []
-        self.holdingpairsvertices = []
-        self.holdingpairsCoM = []
-        self.holdingpairsfaces = []
-        self.holdingpairsfaces_triple = []
+        self.hpairs = []
+        self.hpairsnum = None
+        self.hpairsnormals = []
+        self.hpairscenters = []
+        self.hpairsvertices = []
+        self.hpairsCoM = []
+        self.hpairsfaces = []
+        self.hpairsfaces_triple = []
 
-        self.placementRotMat = []
-        self.placementNormals = []
-        self.placementfacetpairscenter = []
-        self.placementVertices = []
-        self.placementCoM = []
-        self.placementfaces = []
+        self.pRotMat = []
+        self.pNormals = []
+        self.pFacetpairscenter = []
+        self.pVertices = []
+        self.pCoM = []
+        self.pFaces = []
 
         self.color = (random.random(), random.random(), random.random(), 1)
         tic = time.time()
@@ -187,8 +187,8 @@ class FreeholdContactpairs(object):
 
     def showFacetsPair(self, base, id):
         vertices = self.vertices
-        surface_id_1 = self.holdpairs[id][0]
-        surface_id_2 = self.holdpairs[id][1]
+        surface_id_1 = self.hpairs[id][0]
+        surface_id_2 = self.hpairs[id][1]
         color = (random.random(), random.random(), random.random(), 1)
         face_1 = self.facets[surface_id_1]
         face_2 = self.facets[surface_id_2]
@@ -228,13 +228,13 @@ class FreeholdContactpairs(object):
             dotnorm = np.dot(self.facetnormals[facetpair[0]], self.facetnormals[facetpair[1]])
             if dotnorm > verticaljudge_lft and dotnorm < verticaljudge_rgt:
                 updatedholdingfacetpairs.append(facetpair)
-        self.holdpairs = updatedholdingfacetpairs
-        self.holdpairsnum = len(self.holdpairs)
+        self.hpairs = updatedholdingfacetpairs
+        self.hpairsnum = len(self.hpairs)
 
     def getCoordinate(self):
         coordinata = []
         doubleholdpair = []
-        for pair in self.holdpairs:
+        for pair in self.hpairs:
             normal_0 = -self.facetnormals[pair[0]]
             normal_1 = -self.facetnormals[pair[1]]
             normal_2a = np.cross(normal_0, normal_1)
@@ -280,14 +280,14 @@ class FreeholdContactpairs(object):
             origin = self.getorigin(normal_list=[self.largeface_normals[facet_1_ID],self.largeface_normals[facet_2_ID], axis], point_list=[self.largefacescenter[facet_1_ID],self.largefacescenter[facet_2_ID],(large_vec+small_vec)*0.5])
             self.origin.append(origin)
             homomat = np.linalg.inv(rm.homomat_from_posrot(origin, coordinate))
-            self.placementRotMat.append(homomat)
-            self.placementCoM.append(rm.homomat_transform_points(homomat, self.com))
+            self.pRotMat.append(homomat)
+            self.pCoM.append(rm.homomat_transform_points(homomat, self.com))
             tempvertice = []
             for vertice in vertices:
                 tempvertice.append(rm.homomat_transform_points(homomat, vertice))
-            self.placementVertices.append(tempvertice)
-            self.placementNormals.append([np.dot(coordinate.T, self.largeface_normals[facet_1_ID]),np.dot(coordinate.T, self.largeface_normals[facet_2_ID])])
-            self.placementfacetpairscenter.append([rm.homomat_transform_points(homomat,self.largefacescenter[facet_1_ID]), rm.homomat_transform_points(homomat,self.largefacescenter[facet_2_ID])])
+            self.pVertices.append(tempvertice)
+            self.pNormals.append([np.dot(coordinate.T, self.largeface_normals[facet_1_ID]),np.dot(coordinate.T, self.largeface_normals[facet_2_ID])])
+            self.pFacetpairscenter.append([rm.homomat_transform_points(homomat,self.largefacescenter[facet_1_ID]), rm.homomat_transform_points(homomat,self.largefacescenter[facet_2_ID])])
 
     def getFacetsCenter(self):
 

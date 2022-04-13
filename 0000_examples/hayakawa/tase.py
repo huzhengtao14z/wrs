@@ -1417,7 +1417,7 @@ if __name__ == "__main__":
 
 
     def updatesection(rbtmnp, objmnp, motioncounter, rbt, pnt, finalpos, task):
-        if base.inputmgr.keyMap['space'] is True:
+        if base.inputmgr.keymap['space'] is True:
             activelist_real = experimentlist[pathcounter[0]]
             ## ---- 実機 ----
             # timepathstep = activelist_real[5]
@@ -2862,7 +2862,7 @@ if __name__ == "__main__":
 
             pathcounter[0] += 1
             activelist_sim = experimentlist[pathcounter[0]]
-            base.inputmgr.keyMap['space'] = False
+            base.inputmgr.keymap['space'] = False
             taskMgr.remove('updatemotionsec')
             motioncounter[0] = 0
             taskMgr.doMethodLater(0.1, updatemotionsec, "updatemotionsec",

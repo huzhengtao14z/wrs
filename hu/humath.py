@@ -8,9 +8,9 @@ def centerPoftrangle(a,b,c):
     :param c: third vertice of triangle
     :return: a array consists of those three vertice and a center point
     '''
-    x_middle=(a[0]+b[0]+c[0])/3
-    y_middle = (a[1] + b[1] + c[1])/3
-    z_middle = (a[2] + b[2] + c[2])/3
+    x_middle = (a[0] + b[0] + c[0]) /3
+    y_middle = (a[1] + b[1] + c[1]) /3
+    z_middle = (a[2] + b[2] + c[2]) /3
     d=np.array([x_middle, y_middle, z_middle])
     surface=np.concatenate((a,b,c,d),axis=0)
     return surface

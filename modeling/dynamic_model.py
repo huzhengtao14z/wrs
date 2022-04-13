@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
 
     def update(bunnycm, task):
-        if base.inputmgr.keyMap['space'] is True:
+        if base.inputmgr.keymap['space'] is True:
             for i in range(300):
                 bunnycm1 = bunnycm.copy()
                 bunnycm1.setMass(.1)
@@ -209,7 +209,7 @@ if __name__ == "__main__":
                 print(x, y, z, "\n")
                 bunnycm1.setMat(base.pg.npToMat4(rotmat, np.array([x * 15 - 70, y * 15 - 70, 150 + z * 15])))
                 base.attachRUD(bunnycm1)
-        base.inputmgr.keyMap['space'] = False
+        base.inputmgr.keymap['space'] = False
         return task.cont
 
 

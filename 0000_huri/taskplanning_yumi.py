@@ -111,8 +111,8 @@ def update(path, objst, objlt, counter, tubemnplist, objtsdpos, task):
                     objlttemp.setPos(pos[0], pos[1], pos[2])
                     objlttemp.reparentTo(base.render)
                     tubemnplist[0].append(objlttemp)
-        if base.inputmgr.keyMap['space'] is True:
-            base.inputmgr.keyMap['space'] = False
+        if base.inputmgr.keymap['space'] is True:
+            base.inputmgr.keymap['space'] = False
             counter[0] += 1
     # else:
     #     counter[0] = 0

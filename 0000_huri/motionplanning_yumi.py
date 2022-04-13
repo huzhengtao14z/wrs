@@ -139,7 +139,7 @@ if __name__ == '__main__':
         rbtmnp.reparentTo(base.render)
     # base.run()
     def update(rbtmnp, motioncounter, robot, path, armname, robotmesh, robotball, task):
-        if base.inputmgr.keyMap['space'] is True:
+        if base.inputmgr.keymap['space'] is True:
             statelist = []
             for armjnts in path:
                 rgtstate = ys.YuMiState(armjnts)

@@ -104,21 +104,21 @@ class FreeholdContactpairs(object):
         self.largeface_normals = []
         self.largeface_vertices = []
         # plan contact pairs
-        self.holdpairs = []
-        self.holdpairsnum = None
-        self.holdingpairsnormals = []
-        self.holdingpairscenters = []
-        self.holdingpairsvertices = []
-        self.holdingpairsCoM = []
-        self.holdingpairsfaces = []
-        self.holdingpairsfaces_triple = []
+        self.hpairs = []
+        self.hpairsnum = None
+        self.hpairsnormals = []
+        self.hpairscenters = []
+        self.hpairsvertices = []
+        self.hpairsCoM = []
+        self.hpairsfaces = []
+        self.hpairsfaces_triple = []
 
-        self.placementRotMat = []
-        self.placementNormals = []
-        self.placementfacetpairscenter = []
-        self.placementVertices = []
-        self.placementCoM = []
-        self.placementfaces = []
+        self.pRotMat = []
+        self.pNormals = []
+        self.pFacetpairscenter = []
+        self.pVertices = []
+        self.pCoM = []
+        self.pFaces = []
 
         self.color = (random.random(), random.random(), random.random(), 1)
         tic = time.time()
@@ -187,8 +187,8 @@ class FreeholdContactpairs(object):
 
     def showFacetsPair(self, base, id):
         vertices = self.vertices
-        surface_id_1 = self.holdpairs[id][0]
-        surface_id_2 = self.holdpairs[id][1]
+        surface_id_1 = self.hpairs[id][0]
+        surface_id_2 = self.hpairs[id][1]
         color = (random.random(), random.random(), random.random(), 1)
         face_1 = self.facets[surface_id_1]
         face_2 = self.facets[surface_id_2]
@@ -228,13 +228,13 @@ class FreeholdContactpairs(object):
             dotnorm = np.dot(self.facetnormals[facetpair[0]], self.facetnormals[facetpair[1]])
             if dotnorm > verticaljudge_lft and dotnorm < verticaljudge_rgt:
                 updatedholdingfacetpairs.append(facetpair)
-        self.holdpairs = updatedholdingfacetpairs
-        self.holdpairsnum = len(self.holdpairs)
+        self.hpairs = updatedholdingfacetpairs
+        self.hpairsnum = len(self.hpairs)
 
     def getCoordinate(self):
         coordinata = []
         doubleholdpair = []
-        for pair in self.holdpairs:
+        for pair in self.hpairs:
             normal_0 = -self.facetnormals[pair[0]]
             normal_1 = -self.facetnormals[pair[1]]
             normal_2a = np.cross(normal_0, normal_1)
@@ -280,14 +280,14 @@ class FreeholdContactpairs(object):
             origin = self.getorigin(normal_list=[self.largeface_normals[facet_1_ID],self.largeface_normals[facet_2_ID], axis], point_list=[self.largefacescenter[facet_1_ID],self.largefacescenter[facet_2_ID],(large_vec+small_vec)*0.5])
             self.origin.append(origin)
             homomat = np.linalg.inv(rm.homomat_from_posrot(origin, coordinate))
-            self.placementRotMat.append(homomat)
-            self.placementCoM.append(rm.homomat_transform_points(homomat, self.com))
+            self.pRotMat.append(homomat)
+            self.pCoM.append(rm.homomat_transform_points(homomat, self.com))
             tempvertice = []
             for vertice in vertices:
                 tempvertice.append(rm.homomat_transform_points(homomat, vertice))
-            self.placementVertices.append(tempvertice)
-            self.placementNormals.append([np.dot(coordinate.T, self.largeface_normals[facet_1_ID]),np.dot(coordinate.T, self.largeface_normals[facet_2_ID])])
-            self.placementfacetpairscenter.append([rm.homomat_transform_points(homomat,self.largefacescenter[facet_1_ID]), rm.homomat_transform_points(homomat,self.largefacescenter[facet_2_ID])])
+            self.pVertices.append(tempvertice)
+            self.pNormals.append([np.dot(coordinate.T, self.largeface_normals[facet_1_ID]),np.dot(coordinate.T, self.largeface_normals[facet_2_ID])])
+            self.pFacetpairscenter.append([rm.homomat_transform_points(homomat,self.largefacescenter[facet_1_ID]), rm.homomat_transform_points(homomat,self.largefacescenter[facet_2_ID])])
 
     def getFacetsCenter(self):
 
@@ -373,7 +373,7 @@ if __name__=='__main__':
     objpath = os.path.join(this_dir, "objects", "l-cylinder.STL")
     freehold = FreeholdContactpairs(objpath)
     freehold.planHoldpairs()
-    # freehold.showFacetsPair(base = base, id =0)
+    freehold.showFacetsPair(base = base, id =0)
     freehold.getFacetsCenter()
     freehold.getCoordinate()
     freehold.gettwoend()
@@ -394,7 +394,7 @@ if __name__=='__main__':
         if base.inputmgr.keymap['space'] is True:
             print("space")
             # time.sleep(0.5)
-            if counter[0] >= len(freehold.placementRotMat):
+            if counter[0] >= len(freehold.pRotMat):
                 counter[0] = 0
             if obj_show_node[0] is not None:
                 obj_show_node[0].detach()
@@ -404,7 +404,7 @@ if __name__=='__main__':
             obj_show_node[0] = cm.CollisionModel(objpath)
             obj_show_node[0].set_scale((0.001, 0.001, 0.001))
             obj_show_node[0].set_rgba((0, 191 / 255, 1, 0.5))
-            obj_show_node[0].set_homomat(freehold.placementRotMat[counter[0]])
+            obj_show_node[0].set_homomat(freehold.pRotMat[counter[0]])
             if obj_show_node[0].is_mcdwith(fixturecm):
                 obj_show_node[0].set_rgba((1, 0, 0, 0.5))
             obj_show_node[0].attach_to(base)
@@ -416,9 +416,9 @@ if __name__=='__main__':
             # for vertace in freehold.placementVertices[counter[0]]:
             #     gm.gen_sphere(pos=vertace, radius=0.005).attach_to(obj_show_node[2])
             obj_show_node[2].reparentTo(base.render)
-            for i, normal in enumerate(freehold.placementNormals[counter[0]]):
+            for i, normal in enumerate(freehold.pNormals[counter[0]]):
                 print(normal)
-                gm.gen_arrow(spos=freehold.placementfacetpairscenter[counter[0]][i], epos=freehold.placementfacetpairscenter[counter[0]][i]+normal*0.1).attach_to(obj_show_node[3])
+                gm.gen_arrow(spos=freehold.pFacetpairscenter[counter[0]][i], epos=freehold.pFacetpairscenter[counter[0]][i]+normal*0.1).attach_to(obj_show_node[3])
             obj_show_node[3].reparentTo(base.render)
             counter[0]+=1
 

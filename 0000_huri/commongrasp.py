@@ -87,7 +87,7 @@ if __name__=='__main__':
     rbtmnp = [None, None]
     nodecounter = [0]
     def update(rbtmnp, nptoshow, nodecounter, task):
-        if base.inputmgr.keyMap['space'] is True:
+        if base.inputmgr.keymap['space'] is True:
             if nodecounter[0] < len(nptoshow):
                 if rbtmnp[0] is not None:
                     rbtmnp[0].detachNode()
@@ -101,7 +101,7 @@ if __name__=='__main__':
                 print(nodecounter[0])
             else:
                 nodecounter[0] = 0
-            base.inputmgr.keyMap['space'] = False
+            base.inputmgr.keymap['space'] = False
         return task.again
 
     taskMgr.doMethodLater(0.05, update, "update",

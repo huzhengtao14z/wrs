@@ -3,7 +3,8 @@ import math
 import modeling.geometric_model as gm
 import modeling.dynamics.bullet.bdbody as bdb
 from visualization.panda.world import ShowBase
-
+import basis.data_adapter as da
+import modeling.collision_model as cm
 
 class BDModel(object):
     """
@@ -28,6 +29,7 @@ class BDModel(object):
         if isinstance(objinit, BDModel):
             self._gm = copy.deepcopy(objinit.gm)
             self._bdb = objinit.bdb.copy()
+            self._cm = copy.deepcopy(objinit.cm)
         elif isinstance(objinit, gm.GeometricModel):
             if mass is None:
                 mass = 0
@@ -37,6 +39,7 @@ class BDModel(object):
         else:
             if mass is None:
                 mass = 0
+            self._cm = cm.CollisionModel(objinit)
             self._gm = gm.GeometricModel(objinit)
             self._bdb = bdb.BDBody(self._gm, type, mass, restitution, allow_deactivation=allowdeactivation,
                                    allow_ccd=allowccd, friction=friction, dynamic=dynamic, name=name)
@@ -45,6 +48,11 @@ class BDModel(object):
     def gm(self):
         # read-only property
         return self._gm
+
+    @property
+    def cm(self):
+        # read-only property
+        return self._cm
 
     @property
     def bdb(self):
@@ -78,6 +86,29 @@ class BDModel(object):
 
     def set_mass(self, mass):
         self._bdb.set_mass(mass)
+
+    def setMat(self, pandamat4):
+        self._bdb.sethomomat(da.pdmat4_to_npmat4(pandamat4))
+        self._objcm.objnp.setMat(pandamat4)
+
+    def setRPY(self, roll, pitch, yaw):
+        """
+        set the pose of the object using rpy
+
+        :param roll: degree
+        :param pitch: degree
+        :param yaw: degree
+        :return:
+
+        author: weiwei
+        date: 20190513
+        """
+
+        currentmat = self._bdb.gethomomat()
+        # currentmatnp = base.pg.mat4ToNp(currentmat)# motified by hu 2020/06/30
+        currentmatnp = currentmat# motified by hu 2020/06/30
+        newmatnp = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
+        self.set(base.pg.npToMat4(newmatnp, currentmatnp[:,3]))
 
     def attach_to(self, obj):
         """

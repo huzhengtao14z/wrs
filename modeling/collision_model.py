@@ -256,6 +256,8 @@ class CollisionModel(gm.GeometricModel):
             self._objpdnp.reparentTo(obj.render)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_cm(self)
+        elif isinstance(obj, NodePath):
+            self._objpdnp.reparentTo(obj)
         else:
             print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, "
                   "or CollisionModelCollection!")

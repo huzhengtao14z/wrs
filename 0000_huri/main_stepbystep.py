@@ -106,8 +106,8 @@ if __name__ == '__main__':
     #         lctr.showTubestand(homomat=tubestandhomomat[0])
     #         state = path[counter[0]]
     #         lctr.showTubes(state.grid, tubestandhomomat[0])
-    #         if base.inputmgr.keyMap['space'] is True:
-    #             base.inputmgr.keyMap['space'] = False
+    #         if base.inputmgr.keymap['space'] is True:
+    #             base.inputmgr.keymap['space'] = False
     #             counter[0] += 1
     #     # else:
     #     #     counter[0] = 0
