@@ -37,16 +37,16 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[10, 0, 5], lookat_pos=[0, 0, 1])
     base.setFrameRateMeter(True)
     gm.gen_frame().attach_to(base)
-    # obj_box = cm.gen_box(extent=[.2, 1, .3], rgba=[.3, 0, 0, 1])
-    obj_box = cm.gen_sphere(radius=.5, rgba=[.3, 0, 0, 1])
-    obj_bd_box = bdm.BDModel(obj_box, mass=.3, type="convex")
+    obj_box = cm.gen_box(extent=[.2, 1, .3], rgba=[.3, 0, 0, 1])
+    # obj_box = cm.gen_sphere(radius=.5, rgba=[.3, 0, 0, 1])
+    obj_bd_box = bdm.BDModel(obj_box, mass=.3, type="triangles")
     obj_bd_box.set_pos(np.array([.7, 0, 2.7]))
     obj_bd_box.start_physics()
     base.attach_internal_update_obj(obj_bd_box)
 
     robot_s = ur3ed.UR3EDual()
     robot_s.fk("both_arm", np.radians(np.array([-90,-60,-60,180,0,0,90,-120,60,0,0,0])))
-    robot_s.gen_stickmodel().attach_to(base)
+    # robot_s.gen_stickmodel().attach_to(base)
     robot_s.show_cdprimit()
     bd_lnk_list = get_robot_bdmoel(robot_s)
     for bdl in bd_lnk_list:
@@ -62,6 +62,7 @@ if __name__ == '__main__':
             la_jnt_values=la_jnt_values+rand_la
             ra_jnt_values=ra_jnt_values+rand_ra
             robot_s.fk(component_name="both_arm", jnt_values=np.hstack((la_jnt_values, ra_jnt_values)))
+            robot_s.show_cdprimit()
             update_robot_bdmodel(robot_s, bd_lnk_list)
             base.inputmgr.keymap['space'] = False
         return task.cont

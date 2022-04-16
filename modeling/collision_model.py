@@ -325,6 +325,9 @@ class CollisionModel(gm.GeometricModel):
     def copy(self):
         return CollisionModel(self)
 
+    def get_com(self):
+        com = self._objtrm.center_mass
+        return com
     # def objpdnp(self):
     #     # read-only property
     #     return self._objpdnp

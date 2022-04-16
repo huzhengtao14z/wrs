@@ -70,19 +70,19 @@ class Slope():
     def getSlope(self):
         return [self.slopex,self.slopey,self.slopez]
 
-    def getSlopeDym(self,mass=0,restitution=0, dynamic=True, friction=0.3):
+    def getSlopeDym(self,mass=0, restitution=0, dynamic=True, friction=0.3):
         s=self.size
 
         if self.placement=="shu":
             self.slopex = trimesh.primitives.Extrusion(
                 extrude_polygon=Polygon(
-                    [np.array([0, 0]), np.array([70.7 * s, -70.7 * s]), np.array([70.7 * s, 70.7 * s])]),
+                    [np.array([0, 0]), np.array([0.0707 * s, -70.7 * s]), np.array([0.0707 * s, 0.0707 * s])]),
                 extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -6], [0, 0, 0, 1]]),
                 extrude_height=6)
             self.slopex = bdm.BDModel(self.slopex, mass=mass,restitution=restitution,dynamic=dynamic, friction=friction)
             self.slopex.set_rgba((255 / 255, 51 / 255, 153 / 255, 1))
             self.slopex.set_pos((0, 0, -0))
-            self.slopex.set_rpy(roll=0, pitch=-45, yaw=180)
+            self.slopex.set_rpy(roll=0, pitch=np.radians(-45), yaw=np.radians(180))
 
             self.slopey = trimesh.primitives.Extrusion(
                 extrude_polygon=Polygon(
@@ -91,9 +91,9 @@ class Slope():
                 extrude_transform=np.array([[1, 0, 0, -50 * s], [0, 1, 0, 0], [0, 0, 1, -6], [0, 0, 0, 1]]),
                 extrude_height=6)
             self.slopey =bdm.BDModel(self.slopey, mass=mass,restitution=restitution,dynamic=dynamic, friction=friction)
-            self.slopey.set_rgba(r=255 / 255, g=51 / 255, b=153 / 255, a=1)
-            self.slopey.set_pos(x=0, y=0, z=-0)
-            self.slopey.set_rpy(roll=45, pitch=45, yaw=180)
+            self.slopey.set_rgba((255 / 255, 51 / 255, 153 / 255, 1))
+            self.slopey.set_pos((0, 0, 0))
+            self.slopey.set_rpy(roll=np.radians(45), pitch=np.radians(45), yaw=np.radians(180))
 
             self.slopez = trimesh.primitives.Extrusion(
                 extrude_polygon=Polygon(
@@ -102,48 +102,51 @@ class Slope():
                 extrude_transform=np.array([[1, 0, 0, -50 * s], [0, 1, 0, 0], [0, 0, 1, -6], [0, 0, 0, 1]]),
                 extrude_height=6)
             self.slopez = bdm.BDModel(self.slopez, mass=mass,restitution=restitution,dynamic=dynamic, friction=friction)
-            self.slopez.set_rgba(r=255 / 255, g=51 / 255, b=153 / 255, a=1)
-            self.slopez.set_pos(x=0, y=0, z=-0)
-            self.slopez.set_rpy(roll=-45, pitch=45, yaw=0)
+            self.slopez.set_rgba((255 / 255, 51 / 255, 153 / 255, 1))
+            self.slopez.set_pos((0, 0, 0))
+            self.slopez.set_rpy(roll=np.radians(-45), pitch=np.radians(45), yaw=np.radians(0))
 
 
         if self.placement=="ping":
             self.slopex = trimesh.primitives.Extrusion(
                 extrude_polygon=Polygon(
-                    [np.array([0, 0]) * s, np.array([70.7, -70.7]) * s, np.array([70.7, 70.7]) * s]),
-                extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -6], [0, 0, 0, 1]]),
-                extrude_height=6)
+                    [np.array([0, 0]) * s, np.array([.0707, -0.0707]) * s, np.array([0.0707, 0.0707]) * s]),
+                extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -0.006], [0, 0, 0, 1]]),
+                extrude_height=0.006)
             self.slopex = bdm.BDModel(self.slopex, mass=mass, restitution=restitution, dynamic=dynamic,
                                       friction=friction)
-            self.slopex.set_rgba(r=255 / 255, g=51 / 255, b=153 / 255, a=1)
-            self.slopex.set_pos(x=0, y=0, z=-0)
-            self.slopex.set_rpy(roll=0, pitch=-54.74, yaw=180)
+            self.slopex.set_rgba((255 / 255, 51 / 255, 153 / 255, 1))
+            self.slopex.set_pos((0, 0, -0))
+            self.slopex.set_rpy(roll=0, pitch=np.radians(-54.74), yaw=np.radians(180))
 
             self.slopey = trimesh.primitives.Extrusion(
                 extrude_polygon=Polygon(
-                    [np.array([0, 100]) * s, np.array([0, 0]) * s, np.array([-100, 0]) * s]),
-                extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -6], [0, 0, 0, 1]]),
-                extrude_height=6)
+                    [np.array([0, .100]) * s, np.array([0, 0]) * s, np.array([-0.100, 0]) * s]),
+                extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -0.006], [0, 0, 0, 1]]),
+                extrude_height=0.006)
             self.slopey = bdm.BDModel(self.slopey, mass=mass, restitution=restitution, dynamic=dynamic,
                                       friction=friction)
-            self.slopey.set_rgba(r=255 / 255, g=51 / 255, b=153 / 255, a=1)
-            self.slopey.set_pos(x=0, y=0, z=-0)
-            self.slopey.set_rpy(roll=45, pitch=90-54.75, yaw=180)
+            self.slopey.set_rgba((255 / 255, 51 / 255, 153 / 255, 1))
+            self.slopey.set_pos((0, 0, 0))
+            self.slopey.set_rpy(roll=np.radians(45), pitch=np.radians(90-54.75), yaw=np.radians(180))
 
             self.slopez = trimesh.primitives.Extrusion(
                 extrude_polygon=Polygon(
-                    [np.array([0, -100]) * s, np.array([0, 0]) * s, np.array([-100, 0]) * s]),
-                extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -6], [0, 0, 0, 1]]),
-                extrude_height=6)
+                    [np.array([0, -.100]) * s, np.array([0, 0]) * s, np.array([-.100, 0]) * s]),
+                extrude_transform=np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -0.006], [0, 0, 0, 1]]),
+                extrude_height=0.006)
             self.slopez = bdm.BDModel(self.slopez, mass=mass, restitution=restitution, dynamic=dynamic,
                                       friction=friction)
-            self.slopez.set_rgba(r=255 / 255, g=51 / 255, b=153 / 255, a=1)
-            self.slopez.set_pos(x=0, y=0, z=-0)
-            self.slopez.set_rpy(roll=-45, pitch=90 - 54.75, yaw=180)
+            self.slopez.set_rgba((255 / 255, 51 / 255, 153 / 255, 1))
+            self.slopez.set_pos((0, 0, 0))
+            self.slopez.set_rpy(roll=np.radians(-45), pitch=np.radians(90 - 54.75), yaw=np.radians(180))
 
-        self.slopex.attach_to(base.render)
-        self.slopey.attach_to(base.render)
-        self.slopez.attach_to(base.render)
+        self.slopex.start_physics()
+        self.slopey.start_physics()
+        self.slopez.start_physics()
+        # self.slopex.attach_to(base)
+        # self.slopey.attach_to(base)
+        # self.slopez.attach_to(base)
         return [self.slopex,self.slopey,self.slopez]
 
 if __name__=="__main__":

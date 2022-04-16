@@ -105,8 +105,10 @@ class World(ShowBase, object):
         # self.filter.setViewGlow()
         # set up physics world
         self.physics_scale=1e3
+        # self.physics_scale = 1
         self.physicsworld = BulletWorld()
         self.physicsworld.setGravity(Vec3(0, 0, -9.81*self.physics_scale))
+        # self.physicsworld.set_gravity(const_LVector3f_gravity =Vec3(0, 0, -9.81*self.physics_scale))
         taskMgr.add(self._physics_update, "physics", appendTask=True)
         globalbprrender = base.render.attachNewNode("globalbpcollider")
         debugNode = BulletDebugNode('Debug')

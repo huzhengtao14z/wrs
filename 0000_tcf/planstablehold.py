@@ -492,8 +492,11 @@ class stableholdplanner(fh.FreeholdContactpairs, slope.Slope):
                     normalnode[0].reparentTo(base.render)
 
                     for j in range(len(self.cfreegrasppose[counter[0]])):
-                        if j%15 != 0:
-                            continue
+                        if j%30 != 0:
+                            if not self.cfreegrasppose[counter[0]][j][1]:
+                                hndfa.gen_meshmodel(rgba=(0, 1, 0, 0.15)).attach_to(graspnode[0])
+                            else:
+                                continue
                         print("number of grasp 3", len(self.cfreegrasppose[counter[0]]))
                         hndfa.fix_to(pos=da.pdmat4_to_npmat4(self.cfreegrasppose[counter[0]][j][0])[:3, 3],
                                      rotmat=da.pdmat4_to_npmat4(self.cfreegrasppose[counter[0]][j][0])[:3, :3])
@@ -507,7 +510,7 @@ class stableholdplanner(fh.FreeholdContactpairs, slope.Slope):
                                           placementfacetpairscenter=self.pFacetpairscenter[counter[0]],
                                           placementVertices=self.pVertices[counter[0]],
                                           placementCoM=self.pCoM[counter[0]],
-                                          showCoM=False,
+                                          showCoM=True,
                                           showVertices=False,
                                           showNormal=False
                                           )
@@ -527,9 +530,11 @@ class stableholdplanner(fh.FreeholdContactpairs, slope.Slope):
                     # checker.showMesh(objmnp[0])
                     if self.collisionlist[counter[0]]:
                         objmnp[0].set_rgba((1, 0, 0, 1))
+                        # objmnp[0].set_rgba((0.1, 0.1, 0.1, 1))
                     else:
                         if self.stablelist[counter[0]]:
                             objmnp[0].set_rgba((0, 191 / 255, 1, 1))
+                            objmnp[0].set_rgba((0.1, 0.1, 0.1, 0.5))
                         else:
                             objmnp[0].set_rgba((0.1, 0.1, 0.1, 1))
                     objmnp[0].attach_to(base)
@@ -607,10 +612,15 @@ class stableholdplanner(fh.FreeholdContactpairs, slope.Slope):
                         if self.stablelist is not None:
                             if self.stablelist[counter[0]]:
                                 objmnp[0].set_rgba((0, 191 / 255, 1, 0.5))
+                                objmnp[0].set_rgba((0.1, 0.1, 0.1, 0.5))
+                                # objmnp[0].set_rgba((1, 0, 0, 1))
                             else:
                                 objmnp[0].set_rgba((0.1, 0.1, 0.1, 0.5))
+                                # objmnp[0].set_rgba((1, 0, 0, 1))
                         else:
                             objmnp[0].set_rgba((0, 191 / 255, 1, 0.5))
+                            objmnp[0].set_rgba((0.1, 0.1, 0.1, 0.5))
+                            # objmnp[0].set_rgba((1, 0, 0, 1))
                     objmnp[0].attach_to(base)
                     counter[0] += 1
                 else:
@@ -635,31 +645,45 @@ if __name__=='__main__':
     # gm.gen_frame(length=0.10, thickness=0.005).attach_to(base)
     # objname = "yuanbox_small
     # objname = "box20"
-    # objname = "test_long_small"
+    objname = "test_long_small"
     # objname = "lofted"
     # objname = "angle"
     # objname = "wedge"
     # objname = "bar"
     # objname = "polysolid"
-    objname = "tjunction-s-c"
+    # objname = "tjunction-s-c"
     # objname = "smallvbase"
     # objname = "tjunction-show"
     # objname = "housing-cal"
-    # objname = "bracket-cal"
+    # objname = "bracket-box"
     # objname = "longtube"
     # objname = "test_long_small"
     slopename = "tc71.stl"
 
     # slopeplacement = "shu"
     slopeplacement = "ping"
-
+    this_dir, this_filename = os.path.split(__file__)
     slope_low = slope.Slope(z=-0.002, placement=slopeplacement, size=sinfo.Sloperate[slopename], show = False)
     slopeforcd = slope_low.getSlope()
     slope_high = slope.Slope(z=0, placement=slopeplacement, size=sinfo.Sloperate[slopename], show = False)
     slopeforcd_high = slope_high.getSlope()
     # The slope for rendering is different to the one for collision detection. the one for cd is better to be a little lower.
 
-    this_dir, this_filename = os.path.split(__file__)
+    # slopeforshowpath = os.path.join(this_dir, "objects", "bracket-box.stl")
+    # slopeforshowpath = slopeforshowpath.replace('\\', '/')
+    # slopeforshow = cm.CollisionModel(slopeforshowpath)
+    # slopeforshow.set_scale((0.001, 0.001, 0.001))
+    # slopeforshow.set_rgba((0.1, .1, .1, 0.5))
+    # # slopeforshow.set_rpy(np.radians(0),np.radians(-90+54.74),np.radians(-45))
+    # # import basis.robot_math as rm
+    #
+    # slopeforshow.set_rotmat(np.dot(rm.rotmat_from_axangle((0, 1, 0), np.radians(-54.74)),
+    #                                rm.rotmat_from_axangle((0, 0, 1), np.radians(-45))))
+    #
+    # slopeforshow.attach_to(base)
+
+
+    # this_dir, this_filename = os.path.split(__file__)
     dic = "PlacementData"
     dataaddress = os.path.join(this_dir, dic, objname)
     dataaddress = dataaddress.replace('\\', '/')

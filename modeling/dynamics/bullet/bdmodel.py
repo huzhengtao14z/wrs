@@ -5,6 +5,7 @@ import modeling.dynamics.bullet.bdbody as bdb
 from visualization.panda.world import ShowBase
 import basis.data_adapter as da
 import modeling.collision_model as cm
+import basis.robot_math as rm
 
 class BDModel(object):
     """
@@ -62,6 +63,17 @@ class BDModel(object):
     def set_rgba(self, rgba):
         self._gm.set_rgba(rgba)
 
+    def set_scale(self, scale=[1, 1, 1]):
+        self._cm.set_scale(scale)
+
+        self._gm.set_scale(scale)
+
+    def set_linearVelocity(self, v):
+        self._bdb.setLinearVelocity(v)
+
+    def set_angularVelocity(self, av):
+        self._bdb.setAngularVelocity(av)
+
     def clear_rgba(self):
         self._gm.clear_rgba()
 
@@ -73,6 +85,26 @@ class BDModel(object):
         homomat_bdb[:3, 3] = npvec3
         self._bdb.set_homomat(homomat_bdb)
         self._gm.set_homomat(homomat_bdb)
+
+    def set_rpy(self, roll, pitch, yaw):
+        """
+        set the pose of the object using rpy
+
+        :param roll: degree
+        :param pitch: degree
+        :param yaw: degree
+        :return:
+
+        author: weiwei
+        date: 20190513
+        """
+
+        currentmatnp = self._gm.get_homomat()
+        # currentmatnp = da.pdmat4_to_npmat4(currentmat)
+        newmatnp = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
+        # self.__objnp.setMat(p3du.npToMat4(newmatnp, currentmatnp[:,3]))
+        self._bdb.set_homomat(rm.homomat_from_posrot(currentmatnp[:3,3], newmatnp))
+        self._gm.set_homomat(rm.homomat_from_posrot(currentmatnp[:3,3], newmatnp))
 
     def get_pos(self):
         return self._bdb.get_pos()
