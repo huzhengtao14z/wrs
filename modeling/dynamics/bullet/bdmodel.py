@@ -65,14 +65,20 @@ class BDModel(object):
 
     def set_scale(self, scale=[1, 1, 1]):
         self._cm.set_scale(scale)
-
         self._gm.set_scale(scale)
+        # self._bdb.set_scale(scale)
 
     def set_linearVelocity(self, v):
         self._bdb.setLinearVelocity(v)
 
     def set_angularVelocity(self, av):
         self._bdb.setAngularVelocity(av)
+
+    def set_angularDamping(self, ad):
+        self._bdb.setAngularDamping(ad)
+
+    def set_linearDamping(self, d):
+        self._bdb.setLinearDamping(d)
 
     def clear_rgba(self):
         self._gm.clear_rgba()

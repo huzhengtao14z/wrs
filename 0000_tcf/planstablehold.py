@@ -645,7 +645,7 @@ if __name__=='__main__':
     # gm.gen_frame(length=0.10, thickness=0.005).attach_to(base)
     # objname = "yuanbox_small
     # objname = "box20"
-    objname = "test_long_small"
+    objname = "test_long"
     # objname = "lofted"
     # objname = "angle"
     # objname = "wedge"
@@ -658,7 +658,7 @@ if __name__=='__main__':
     # objname = "bracket-box"
     # objname = "longtube"
     # objname = "test_long_small"
-    slopename = "tc71.stl"
+    slopename = "tc100.stl"
 
     # slopeplacement = "shu"
     slopeplacement = "ping"
@@ -703,13 +703,13 @@ if __name__=='__main__':
     print(stablehold.checkcollision())
     print("stablehold.checkstablity")
 
-    # stablehold.outputverticeswithface(dataaddress)
-    # stablehold.outputcom(dataaddress)
-    # stablehold.outputcollisionlist(dataaddress)
-    # stablehold.outputnormal(dataaddress)
-    # stablehold.outputfacetcenter(dataaddress)
-    # stablehold.outputplacmentrotmat(dataaddress)
-    # stablehold.outputstability(dataaddress)
+    stablehold.outputverticeswithface(dataaddress)
+    stablehold.outputcom(dataaddress)
+    stablehold.outputcollisionlist(dataaddress)
+    stablehold.outputnormal(dataaddress)
+    stablehold.outputfacetcenter(dataaddress)
+    stablehold.outputplacmentrotmat(dataaddress)
+    stablehold.outputstability(dataaddress)
 
     stablehold.animation()
 

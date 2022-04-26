@@ -1,4 +1,5 @@
 import serial
+import time
 class Sender:
     TERMINATOR = '\r'.encode("UTF8")
 
@@ -20,3 +21,10 @@ class Sender:
 
 if __name__ == "__main__":
     s = Sender()
+    # s.send("wristup")
+    print("check")
+    while True:
+        s.send("wristup()")
+        time.sleep(1)
+        s.send("wristdown()")
+        time.sleep(1)

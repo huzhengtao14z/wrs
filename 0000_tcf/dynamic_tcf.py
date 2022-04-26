@@ -123,6 +123,8 @@ if __name__=="__main__":
     # testobj.set_scale((0.001,0.001,0.001))
     testobj.set_rgba((.3, .5, .7, 0.5))
     testobj.start_physics()
+    testobj.set_linearDamping(0.1)
+    testobj.set_angularDamping(0.1)
     objbm.append(testobj)
 
     # table
