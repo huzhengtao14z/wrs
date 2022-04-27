@@ -125,7 +125,8 @@ if __name__ == '__main__':
     # object_goal = object_fixture
 
     object_start = object.copy()
-    object_start_pos = np.array([0.900, -.350, 0.800])
+    # object_start_pos = np.array([0.900, -.350, 0.800])
+    object_start_pos = np.array([0.950, -.350, 0.800])
     object_start_rotmat = rm.rotmat_from_axangle((1,0,0), np.radians(-90)).dot(rm.rotmat_from_axangle((0,0,1),np.radians(180)))
     object_start_homomat = rm.homomat_from_posrot(object_start_pos, object_start_rotmat)
     object_start.set_pos(object_start_pos)
@@ -180,9 +181,10 @@ if __name__ == '__main__':
                                       end_conf=start_conf,
                                       goal_homomat_list=[object_start_homomat, object_fixture_homomat],
                                       approach_direction_list=[None, np.array([0, 0, -1])],
-                                      approach_distance_list=[.05] * 2,
+                                      approach_distance_list=[.1] * 2,
+                                      obstacle_list=slopeforcd_high,
                                       depart_direction_list=[np.array([0, 0, 1]), None],
-                                      depart_distance_list=[.05] * 2)
+                                      depart_distance_list=[.1] * 2)
 
     # conf_list, jawwidth_list, objpose_list = \
     #     ppp.gen_pick_and_place_motion(hnd_name=hand_name,

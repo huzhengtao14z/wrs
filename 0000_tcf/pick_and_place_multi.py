@@ -118,7 +118,7 @@ if __name__ == '__main__':
     object_fixture = object.copy()
     object_fixture_pos = fixture_start_pos + np.array([0,0,0.050])
     object_fixture_rotmat = np.eye(3)
-    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(da.pdmat4_to_npmat4(RotMatnozero[0]))
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(da.pdmat4_to_npmat4(RotMatnozero[1]))
     object_fixture.set_homomat(object_fixture_homomat)
     # object_fixture.attach_to(base)
 
@@ -178,8 +178,9 @@ if __name__ == '__main__':
                                       goal_homomat_list=[object_start_homomat, object_fixture_homomat],
                                       approach_direction_list=[None, np.array([0, 0, -1])],
                                       approach_distance_list=[.05] * 2,
+                                      obstacle_list=slopeforcd_high,
                                       depart_direction_list=[np.array([0, 0, 1]), None],
-                                      depart_distance_list=[.05] * 2)
+                                      depart_distance_list=[.1] * 2)
 
 
 

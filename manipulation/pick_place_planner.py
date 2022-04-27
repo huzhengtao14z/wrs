@@ -241,7 +241,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                           goal_conf=conf_list_approach[0],
                                                           obstacle_list=obstacle_list,
                                                           otherrobot_list=[],
-                                                          ext_dist=.07,
+                                                          ext_dist=.05,
                                                           max_iter=300)
                 if conf_list_middle is None:
                     print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
@@ -394,7 +394,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                         approach_direction_list=approach_direction_list,
                                         depart_distance_list=depart_distance_list,
                                         approach_distance_list=approach_distance_list,
-                                        ad_granularity=.003,
+                                        ad_granularity=.007,
                                         use_rrt=use_rrt,
                                         obstacle_list=obstacle_list,
                                         seed_jnt_values=conf_list_approach[-1])

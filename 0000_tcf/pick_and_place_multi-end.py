@@ -187,6 +187,7 @@ if __name__ == '__main__':
                                       goal_homomat_list=[object_fixture_homomat, object_fixture_after_homomat],
                                       approach_direction_list=[None, np.array([0, 0, -1])],
                                       approach_distance_list=[.05] * 2,
+                                      obstacle_list=slopeforcd_high,
                                       depart_direction_list=[np.array([0, 0, 1]), None],
                                       depart_distance_list=[.1] * 2)
 
@@ -225,7 +226,7 @@ if __name__ == '__main__':
     objb_copy.set_homomat(objpose_list[-1])
     objb_copy.attach_to(base)
 
-    for i in range(0,len(conf_list), 2):
+    for i in range(0,len(conf_list), 1):
         robot.fk(hand_name, conf_list[i])
         if jawwidth_list[i] <0.04:
             robot.jaw_to(hand_name, jawwidth_list[i])

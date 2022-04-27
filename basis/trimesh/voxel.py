@@ -38,6 +38,7 @@ class Voxel:
         plot_raw(self.raw, **self.run)
 
 
+
 def run_to_raw(shape, index_xy, index_z, **kwargs):
     raw = np.zeros(shape, dtype=np.bool)
     for xy, z in zip(index_xy, index_z):
