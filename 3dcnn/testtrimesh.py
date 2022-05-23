@@ -20,7 +20,7 @@ import basis.data_adapter as da
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
 import slope
 import Sptpolygoninfo as sinfo
-import basis.trimesh as trimesh
+import basis.trimesh as trimeshWan
 import trimesh
 
 def show_ikfeasible_poses(obj_rotmat, obj_pos):
@@ -64,12 +64,31 @@ if __name__ == '__main__':
 
     name = "bunnysim.stl"
 
-    # a = trimesh.load("./3dcnnobj/" + name)
+    a = trimesh.load("./3dcnnobj/" + name)
     # b = a.voxelized(5).as_boxes()
-    # # b.show()
+    def tfmeshInfo(mesh, rotaxis = np.array([0,0,1]), angle = np.radians(90), translation=np.array([0,0,0])):
+        rotmat = rm.rotmat_from_axangle(rotaxis, angle)
+        vertices = np.asarray([rotmat.dot(vert) + translation for vert in mesh.vertices])
+        faces = mesh.faces
+        face_normals =  np.asarray([rotmat.dot(face_normal) + translation for face_normal in mesh.face_normals])
+        vertex_normals =  np.asarray([rotmat.dot(vertex_normal) + translation for vertex_normal in mesh.vertex_normals])
+        return [vertices, faces, face_normals, vertex_normals]
+
+    tfinfo = tfmeshInfo(a, rotaxis = np.array([0,0,1]), angle =np.radians(0), translation=np.array([0,0,0]))
+
+    temp = trimesh.Trimesh(vertices=tfinfo[0], faces=tfinfo[1], face_normals=tfinfo[2], vertex_normals=tfinfo[3])
+    b = temp.voxelized(1).as_boxes()
+
+    c = trimeshWan.Trimesh(vertices=b.vertices, faces=b.faces, face_normals=b.face_normals, vertex_normals=b.vertex_normals)
+    c_cm = cm.CollisionModel(c)
+    c_cm.set_scale((.001, .001, .001))
+    c_cm.set_rgba([.5, .7, .3, 1])
+    gm.gen_frame().attach_to(c_cm)
+    c_cm.attach_to(base)
+    # b.show()
     # b.export(name)
-    # base.run()
-    # a.show()
+    base.run()
+    a.show()
     object = cm.CollisionModel(name)
     object.set_scale((.001,.001,.001))
     object.set_rgba([.5, .7, .3, 1])

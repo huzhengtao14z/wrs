@@ -54,7 +54,7 @@ class stableholdplanner(fh.FreeholdContactpairs, slope.Slope):
         self.objname = objname
         self.objpath = os.path.join(this_dir, "objects", objname + ".stl")
         self.objpath = self.objpath.replace('\\', '/')
-        super().__init__(self.objpath, faceangle=.980, segangle=.97, verticalthreshold=.995, useoverlap=True)
+        super().__init__(self.objpath, faceangle=.98, segangle=.98, verticalthreshold=.995, useoverlap=True)
 
         self.dataaddress = dataaddress
         self.slopename = slopename
@@ -645,13 +645,13 @@ if __name__=='__main__':
     # gm.gen_frame(length=0.10, thickness=0.005).attach_to(base)
     # objname = "yuanbox_small
     # objname = "box20"
-    objname = "test_long"
+    # objname = "test_long"
     # objname = "lofted"
     # objname = "angle"
     # objname = "wedge"
     # objname = "bar"
     # objname = "polysolid"
-    # objname = "tjunction-s-c"
+    objname = "tjunction-s-c"
     # objname = "smallvbase"
     # objname = "tjunction-show"
     # objname = "housing-cal"
