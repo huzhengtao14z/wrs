@@ -36,21 +36,45 @@ class TrimeshHu(object):
         self.mesh = trimesh.Trimesh(vertices=self.vertices, faces=self.faces, face_normals=self.face_normals,
                                        vertex_normals=self.vertex_normals)
 
-    def transform(self, mesh, rotaxis = np.array([0,0,1]), angle = np.radians(90), translation=np.array([0,0,0])):
-        rotmat = rm.rotmat_from_axangle(rotaxis, angle)
-        self.vertices = np.asarray([rotmat.dot(vert) + translation for vert in mesh.vertices])
-        self.faces = mesh.faces
-        self.face_normals =  np.asarray([rotmat.dot(face_normal) + translation for face_normal in mesh.face_normals])
-        self.vertex_normals =  np.asarray([rotmat.dot(vertex_normal) + translation for vertex_normal in mesh.vertex_normals])
-        # trimesh.Trimesh(vertices=self.vertices, faces = self.faces, face_normals=self.face_normals, vertex_normals=self.vertex_normals)
+    # def set_scale
 
     def voxelization(self, voxel, hollow):
-        # self.mesh = self.mesh.voxelized(voxel).as_boxes()
+        self.voxel = voxel
         if hollow == True:
-            self.mesh = self.mesh.voxelized(voxel).hollow().as_boxes()
+            voxelizedmodel = self.mesh.voxelized(voxel).hollow()
+            self.tfmatrix = voxelizedmodel.transform
+            self.matrix = voxelizedmodel.matrix
+            self.points = voxelizedmodel.points
+            self.mesh = voxelizedmodel.as_boxes()
         else:
-            self.mesh = self.mesh.voxelized(voxel).fill(method='base').as_boxes()
+            voxelizedmodel = self.mesh.voxelized(voxel).fill(method='base')
+            self.tfmatrix = voxelizedmodel.transform
+            self.matrix = voxelizedmodel.matrix
+            self.points = voxelizedmodel.points
+            self.mesh = voxelizedmodel.as_boxes()
         self.__infoUpdate(self.mesh)
+
+    def get_node_matrix(self):
+        matrix = [[[[self.matrix[i][j][k]*i*self.voxel+self.tfmatrix[0][3], self.matrix[i][j][k]*j*self.voxel+self.tfmatrix[1][3], self.matrix[i][j][k]*k*self.voxel+self.tfmatrix[2][3]] for k in range(len(self.matrix[i][j]))] for j in range(len(self.matrix[i]))] for i in range(len(self.matrix))]
+        # print(np.asarray(matrix, dtype=float))
+        self.node_matrix = np.asarray(matrix)
+        print(self.node_matrix)
+        return self.node_matrix
+
+    def get_transform(self):
+        print(self.tfmatrix)
+        return self.tfmatrix
+
+    def show_balls(self):
+        # for i_index, i in enumerate(self.node_matrix):
+        #     for j_index, j in enumerate(i):
+        #         for k_index, k in enumerate(j):
+        #             if self.matrix[i_index][j_index][k_index]:
+        #                 gm.gen_sphere(k*0.001, 0.001, [1,0,0,0.5]).attach_to(base)
+
+        for point in self.points:
+            gm.gen_sphere(point * 0.001, 0.001, [1, 0, 0, 0.5]).attach_to(base)
+        # return self.tfmatrix
 
     @property
     def outputTrimesh(self):
@@ -70,12 +94,14 @@ class TrimeshHu(object):
 
     def meshTransform(self, rotaxis = np.array([0,0,1]), angle = np.radians(90), translation=np.array([0,0,0])):
         rotmat = rm.rotmat_from_axangle(rotaxis, angle)
-        self.vertices = np.asarray([rotmat.dot(vert) + translation for vert in self.mesh.vertices])
-        self.faces = self.mesh.faces
-        self.face_normals =  np.asarray([rotmat.dot(face_normal) + translation for face_normal in self.mesh.face_normals])
-        self.vertex_normals =  np.asarray([rotmat.dot(vertex_normal) + translation for vertex_normal in self.mesh.vertex_normals])
-        self.mesh = trimesh.Trimesh(vertices=self.vertices, faces=self.faces, face_normals=self.face_normals,
-                                       vertex_normals=self.vertex_normals)
+        homomate = rm.homomat_from_posrot(translation, rotmat)
+        self.mesh.apply_transform(homomate)
+        # self.vertices = np.asarray([rotmat.dot(vert) + translation for vert in self.mesh.vertices])
+        # self.faces = self.mesh.faces
+        # self.face_normals =  np.asarray([rotmat.dot(face_normal) + translation for face_normal in self.mesh.face_normals])
+        # self.vertex_normals =  np.asarray([rotmat.dot(vertex_normal) + translation for vertex_normal in self.mesh.vertex_normals])
+        # self.mesh = trimesh.Trimesh(vertices=self.vertices, faces=self.faces, face_normals=self.face_normals,
+        #                                vertex_normals=self.vertex_normals)
 
     def export(self, outputfile, outputname):
         this_dir, this_filename = os.path.split(__file__)
@@ -101,12 +127,17 @@ if __name__ == '__main__':
 
     # mesh = TrimeshHu("./3dcnnobj/", name)
     mesh = TrimeshHu(mesh = box)
-    # mesh.voxelization(3)
-    mesh.meshTransform(rotaxis = np.array([0,0,1]), angle = np.radians(0), translation=np.array([0,0,0]))
-    mesh.voxelization(45, hollow = True)
+    # mesh.set_scale((0.001, 0.001, 0.001))
+    # mesh.voxelization(45, hollow = False)
+    mesh.meshTransform(rotaxis = np.array([0,0,1]), angle = np.radians(45), translation=np.array([0,0,0]))
+    mesh.voxelization(10, hollow = True)
+    mesh.get_node_matrix()
+    mesh.get_transform()
+    mesh.show_balls()
     mesh.export(this_dir,"box_vox")
     c = cm.CollisionModel(mesh.outputTrimesh)
     c.set_scale((0.001, 0.001, 0.001))
+    c.set_rgba((0,1,0,0.052))
     c.attach_to(base)
     base.run()
 
