@@ -1,3 +1,4 @@
+import copy
 import math
 import visualization.panda.world as wd
 import modeling.collision_model as cm
@@ -21,10 +22,11 @@ import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
 import slope
 import Sptpolygoninfo as sinfo
 import basis.trimesh as trimeshWan
-import trimesh
+import trimesh as trimesh
+from panda3d.core import NodePath
 
 class TrimeshHu(object):
-    def __init__(self, meshpath = None, name = None, mesh = None):
+    def __init__(self, meshpath = None, name = None, mesh = None, scale = 1.0):
 
         if not mesh:
             self.name = name
@@ -33,25 +35,28 @@ class TrimeshHu(object):
         else:
             self.mesh = mesh
         self.__infoUpdate(self.mesh)
-        self.mesh = trimesh.Trimesh(vertices=self.vertices, faces=self.faces, face_normals=self.face_normals,
+        self.originalmesh = trimesh.Trimesh(vertices=self.vertices*scale, faces=self.faces*scale, face_normals=self.face_normals,
                                        vertex_normals=self.vertex_normals)
-
+        self.mesh = copy.copy(self.originalmesh)
+        # self.mesh.scale(scale)
     # def set_scale
 
     def voxelization(self, voxel, hollow):
         self.voxel = voxel
         if hollow == True:
-            voxelizedmodel = self.mesh.voxelized(voxel).hollow()
-            self.tfmatrix = voxelizedmodel.transform
-            self.matrix = voxelizedmodel.matrix
-            self.points = voxelizedmodel.points
-            self.mesh = voxelizedmodel.as_boxes()
+            self.voxelizedmodel = self.mesh.voxelized(voxel).hollow()
+            self.tfmatrix = self.voxelizedmodel.transform
+            self.matrix = self.voxelizedmodel.matrix
+            self.points = self.voxelizedmodel.points
+            self.mesh = self.voxelizedmodel.as_boxes()
+            # self.mesh = voxelizedmodel.marching_cubes
         else:
-            voxelizedmodel = self.mesh.voxelized(voxel).fill(method='base')
-            self.tfmatrix = voxelizedmodel.transform
-            self.matrix = voxelizedmodel.matrix
-            self.points = voxelizedmodel.points
-            self.mesh = voxelizedmodel.as_boxes()
+            self.voxelizedmodel = self.mesh.voxelized(voxel).fill(method='base')
+            self.tfmatrix = self.voxelizedmodel.transform
+            self.matrix = self.voxelizedmodel.matrix
+            self.points = self.voxelizedmodel.points
+            self.mesh = self.voxelizedmodel.as_boxes()
+            # self.mesh = voxelizedmodel.marching_cubes
         self.__infoUpdate(self.mesh)
 
     def get_node_matrix(self):
@@ -73,8 +78,36 @@ class TrimeshHu(object):
         #                 gm.gen_sphere(k*0.001, 0.001, [1,0,0,0.5]).attach_to(base)
 
         for point in self.points:
-            gm.gen_sphere(point * 0.001, 0.001, [1, 0, 0, 0.5]).attach_to(base)
-        # return self.tfmatrix
+            gm.gen_sphere(point, .001, [1, 0, 0, 0.5]).attach_to(base)
+
+    def show_hited_balls(self, observe_origin,target):
+        # for i_index, i in enumerate(self.node_matrix):
+        #     for j_index, j in enumerate(i):
+        #         for k_index, k in enumerate(j):
+        #             if self.matrix[i_index][j_index][k_index]:
+        #                 gm.gen_sphere(k*0.001, 0.001, [1,0,0,0.5]).attach_to(base)
+        # self.hited_list = []
+        hited_list =  self.hitray(observe_origin)
+        for point in hited_list:
+            # gm.gen_sphere(point, .001, [1, 0, 0, 0.5]).attach_to(target)
+            gm.gen_box(extent=[self.voxel]*3, homomat = rm.homomat_from_posrot(point), rgba = [1, 0, 0, 1]).attach_to(target)
+        return target
+    def hitray(self, observe_origin = [.0,.0,-.09]):
+        checker = trimesh.base.ray.ray_pyembree.RayMeshIntersector(self.mesh)
+        # observation = np.array([[0, 0, .900]])
+        observation = np.array([observe_origin])
+        ray_directions = [point - observation[0] for point in self.points]
+        ray_origins = [observation[0] for point in self.points]
+        hitinfo = checker.intersects_id(ray_origins=ray_origins, ray_directions=ray_directions, multiple_hits=False, max_hits=1,
+                            return_locations=True)
+        hited_list = []
+        for i, point in enumerate(self.points):
+            if np.linalg.norm(point - hitinfo[2][i]) <= self.voxel:
+                hited_list.append(point)
+        hited_list = np.asarray(hited_list)
+        # self.observed_mesh = self.voxelizedmodel.points_to_indices(self.hited_list)
+
+        return hited_list
 
     @property
     def outputTrimesh(self):
@@ -83,10 +116,6 @@ class TrimeshHu(object):
         return self.newmesh
 
     def __infoUpdate(self, mesh):
-        # self.faces = mesh.faces
-        # self.vertices = mesh.vertices
-        # self.face_normals = mesh.face_normals
-        # self.vertex_normals = mesh.vertex_normals
         self.faces = np.asarray(mesh.faces)
         self.vertices = np.asarray(mesh.vertices)
         self.face_normals = np.asarray(mesh.face_normals)
@@ -119,25 +148,83 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
 
-    # name = "bunnysim.stl"
-    name = "bo"
-    box = gm.gen_box([90,90,90]).objtrm
+    name = "armadillo.stl"
+    mesh = TrimeshHu("./3dcnnobj/", name)
 
-    # a = trimesh.load("./3dcnnobj/" + name)
+    # name = "bo"
+    # box = gm.gen_box([.090,.090,.090]).objtrm
 
-    # mesh = TrimeshHu("./3dcnnobj/", name)
-    mesh = TrimeshHu(mesh = box)
+    # mesh = TrimeshHu(mesh = box, scale=1)
     # mesh.set_scale((0.001, 0.001, 0.001))
     # mesh.voxelization(45, hollow = False)
+
+    icosphere = gm.gen_sphere(radius=0.2, rgba =[0,0,1,0.1] ,subdivisions=1)
+    sample = icosphere.objtrm.vertices
+    icosphere.attach_to(base)
+    # print(sample)
+
+
     mesh.meshTransform(rotaxis = np.array([0,0,1]), angle = np.radians(45), translation=np.array([0,0,0]))
-    mesh.voxelization(10, hollow = True)
+    mesh.voxelization(.0045, hollow = True)
     mesh.get_node_matrix()
     mesh.get_transform()
-    mesh.show_balls()
+    # mesh.show_balls()
+    # mesh.show_hited_balls(base)
     mesh.export(this_dir,"box_vox")
     c = cm.CollisionModel(mesh.outputTrimesh)
-    c.set_scale((0.001, 0.001, 0.001))
-    c.set_rgba((0,1,0,0.052))
+    # c.set_scale((0.001, 0.001, 0.001))
+    c.set_rgba((0,1,0,.11))
     c.attach_to(base)
+
+
+    objNode = [None]
+    voxelNode = [None]
+    observeNode = [None]
+
+
+    def update(textNode, objNode, voxelNode, observeNode, count, task):
+        if observeNode[0] is not None:
+            observeNode[0].detachNode()
+        observeNode[0] = NodePath("observe")
+        mesh.show_hited_balls(observe_origin=sample[count[0]],target = observeNode[0])
+        gm.gen_sphere(sample[count[0]]).attach_to(observeNode[0])
+        observeNode[0].reparent_to(base.render)
+        count[0]+=1
+
+        if textNode[0] is not None:
+            textNode[0].detachNode()
+            textNode[1].detachNode()
+            textNode[2].detachNode()
+        cam_pos = base.cam.getPos()
+        textNode[0] = OnscreenText(
+            text=str(cam_pos[0])[0:5],
+            fg=(1, 0, 0, 1),
+            pos=(1.0, 0.8),
+            align=TextNode.ALeft)
+        textNode[1] = OnscreenText(
+            text=str(cam_pos[1])[0:5],
+            fg=(0, 1, 0, 1),
+            pos=(1.3, 0.8),
+            align=TextNode.ALeft)
+        textNode[2] = OnscreenText(
+            text=str(cam_pos[2])[0:5],
+            fg=(0, 0, 1, 1),
+            pos=(1.6, 0.8),
+            align=TextNode.ALeft)
+        return task.again
+
+    cam_view_text = OnscreenText(
+        text="Camera View: ",
+        fg=(0, 0, 0, 1),
+        pos=(1.15, 0.9),
+        align=TextNode.ALeft)
+    testNode = [None, None, None]
+    count = [0]
+    taskMgr.doMethodLater(1,update,  "addobject", extraArgs=[testNode, objNode, voxelNode, observeNode, count], appendTask=True)
+
+
+
+
+    # print(b)
     base.run()
 
