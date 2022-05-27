@@ -3,7 +3,9 @@ import pickle
 import modeling.collision_model as cm
 
 base = wd.World(cam_pos=[0, -2, -5], lookat_pos=[0, -1, 5])
-pcd_list = pickle.load(open("pcdlist.pkl", "rb"))
+pcd_list = pickle.load(open("skull.pkl", "rb"))[2]
+
+
 
 attached_list = []
 counter = [0]

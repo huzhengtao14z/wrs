@@ -164,6 +164,50 @@ if __name__ == '__main__':
     # print(sample)
 
 
+    import open3d as o3d
+    import vision.depth_camera.pcd_data_adapter as vdda
+    calib_mat = pickle.load(open("phoxi_calibmat.pkl", "rb"))
+    pcd_list = pickle.load(open("pc/bunnypcd.pkl", "rb"))[2]
+
+    pcd_list = rm.homomat_transform_points(calib_mat, pcd_list)
+    n_pcd_list = []
+    for pcd in pcd_list:
+        if pcd[2] > 810 and pcd[2] < 930  and pcd[1]>100 and pcd[1]<270 and pcd[0]>700 and pcd[0]<930:
+            n_pcd_list.append(pcd)
+
+
+    # pcd_list = [pcd for pcd in pcd_list if pcd[2]>785]
+    pcd = vdda.nparray_to_o3dpcd(np.asarray(n_pcd_list))
+    # o3d.visualization.draw_geometries([pcd])
+    alpha = 8
+    mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+    mmesh.compute_vertex_normals()
+    # o3d.visualization.draw_geometries([mmesh], mesh_show_back_face=True)
+    mmesh_trimesh = vdda.o3dmesh_to_trimesh(mmesh)
+
+
+
+    mmesh_hu = TrimeshHu(mesh = mmesh_trimesh)
+    mmesh_hu.voxelization(3, hollow=True)
+    mmesh_hu.get_node_matrix()
+    mmesh_hu.get_transform()
+    t = cm.CollisionModel(mmesh_hu.outputTrimesh)
+    t.set_scale((0.001, 0.001, 0.001))
+    t.set_rgba((0, 1, 0, .11))
+    t.attach_to(base)
+    base.run()
+
+
+    # pctrim = vdda.o3dmesh_to_trimesh(pcd)
+    radii = [0.005, 0.01, 0.02, 0.04]
+    rec_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
+    # objpdnp_raw.reparentTo(self._objpdnp)
+    a = gm.GeometricModel(pcd)
+    a.set_scale((0.001,0.001,0.001))
+    a.attach_to(base)
+    base.run()
+
+
     mesh.meshTransform(rotaxis = np.array([0,0,1]), angle = np.radians(45), translation=np.array([0,0,0]))
     mesh.voxelization(.0045, hollow = True)
     mesh.get_node_matrix()
