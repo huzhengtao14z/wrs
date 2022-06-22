@@ -305,7 +305,7 @@ class Element(object):
 
         this_dir, this_filename = os.path.split(__file__)
         # file = f"{this_dir}/space_boolean/{self.id}-"
-        file = f"{this_dir}/5-5/{self.id}-"
+        file = f"{this_dir}/41-41/{self.id}-"
 
         t_c1_objtrm.export(f"{file}t_c1.stl")
         t_c2_objtrm.export(f"{file}t_c2.stl")
@@ -447,10 +447,10 @@ if __name__ == '__main__':
     #                                                                                          [0, 0, 1],
     #                                                                                          0 * np.pi / 2)),
     #                 rgba=[0, 0, 0, 0.2])
-    cut_list = [c1,c2]
+    # cut_list = [c1,c2]
     # cut_list = [c1]
     gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
-    # cut_list = []
+    cut_list = []
     for model in cut_list:
         model.attach_to(base)
     grid = Grid(np.array(matrix), interval)

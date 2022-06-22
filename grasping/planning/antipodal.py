@@ -9,7 +9,7 @@ def plan_contact_pairs(objcm,
                        max_samples=100,
                        min_dist_between_sampled_contact_points=.005,
                        angle_between_contact_normals=math.radians(160),
-                       toggle_sampled_points=False):
+                       toggle_sampled_points=True):
     """
     find the contact pairs using rayshooting
     the finally returned number of contact pairs may be smaller than the given max_samples due to the min_dist constraint

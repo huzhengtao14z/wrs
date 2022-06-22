@@ -10,7 +10,7 @@ base = wd.World(cam_pos=[1, 1, 1],w=960,
                  h=540, lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
 # object
-object_tube = cm.CollisionModel("objects/bunnysimcal.stl")
+object_tube = cm.CollisionModel("objects/test_long.STL")
 object_tube.set_rgba([.9, .75, .35, 1])
 # object_tube.set_scale([0.001, 0.001, 0.001])
 object_tube.attach_to(base)
@@ -19,12 +19,12 @@ object_tube.attach_to(base)
 # gripper_s = rtqhe.RobotiqHE()
 gripper_s = rtq85.Robotiq85()
 grasp_info_list = gpa.plan_grasps(gripper_s, object_tube,
-                                  angle_between_contact_normals=math.radians(177),
+                                  angle_between_contact_normals=math.radians(160),
                                   openning_direction='loc_x',
                                     rotation_interval=math.radians(22.5),
-                                  max_samples=100, min_dist_between_sampled_contact_points=.00051,
-                                  contact_offset=.005)
-gpa.write_pickle_file('bunnysimcal', grasp_info_list, './', 'rtq85.pickle')
+                                  max_samples=100, min_dist_between_sampled_contact_points=.051,
+                                  contact_offset=.05)
+gpa.write_pickle_file('test_long', grasp_info_list, './', 'rtq85.pickle')
 for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gripper_s.grip_at_with_jcpose(jaw_center_pos, jaw_center_rotmat, jaw_width)
