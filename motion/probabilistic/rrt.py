@@ -275,6 +275,82 @@ class RRT(object):
             plt.pause(delay_time)
         # plt.waitforbuttonpress()
 
+    @staticmethod
+    def draw_wspace_multi(roadmap_list_list,
+                    start_conf_list,
+                    goal_conf_list,
+                    obstacle_list,
+                    near_rand_conf_pair=None,
+                    new_conf=None,
+                    new_conf_mark='^r',
+                    shortcut=None,
+                    smoothed_path=None,
+                    delay_time=.02):
+        """
+        Draw Graph
+        """
+        plt.clf()
+        ax = plt.gca()
+        ax.set_aspect('equal', 'box')
+        plt.grid(True)
+        plt.xlim(-4.0, 17.0)
+        plt.ylim(-4.0, 17.0)
+        ax.add_patch(plt.Circle((start_conf_list[0][0], start_conf_list[0][1]), .5, color='r'))
+        ax.add_patch(plt.Circle((goal_conf_list[0][0], goal_conf_list[0][1]), .5, color='g'))
+
+        ax.add_patch(plt.Circle((start_conf_list[1][0], start_conf_list[1][1]), .5, color='r'))
+        ax.add_patch(plt.Circle((goal_conf_list[1][0], goal_conf_list[1][1]), .5, color='g'))
+
+        ax.add_patch(plt.Circle((start_conf_list[2][0], start_conf_list[2][1]), .5, color='r'))
+        ax.add_patch(plt.Circle((goal_conf_list[2][0], goal_conf_list[2][1]), .5, color='g'))
+
+        for (point, size) in obstacle_list:
+            ax.add_patch(plt.Circle((point[0], point[1]), size / 2.0, color='k'))
+        colors = 'bgrcmykw'
+        for i, roadmap in enumerate(roadmap_list_list[0]):
+            for (u, v) in roadmap.edges:
+                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o' + colors[i])
+                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o' + colors[i])
+                plt.plot([roadmap.nodes[u]['conf'][0], roadmap.nodes[v]['conf'][0]],
+                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-' + colors[i])
+
+        for i, roadmap in enumerate(roadmap_list_list[1]):
+            for (u, v) in roadmap.edges:
+                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o' + colors[i])
+                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o' + colors[i])
+                plt.plot([roadmap.nodes[u]['conf'][0], roadmap.nodes[v]['conf'][0]],
+                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-' + colors[i])
+
+        for i, roadmap in enumerate(roadmap_list_list[2]):
+            for (u, v) in roadmap.edges:
+                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o' + colors[i])
+                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o' + colors[i])
+                plt.plot([roadmap.nodes[u]['conf'][0], roadmap.nodes[v]['conf'][0]],
+                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-' + colors[i])
+
+
+        if near_rand_conf_pair is not None:
+            plt.plot([near_rand_conf_pair[0][0], near_rand_conf_pair[1][0]],
+                     [near_rand_conf_pair[0][1], near_rand_conf_pair[1][1]], "--k")
+            ax.add_patch(plt.Circle((near_rand_conf_pair[1][0], near_rand_conf_pair[1][1]), .3, color='grey'))
+        if new_conf is not None:
+            plt.plot(new_conf[0], new_conf[1], new_conf_mark)
+        if smoothed_path is not None:
+            plt.plot([conf[0] for conf in smoothed_path], [conf[1] for conf in smoothed_path], linewidth=7,
+                     linestyle='-', color='c')
+        if shortcut is not None:
+            plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
+                     color='r')
+        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
+        # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
+        if not hasattr(RRT, 'img_counter'):
+            RRT.img_counter = 0
+        else:
+            RRT.img_counter += 1
+        # plt.savefig(str( RRT.img_counter)+'.jpg')
+        if delay_time > 0:
+            plt.pause(delay_time)
+        # plt.waitforbuttonpress()
 
 if __name__ == '__main__':
     import robot_sim._kinematics.jlchain as jl
@@ -346,7 +422,7 @@ if __name__ == '__main__':
     #     total_t = total_t + toc - tic
     # print(total_t)
     # Draw final path
-    print(path)
+    # print(path)
     rrt.draw_wspace([rrt.roadmap], rrt.start_conf, rrt.goal_conf, obstacle_list, delay_time=0)
     plt.plot([conf[0] for conf in path], [conf[1] for conf in path], linewidth=4, color='c')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
