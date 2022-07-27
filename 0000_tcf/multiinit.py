@@ -56,6 +56,7 @@ def show_ikfeasible_poses(obj_rotmat, obj_pos):
 
 if __name__ == '__main__':
     # world
+    import random
     base = wd.World(cam_pos=[2.01557, 0.637317, 1.88133], w=960,
                     h=540, lookat_pos=[0, 0, 1.1])
     gm.gen_frame().attach_to(base)
@@ -64,9 +65,7 @@ if __name__ == '__main__':
     object = cm.CollisionModel("./objects/test_long.stl")
     # object.set_scale((.001,.001,.001))
     object.set_rgba([.5, .7, .3, 1])
-    object.attach_to(base)
-    # base.run()
-    gm.gen_frame().attach_to(object)
+    # gm.gen_frame().attach_to(object)
 
     # object_goal = object.copy()
     # object_goal_pos = np.array([0.800, -.300, 0.900])
@@ -100,9 +99,7 @@ if __name__ == '__main__':
     # slopeforcd_high[2].attach_to(base)
 
     robot = ur3ed.UR3EDual()
-    component_name = 'rgt_arm'
-    # robot_meshmodel = robot.gen_meshmodel()
-    # robot_meshmodel.attach_to(base)
+    robot.gen_meshmodel().attach_to(base)
 
     address = this_dir + "/PlacementData"
     objname = "test_long_small"
@@ -118,123 +115,139 @@ if __name__ == '__main__':
     comlist = [comlistall[i] for i in range(len(stablecklist)) if stablecklist[i] is True]
 
     object_fixture = object.copy()
-    object_fixture_pos = fixture_start_pos + np.array([0,0,0.050])
+    object_fixture_pos = fixture_start_pos + np.array([0, 0, 0.000])
     object_fixture_rotmat = np.eye(3)
-    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(da.pdmat4_to_npmat4(RotMatnozero[1]))
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(
+        da.pdmat4_to_npmat4(RotMatnozero[1]))
     object_fixture.set_homomat(object_fixture_homomat)
+    object_fixture.set_rgba([0, 191 / 255, 1, 3])
+    object_fixture.attach_to(base)
+    object_fixture = object.copy()
+    object_fixture_pos = fixture_start_pos + np.array([0, 0, 0.050])
+    object_fixture_rotmat = np.eye(3)
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(
+        da.pdmat4_to_npmat4(RotMatnozero[1]))
+    object_fixture.set_homomat(object_fixture_homomat)
+    object_fixture.set_rgba([0, 191 / 255, 1, 0.5])
     object_fixture.attach_to(base)
 
-    # object_goal = object_fixture
+    object_fixture = object.copy()
+    object_fixture_pos = fixture_start_pos + np.array([0, 0, 0.000])
+    object_fixture_rotmat = np.eye(3)
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(
+        da.pdmat4_to_npmat4(RotMatnozero[2]))
+    object_fixture.set_homomat(object_fixture_homomat)
+    object_fixture.set_rgba([0, 191 / 255, 1, 3])
+    object_fixture.attach_to(base)
+    object_fixture = object.copy()
+    object_fixture_pos = fixture_start_pos + np.array([0, 0, 0.050])
+    object_fixture_rotmat = np.eye(3)
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(
+        da.pdmat4_to_npmat4(RotMatnozero[2]))
+    object_fixture.set_homomat(object_fixture_homomat)
+    object_fixture.set_rgba([0, 191 / 255, 1, 0.5])
+    object_fixture.attach_to(base)
+
+    object_fixture = object.copy()
+    object_fixture_pos = fixture_start_pos + np.array([0, 0, 0.000])
+    object_fixture_rotmat = np.eye(3)
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(
+        da.pdmat4_to_npmat4(RotMatnozero[0]))
+    object_fixture.set_homomat(object_fixture_homomat)
+    object_fixture.set_rgba([0, 191 / 255, 1, 3])
+    object_fixture.attach_to(base)
+    object_fixture = object.copy()
+    object_fixture_pos = fixture_start_pos + np.array([0, 0, 0.05])
+    object_fixture_rotmat = np.eye(3)
+    object_fixture_homomat = rm.homomat_from_posrot(object_fixture_pos, object_fixture_rotmat).dot(
+        da.pdmat4_to_npmat4(RotMatnozero[0]))
+    object_fixture.set_homomat(object_fixture_homomat)
+    object_fixture.set_rgba([0, 191 / 255, 1, 0.5])
+    object_fixture.attach_to(base)
+
+    # object_fixture.attach_to(base)
 
     object_start = object.copy()
     object_start_pos = np.array([0.900, -.350, 0.800])
-    object_start_rotmat = rm.rotmat_from_axangle((1,0,0), np.radians(-90)).dot(rm.rotmat_from_axangle((0,0,1),np.radians(180)))
+    object_start_rotmat = rm.rotmat_from_axangle((1, 0, 0), np.radians(-90)).dot(
+        rm.rotmat_from_axangle((0, 0, 1), np.radians(180)))
     object_start_homomat = rm.homomat_from_posrot(object_start_pos, object_start_rotmat)
     object_start.set_pos(object_start_pos)
     object_start.set_rotmat(object_start_rotmat)
     object_start.attach_to(base)
 
-    grasp_info_list = gpa.load_pickle_file('test_long', './', 'rtqhe.pickle')
+    object_start = object.copy()
+    object_start_pos = np.array([0.920, -.450, 0.800])
+    object_start_rotmat = rm.rotmat_from_axangle((1, 0, 0), np.radians(0)).dot(
+        rm.rotmat_from_axangle((0, 0, 1), np.radians(180)))
+    object_start_homomat = rm.homomat_from_posrot(object_start_pos, object_start_rotmat)
+    object_start.set_pos(object_start_pos)
+    object_start.set_rotmat(object_start_rotmat)
+    object_start.attach_to(base)
 
-    # show_ikfeasible_poses(object_fixture_homomat[:3,:3], object_fixture_pos)
-    # show_ikfeasible_poses(object_start_homomat[:3, :3], object_start_pos)
-    # base.run()
+    object_start = object.copy()
+    object_start_pos = np.array([0.820, -.350, 0.800])
+    object_start_rotmat = rm.rotmat_from_axangle((1, 0, 0), np.radians(0)).dot(
+        rm.rotmat_from_axangle((0, 0, 1), np.radians(180)))
+    object_start_rotmat = rm.rotmat_from_axangle((0, 0, 1), np.radians(90)).dot(
+        object_start_rotmat)
+    object_start_homomat = rm.homomat_from_posrot(object_start_pos, object_start_rotmat)
+    object_start.set_pos(object_start_pos)
+    object_start.set_rotmat(object_start_rotmat)
+    object_start.attach_to(base)
 
-    object_fixture_corner = object.copy()
-    object_fixture_corner_pos = fixture_start_pos
-    object_fixture_corner_rotmat = np.eye(3)
-    object_fixture_corner_homomat = rm.homomat_from_posrot(object_fixture_corner_pos, object_fixture_corner_rotmat).dot(
-        da.pdmat4_to_npmat4(RotMatnozero[1]))
-    object_fixture_corner.set_homomat(object_fixture_corner_homomat)
+    for i in range(30):
+        object_rand = object_start.copy()
+        object_rand_pos = np.array([random.uniform(0.4, 0.9), random.uniform(-0.5, 0), 0.780])
+        object_rand_rotmat = rm.rotmat_from_axangle((1, 0, 0), np.radians(-90)).dot(
+            rm.rotmat_from_axangle((0, 0, 1), np.radians(180)))
+        object_rand_rotmat = rm.rotmat_from_axangle((0, 0, 1), np.radians(random.uniform(0, 360))).dot(object_rand_rotmat)
+        object_rand_homomat = rm.homomat_from_posrot(object_start_pos, object_rand_rotmat)
+        object_rand.set_pos(object_rand_pos)
+        object_rand.set_rotmat(object_rand_rotmat)
+        object_rand.set_rgba([.5, .7, .3, 0.2])
+        object_rand.attach_to(base)
+
+    for i in range(30):
+        object_rand = object_start.copy()
+        object_rand_pos = np.array([random.uniform(0.4, 0.9), random.uniform(-0.5, 0), 0.780])
+        object_rand_rotmat = rm.rotmat_from_axangle((1, 0, 0), np.radians(0)).dot(
+            rm.rotmat_from_axangle((0, 0, 1), np.radians(180)))
+        object_rand_rotmat = rm.rotmat_from_axangle((0, 0, 1), np.radians(random.uniform(0, 360))).dot(object_rand_rotmat)
+        object_rand_homomat = rm.homomat_from_posrot(object_start_pos, object_rand_rotmat)
+        object_rand.set_pos(object_rand_pos)
+        object_rand.set_rotmat(object_rand_rotmat)
+        object_rand.set_rgba([.5, .7, .3, 0.2])
+        object_rand.attach_to(base)
+
+
+    for i in range(30):
+        object_rand = object_start.copy()
+        object_rand_pos = np.array([random.uniform(0.4, 0.9), random.uniform(-0.5, 0), 0.780])
+        object_rand_rotmat = rm.rotmat_from_axangle((1, 0, 0), np.radians(-90)).dot(
+            rm.rotmat_from_axangle((0, 0, 1), np.radians(180)))
+        object_rand_rotmat = rm.rotmat_from_axangle((0, 1, 0), np.radians(90)).dot(
+            object_rand_rotmat)
+        object_rand_rotmat = rm.rotmat_from_axangle((0, 0, 1), np.radians(random.uniform(0, 360))).dot(object_rand_rotmat)
+        object_rand_homomat = rm.homomat_from_posrot(object_start_pos, object_rand_rotmat)
+        object_rand.set_pos(object_rand_pos)
+        object_rand.set_rotmat(object_rand_rotmat)
+        object_rand.set_rgba([.5, .7, .3, 0.2])
+        object_rand.attach_to(base)
 
     object_goal = object.copy()
     object_goal_pos = np.array([0.550, -.050, 0.850])
-    object_goal_rotmat = rm.rotmat_from_axangle((0,0,1),np.radians(90)).dot(rm.rotmat_from_axangle((0,1,0),np.radians(-90)))
+    object_goal_rotmat = rm.rotmat_from_axangle((0, 0, 1), np.radians(90)).dot(
+        rm.rotmat_from_axangle((0, 1, 0), np.radians(-90)))
     object_goal_homomat = rm.homomat_from_posrot(object_goal_pos, object_goal_rotmat)
     object_goal.set_pos(object_goal_pos)
     object_goal.set_rotmat(object_goal_rotmat)
-    # object_goal.attach_to(base)
-    # base.run()
-    rrtc = rrtc.RRTConnect(robot)
-    ppp = ppp.PickPlacePlanner(robot)
-
-    hand_name = "rgt_arm"
-    start_conf = robot.get_jnt_values(component_name)
-    # conf_list, jawwidth_list, objpose_list = \
-    #     ppp.gen_pick_and_place_motion(hnd_name=hand_name,
-    #                                   objcm=object,
-    #                                   grasp_info_list=grasp_info_list,
-    #                                   start_conf=start_conf,
-    #                                   end_conf=start_conf,
-    #                                   goal_homomat_list=[object_start_homomat, object_fixture_homomat],
-    #                                   approach_direction_list=[None, np.array([0, 0, -1])],
-    #                                   approach_distance_list=[.05] * 2,
-    #                                   depart_direction_list=[np.array([0, 0, 1]), None],
-    #                                   depart_distance_list=[.05] * 2)
-    conf_list, jawwidth_list, objpose_list = \
-        ppp.gen_pick_and_place_motion(hnd_name=hand_name,
-                                      objcm=object,
-                                      grasp_info_list=grasp_info_list,
-                                      start_conf=start_conf,
-                                      end_conf=start_conf,
-                                      goal_homomat_list=[object_start_homomat, object_fixture_homomat],
-                                      approach_direction_list=[None, np.array([0, 0, -1])],
-                                      approach_distance_list=[.05] * 2,
-                                      obstacle_list=slopeforcd_high,
-                                      depart_direction_list=[np.array([0, 0, 1]), None],
-                                      depart_distance_list=[.1] * 2)
+    object_goal.attach_to(base)
 
 
 
-
-    # conf_list, jawwidth_list, objpose_list = \
-    #     ppp.gen_pick_and_place_motion(hnd_name=hand_name,
-    #                                   objcm=object,
-    #                                   grasp_info_list=grasp_info_list,
-    #                                   start_conf=start_conf,
-    #                                   end_conf=start_conf,
-    #                                   goal_homomat_list=[object_fixture_corner_homomat, object_goal_homomat],
-    #                                   approach_direction_list=[None, np.array([0, 0, -1])],
-    #                                   approach_distance_list=[.1] * 2,
-    #                                   depart_direction_list=[np.array([0, 0, 1]), None],
-    #                                   obstacle_list=slopeforcd_high,
-    #                                   depart_distance_list=[.1, .1])
-    middle_conf_list = [conf_list[i] for i in range(len(conf_list)) if jawwidth_list[i] < 0.04]
-
-    robot.fk(hand_name, middle_conf_list[0])
-    robot.jaw_to(hand_name, 0.03)
-    robot_meshmodel = robot.gen_meshmodel()
-    robot_meshmodel.attach_to(base)
-    objb_copy = object.copy()
-    objb_copy.set_rgba([0, 191 / 255, 1, 1])
-    objb_copy.set_homomat(objpose_list[0])
-    objb_copy.attach_to(base)
-
-    robot.fk(hand_name, middle_conf_list[-1])
-    robot.jaw_to(hand_name, 0.03)
-    robot_meshmodel = robot.gen_meshmodel()
-    robot_meshmodel.attach_to(base)
-    objb_copy = object.copy()
-    objb_copy.set_rgba([0, 191 / 255, 1, 1])
-    objb_copy.set_homomat(objpose_list[-1])
-    objb_copy.attach_to(base)
-
-    for i in range(0,len(conf_list), 2):
-        robot.fk(hand_name, conf_list[i])
-        if jawwidth_list[i] <0.04:
-            robot.jaw_to(hand_name, jawwidth_list[i])
-            robot_meshmodel = robot.gen_meshmodel()
-            tcp = robot.get_gl_tcp(hand_name)
-            gm.gen_sphere(tcp[0], radius=0.005).attach_to(base)
-            # robot_meshmodel.attach_to(base)
-            # robot_attached_list.append(robot_meshmodel)
-            obj_pose = objpose_list[i]
-            objb_copy = object.copy()
-            objb_copy.set_rgba([0, 191 / 255, 1, 0.08])
-            objb_copy.set_homomat(obj_pose)
-            objb_copy.attach_to(base)
-        # object_attached_list.append(objb_copy)
     base.run()
+
 
     # print(len(conf_list), conf_list)
     # if conf_list is None:
