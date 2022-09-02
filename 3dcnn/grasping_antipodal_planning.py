@@ -6,27 +6,33 @@ import grasping.planning.antipodal as gpa
 import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
 import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq85
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
+import trimeshwraper as tw
 
 base = wd.World(cam_pos=[1, 1, 1],w=960,
                  h=540, lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
 # object
-name = 'Tortoise_800_tex'
+# name = 'Tortoise_800_tex'
+name = 'mug'
 # address = "3dcnnobj/"+name+".stl"
 
 # address = "3dcnnobj/"+name+".stl"
-address = "kit/"+name+".obj"
-object_tube = cm.CollisionModel(address)
+# address = "kit/"+name+".obj"
+address = "3dcnnobj/"
+mesh = tw.TrimeshHu(meshpath = address, name = name )
+m =mesh.outputTrimesh
+object = cm.CollisionModel(m)
 
 
-object_tube.set_rgba([.9, .75, .35, 1])
+object.set_rgba([.9, .75, .35, 1])
 # object_tube.set_scale((0.5,0.5,0.5))
-object_tube.attach_to(base)
+object.attach_to(base)
+# base.run()
 
 # hnd_s
 # gripper_s = rtq85.Robotiq85()
 gripper_s = rtqhe.RobotiqHE()
-grasp_info_list = gpa.plan_grasps(gripper_s, object_tube,
+grasp_info_list = gpa.plan_grasps(gripper_s, object,
                                   angle_between_contact_normals=math.radians(160),
                                   openning_direction='loc_x',
                                   rotation_interval=math.radians(50),

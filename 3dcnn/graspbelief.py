@@ -77,16 +77,16 @@ if __name__ == '__main__':
     #     gripper_s.grip_at_with_jcpose(jaw_center_pos, jaw_center_rotmat, jaw_width)
     #     gripper_s.gen_meshmodel(rgba=(0, 1, 0, 0.03)).attach_to(base)
 
-    # mesh.cpt_briefgrasp(observe_origin=(-0.9, 0, 0), target=base, gripper=gripper_s, grasp_info_list=grasp_info_list)
+    mesh.cpt_briefgrasp(observe_origin=(-0.9, 0, 0), target=base, gripper=gripper_s, grasp_info_list=grasp_info_list)
     # mesh.cpt_briefgrasp(observe_origin=(-0.9, 0, 0.9), target=base, gripper=gripper_s, grasp_info_list=grasp_info_list)
     # mesh.cpt_briefgrasp(observe_origin=(-0.9, 0.90, 0.9), target=base, gripper=gripper_s, grasp_info_list=grasp_info_list)
-    mesh.cpt_briefgrasp(observe_origin=(0.9, -0.90, 0.9), target=base, gripper=gripper_s,
-                        grasp_info_list=grasp_info_list)
+    # mesh.cpt_briefgrasp(observe_origin=(0.9, -0.90, 0.9), target=base, gripper=gripper_s,
+    #                     grasp_info_list=grasp_info_list)
     # mesh.export(this_dir, "box_vox")
     c = cm.CollisionModel(mesh.outputTrimesh)
     # c.set_scale((0.001, 0.001, 0.001))
     c.set_rgba((0, 1, 0, .11))
-    # c.attach_to(base)
+    c.attach_to(base)
 
 
 

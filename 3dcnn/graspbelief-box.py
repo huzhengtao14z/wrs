@@ -32,14 +32,14 @@ import vision.depth_camera.pcd_data_adapter as vdda
 if __name__ == '__main__':
     base = wd.World(cam_pos=[2.01557, 0.637317, 1.88133], w=960,
                     h=540, lookat_pos=[0, 0, 0])
-    # gm.gen_frame().attach_to(base)
+    gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
 
     # name = "mug"
     # name = "airplaneremesh"
-    name = "FruitDrink_800_tex"
+    # name = "FruitDrink_800_tex"
     # name = "armadillo"
-    # name = "mug"
+    name = "mug"
     mesh = tw.TrimeshHu("./3dcnnobj/", name+".stl")
     d = cm.CollisionModel(mesh.outputTrimesh)
     d.set_rgba((0.4,0.5,0,1))
@@ -50,8 +50,8 @@ if __name__ == '__main__':
     e = cm.CollisionModel(mesh2.outputTrimesh)
     e.set_rgba((0.4, 0.5, 0, 1))
     e.set_pos((0,0,0.081))
-    e.attach_to(base)
-    base.run()
+    # e.attach_to(base)
+    # base.run()
     # mesh = tw.TrimeshHu("./3dcnnobj/", name + ".obj")
 
     # icosphere = gm.gen_sphere(radius=200, rgba=[0, 0, 1, 0.1], subdivisions=2)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     hnd_rotmat = [grasp_info_list[i][4] for i in range(len(grasp_info_list))]
     gripper_s = rtqhe.RobotiqHE()
 
-    mesh.cpt_briefgrasp(observe_origin=(-1, +0.40, -1), target=base, gripper=gripper_s,
+    mesh.cpt_briefgrasp(observe_origin=(1, +0.40, -1), target=base, gripper=gripper_s,
                         grasp_info_list=grasp_info_list)
     # mesh.export(this_dir, "box_vox")
     c = cm.CollisionModel(mesh.outputTrimesh)

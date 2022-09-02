@@ -117,7 +117,7 @@ class TrimeshHu(object):
         return self.node_matrix
 
     def get_transform(self):
-        # print(self.tfmatrix)
+        print(self.tfmatrix)
         return self.tfmatrix
 
     def show_balls(self):
@@ -204,7 +204,7 @@ class TrimeshHu(object):
         direction_z_list  = []
         direction_x_list  = []
         for i, grasp_info in enumerate(grasp_info_list):
-            if i %5 == 0:
+            if i %1 == 0:
                 jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
                 gripper.grip_at_with_jcpose(jaw_center_pos, jaw_center_rotmat, jaw_width)
                 # if gripper.is_mesh_collided(objcm_list=partialmeshCKlist):
@@ -230,8 +230,8 @@ class TrimeshHu(object):
                     '''
                     # gripper.gen_meshmodel(rgba=(0, 0, 1, 0.3)).attach_to(base)
                     # gripper.gen_meshmodel().attach_to(base)
-                    gripper.gen_meshmodel(rgba=(0.3, 0.3, 0.3, 0.3)).attach_to(base)
-                    gm.gen_arrow(spos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, epos=jaw_center_pos+jaw_width * jaw_center_rotmat[:,0]/2, rgba=(0.1,0.1,0.1,0.01), thickness=0.002).attach_to(base)
+                    # gripper.gen_meshmodel(rgba=(0.3, 0.3, 0.3, 0.1)).attach_to(base)
+                    # gm.gen_arrow(spos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, epos=jaw_center_pos+jaw_width * jaw_center_rotmat[:,0]/2, rgba=(0.1,0.1,0.1,0.01), thickness=0.002).attach_to(base)
                     pass
                 else:
                     '''
@@ -247,7 +247,7 @@ class TrimeshHu(object):
                     gm.gen_arrow(spos=jaw_center_pos, epos=jaw_center_pos - jaw_width * jaw_center_rotmat[:, 2] / 2,
                                  thickness=0.002, rgba=(0, 1, 1, 0.6)).attach_to(base)
                     # gm.gen_arrow(spos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, epos=jaw_center_pos+jaw_width * jaw_center_rotmat[:,0]/2, rgba=(1,0,0,0.6), thickness=0.002).attach_to(base)
-                    gripper.gen_meshmodel(rgba=(1, 0, 0, 0.3)).attach_to(base)
+                    # gripper.gen_meshmodel(rgba=(1, 0, 0, 0.1)).attach_to(base)
                     pass
 
 
@@ -357,11 +357,11 @@ if __name__ == '__main__':
 
     # pcd_list = [pcd for pcd in pcd_list if pcd[2]>785]
     pcd = vdda.nparray_to_o3dpcd(np.asarray(n_pcd_list))
-    # o3d.visualization.draw_geometries([pcd])
+    o3d.visualization.draw_geometries([pcd])
     alpha = 8
     mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
     mmesh.compute_vertex_normals()
-    # o3d.visualization.draw_geometries([mmesh], mesh_show_back_face=True)
+    o3d.visualization.draw_geometries([mmesh], mesh_show_back_face=True)
     mmesh_trimesh = vdda.o3dmesh_to_trimesh(mmesh)
 
 
@@ -377,17 +377,22 @@ if __name__ == '__main__':
     base.run()
 
 
-    # pctrim = vdda.o3dmesh_to_trimesh(pcd)
-    radii = [0.005, 0.01, 0.02, 0.04]
-    rec_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
-    # objpdnp_raw.reparentTo(self._objpdnp)
-    a = gm.GeometricModel(pcd)
-    a.set_scale((0.001,0.001,0.001))
-    a.attach_to(base)
-    base.run()
+    # # pctrim = vdda.o3dmesh_to_trimesh(pcd)
+    # radii = [0.005, 0.01, 0.02, 0.04]
+    # rec_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
+    # # objpdnp_raw.reparentTo(self._objpdnp)
+    # a = gm.GeometricModel(pcd)
+    # a.set_scale((0.001,0.001,0.001))
+    # a.attach_to(base)
+    # base.run()
 
 
     mesh.meshTransform(rotaxis = np.array([0,0,1]), angle = np.radians(45), translation=np.array([0,0,0]))
+    # a = mesh.outputTrimesh
+    # c_a =cm.CollisionModel(a)
+    # c_a.attach_to(base)
+    # base.run()
+
     mesh.voxelization(.0045, hollow = True)
     mesh.get_node_matrix()
     mesh.get_transform()
@@ -398,7 +403,7 @@ if __name__ == '__main__':
     # c.set_scale((0.001, 0.001, 0.001))
     c.set_rgba((0,1,0,.11))
     c.attach_to(base)
-
+    # base.run()
 
     objNode = [None]
     voxelNode = [None]
