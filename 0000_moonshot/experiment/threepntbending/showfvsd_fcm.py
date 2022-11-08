@@ -38,10 +38,22 @@ if __name__ == "__main__":
 
 
 
-    fig = plt.figure(1, figsize=(16, 9))
-    ax = fig.add_subplot(111)
-    plt.xlim([0, 21])
+    # fig = plt.figure(1, figsize=(16, 9))
+    # ax = fig.add_subplot(111)
+    # plt.xlim([0, 21])
 
+    fig = plt.figure(figsize=(16, 9))
+    plt.subplots_adjust(left=0.25, right=0.95, top=0.95, bottom=0.21)
+    ax = plt.gca()
+    plt.xlim([0, 20])
+    plt.ylim([0, 35])
+    bwith = 2
+    ax.spines["bottom"].set_linewidth(bwith)
+    ax.spines['left'].set_linewidth(bwith)
+    ax.spines['top'].set_linewidth(bwith)
+    ax.spines['right'].set_linewidth(bwith)
+
+    plt.tick_params(axis='both', direction='in', length=6, width=2, labelsize=30, pad=15)
 
 
     def case(fvsd0, fvsd1, fvsd2, fvsd3, fvsd4, color, rate =1.0):
@@ -84,11 +96,11 @@ if __name__ == "__main__":
         ax.plot(x_secondhalf, y_average, color=color, linewidth=3)
         plt.fill_between(x_secondhalf, y_min, y_max, color=color, alpha=0.2)
 
-    case(fvsd0_fg_0, fvsd1_fg_0, fvsd2_fg_0, fvsd3_fg_0, fvsd4_fg_0, "red", rate = 6/7)
-    case(fvsd0_fg_25, fvsd1_fg_25, fvsd2_fg_25, fvsd3_fg_25, fvsd4_fg_25, "green")
-    case(fvsd0_fg_45, fvsd1_fg_45, fvsd2_fg_45, fvsd3_fg_45, fvsd4_fg_45, "navy")
-    case(fvsd0_fg_65, fvsd1_fg_65, fvsd2_fg_65, fvsd3_fg_65, fvsd4_fg_65, "gold")
-    case(fvsd0_fg_85, fvsd1_fg_85, fvsd2_fg_85, fvsd3_fg_85, fvsd4_fg_85, "deepskyblue")
+    case(fvsd0_fg_0, fvsd1_fg_0, fvsd2_fg_0, fvsd3_fg_0, fvsd4_fg_0, "red", rate = 6.5/5)
+    case(fvsd0_fg_25, fvsd1_fg_25, fvsd2_fg_25, fvsd3_fg_25, fvsd4_fg_25, "green", rate = 6.5/5)
+    case(fvsd0_fg_45, fvsd1_fg_45, fvsd2_fg_45, fvsd3_fg_45, fvsd4_fg_45, "navy", rate = 6.5/5)
+    case(fvsd0_fg_65, fvsd1_fg_65, fvsd2_fg_65, fvsd3_fg_65, fvsd4_fg_65, "gold", rate = 6.5/5)
+    case(fvsd0_fg_85, fvsd1_fg_85, fvsd2_fg_85, fvsd3_fg_85, fvsd4_fg_85, "deepskyblue", rate = 6.5/5)
 
 
 

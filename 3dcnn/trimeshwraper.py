@@ -171,6 +171,8 @@ class TrimeshHu(object):
 
         # partialmesh = self.triWantotri(gm.gen_box(extent=[self.voxel]*3, homomat = rm.homomat_from_posrot(hited_list[0])).objtrm)
         partialmesh_cklist = []
+        center = np.average(hited_list, axis = 0)
+
         for point in hited_list:
             if shape == "box":
                 element = cm.gen_box(extent=[self.voxel*1.2]*3, homomat = rm.homomat_from_posrot(point), rgba = [1, 0, 0, 0.1])
@@ -230,7 +232,9 @@ class TrimeshHu(object):
                     '''
                     # gripper.gen_meshmodel(rgba=(0, 0, 1, 0.3)).attach_to(base)
                     # gripper.gen_meshmodel().attach_to(base)
-                    gripper.gen_meshmodel(rgba=(0.3, 0.3, 0.3, 0.3)).attach_to(base)
+
+
+                    # gripper.gen_meshmodel(rgba=(0.3, 0.3, 0.3, 0.3)).attach_to(base)
                     gm.gen_arrow(spos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, epos=jaw_center_pos+jaw_width * jaw_center_rotmat[:,0]/2, rgba=(0.1,0.1,0.1,0.01), thickness=0.002).attach_to(base)
                     pass
                 else:
@@ -242,12 +246,15 @@ class TrimeshHu(object):
                     # gm.gen_sphere(pos=np.average(collideinfo[1],axis=0), radius=0.0051).attach_to(base)
 
                     # gm.gen_sphere(pos=jaw_center_pos, radius=0.003, rgba=((0, 191 / 255, 1, 0.5))).attach_to(base)
-                    gm.gen_box(extent=[self.blocksize]*3, homomat=rm.homomat_from_posrot(jaw_center_pos), rgba=((0, 191 / 255, 1, 0.5))).attach_to(base)
-                    # gm.gen_arrow(spos=jaw_center_pos, epos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, thickness=0.002,rgba=(1,0,1,0.6)).attach_to(base)
-                    gm.gen_arrow(spos=jaw_center_pos, epos=jaw_center_pos - jaw_width * jaw_center_rotmat[:, 2] / 2,
-                                 thickness=0.002, rgba=(0, 1, 1, 0.6)).attach_to(base)
-                    # gm.gen_arrow(spos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, epos=jaw_center_pos+jaw_width * jaw_center_rotmat[:,0]/2, rgba=(1,0,0,0.6), thickness=0.002).attach_to(base)
-                    gripper.gen_meshmodel(rgba=(1, 0, 0, 0.3)).attach_to(base)
+
+
+
+                    # gm.gen_box(extent=[self.blocksize]*3, homomat=rm.homomat_from_posrot(jaw_center_pos), rgba=((0, 191 / 255, 1, 0.5))).attach_to(base)
+                    # # gm.gen_arrow(spos=jaw_center_pos, epos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, thickness=0.002,rgba=(1,0,1,0.6)).attach_to(base)
+                    # gm.gen_arrow(spos=jaw_center_pos, epos=jaw_center_pos - jaw_width * jaw_center_rotmat[:, 2] / 2,
+                    #              thickness=0.002, rgba=(0, 1, 1, 0.6)).attach_to(base)
+                    # # gm.gen_arrow(spos=jaw_center_pos -jaw_width * jaw_center_rotmat[:, 0]/2, epos=jaw_center_pos+jaw_width * jaw_center_rotmat[:,0]/2, rgba=(1,0,0,0.6), thickness=0.002).attach_to(base)
+                    # gripper.gen_meshmodel(rgba=(1, 0, 0, 0.3)).attach_to(base)
                     pass
 
 

@@ -13,12 +13,12 @@ base = wd.World(cam_pos=[1, 1, 1],w=960,
 gm.gen_frame().attach_to(base)
 # object
 # name = 'Tortoise_800_tex'
-name = 'mug'
+name = 'CatLying_800_tex'
 # address = "3dcnnobj/"+name+".stl"
 
 # address = "3dcnnobj/"+name+".stl"
-# address = "kit/"+name+".obj"
-address = "3dcnnobj/"
+address = "kit/"+name+".obj"
+# address = "3dcnnobj/"
 mesh = tw.TrimeshHu(meshpath = address, name = name )
 m =mesh.outputTrimesh
 object = cm.CollisionModel(m)
@@ -33,12 +33,12 @@ object.attach_to(base)
 # gripper_s = rtq85.Robotiq85()
 gripper_s = rtqhe.RobotiqHE()
 grasp_info_list = gpa.plan_grasps(gripper_s, object,
-                                  angle_between_contact_normals=math.radians(160),
+                                  angle_between_contact_normals=math.radians(170),
                                   openning_direction='loc_x',
-                                  rotation_interval=math.radians(50),
-                                  max_samples=100, min_dist_between_sampled_contact_points=.0001,
+                                  rotation_interval=math.radians(20),
+                                  max_samples=100, min_dist_between_sampled_contact_points=.005,
                                   contact_offset=.002)
-gpa.write_pickle_file(name, grasp_info_list, './', 'grasp/hande.pickle')
+gpa.write_pickle_file(name, grasp_info_list, './', 'grasp/rbq85.pickle')
 for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gripper_s.grip_at_with_jcpose(jaw_center_pos, jaw_center_rotmat, jaw_width)

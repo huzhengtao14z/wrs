@@ -5,17 +5,18 @@ import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.grippers.gripper_interface as gp
 import modeling.geometric_model as gm
+import basis.data_adapter as da
 
 
 class RobotiqHE(gp.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiqhe', enable_cc=True):
-        super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiqhe', enable_cc=True, dynamic = False):
+        super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name, dynamic = dynamic)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
-        self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base_lft_finger')
+        self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base_lft_finger', dynamic = True)
         self.lft.jnts[1]['loc_pos'] = np.array([-.025, .0, .11])
         self.lft.jnts[1]['type'] = 'prismatic'
         self.lft.jnts[1]['motion_rng'] = [0, .03]
@@ -28,7 +29,7 @@ class RobotiqHE(gp.GripperInterface):
         self.lft.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger1_cvt.stl")
         self.lft.lnks[1]['rgba'] = [.5, .5, .5, 1]
         # - rgt
-        self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger')
+        self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger', dynamic = True)
         self.rgt.jnts[1]['loc_pos'] = np.array([.025, .0, .11])
         self.rgt.jnts[1]['type'] = 'prismatic'
         self.rgt.jnts[1]['motion_rng'] = [0, -.03]
@@ -59,6 +60,12 @@ class RobotiqHE(gp.GripperInterface):
             self.cc.set_active_cdlnks(activelist)
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
+        for cdelement in self.all_cdelements:
+            cdmesh = cdelement['collisionmodel'].copy()
+            self.cdmesh_collection.add_cm(cdmesh)
+
+    def enable_dynamic(self, toggle_cdprimit):
+
         for cdelement in self.all_cdelements:
             cdmesh = cdelement['collisionmodel'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
@@ -96,6 +103,10 @@ class RobotiqHE(gp.GripperInterface):
         if jawwidth > .06:
             raise ValueError("The jawwidth parameter is out of range!")
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
+
+    def dynamic_jaw(self):
+        self.rgt.lnks[1]['dynamicmodel'].set_linearVelocity(da.npv3_to_pdv3(np.array([0,10,0])))
+        self.lft.lnks[1]['dynamicmodel'].set_linearVelocity(da.npv3_to_pdv3(np.array([0, -10, 0])))
 
     def get_jawwidth(self):
         return 0.05-2*self.lft.jnts[1]['motion_val']
@@ -154,6 +165,32 @@ class RobotiqHE(gp.GripperInterface):
             gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(meshmodel)
         return meshmodel
 
+    def gen_dynamicmodel(self,base = None,
+                      toggle_tcpcs=False,
+                      toggle_jntscs=False,
+                      rgba=None,
+                      name='xarm_gripper_dynamicmodel'):
+        dynamicmodel = mc.ModelCollection(name=name)
+        self.coupling.gen_dynamicmodel(base = base, toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    rgba=rgba).attach_to(dynamicmodel)
+        self.lft.gen_dynamicmodel(base = base, toggle_tcpcs=False,
+                               toggle_jntscs=toggle_jntscs,
+                               rgba=rgba).attach_to(dynamicmodel)
+        self.rgt.gen_dynamicmodel(base = base, toggle_tcpcs=False,
+                               toggle_jntscs=toggle_jntscs,
+                               rgba=rgba).attach_to(dynamicmodel)
+        if toggle_tcpcs:
+            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            gm.gen_dashstick(spos=self.pos,
+                             epos=jaw_center_gl_pos,
+                             thickness=.0062,
+                             rgba=[.5,0,1,1],
+                             type="round").attach_to(dynamicmodel)
+            gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(dynamicmodel)
+        return dynamicmodel
+
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
@@ -164,14 +201,16 @@ if __name__ == '__main__':
     #     grpr = Robotiq85()
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
-    grpr = RobotiqHE(enable_cc=True)
-    grpr.jaw_to(.03)
+    grpr = RobotiqHE(enable_cc=True, dynamic=True)
+    # grpr.jaw_to(.03)
     print(grpr.get_jawwidth())
-    grpr.gen_meshmodel().attach_to(base)
+    # grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
-    grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
+    # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
-    grpr.show_cdmesh()
-    grpr.show_cdprimit()
+    # grpr.show_cdmesh()
+    # grpr.show_cdprimit()
+    bdm_grpr = grpr.gen_dynamicmodel(base)
+    base.attach_internal_update_obj(bdm_grpr)
 
     base.run()

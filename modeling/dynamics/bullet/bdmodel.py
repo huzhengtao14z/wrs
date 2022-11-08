@@ -5,6 +5,7 @@ import modeling.dynamics.bullet.bdbody as bdb
 from visualization.panda.world import ShowBase
 import basis.data_adapter as da
 import modeling.collision_model as cm
+import modeling.model_collection as mc
 import basis.robot_math as rm
 
 class BDModel(object):
@@ -71,6 +72,9 @@ class BDModel(object):
     def set_linearVelocity(self, v):
         self._bdb.setLinearVelocity(v)
 
+    def get_linearVelocity(self):
+        return self._bdb.getLinearVelocity()
+
     def set_angularVelocity(self, av):
         self._bdb.setAngularVelocity(av)
 
@@ -79,6 +83,9 @@ class BDModel(object):
 
     def set_linearDamping(self, d):
         self._bdb.setLinearDamping(d)
+
+    def get_linearDamping(self):
+        return self._bdb.getLinearDamping()
 
     def clear_rgba(self):
         self._gm.clear_rgba()
@@ -160,6 +167,11 @@ class BDModel(object):
             # for rendering to base.render
             self._gm.set_homomat(self.bdb.get_homomat()) # get updated with dynamics
             self._gm.attach_to(obj)
+        elif isinstance(obj, mc.ModelCollection):
+            obj.add_bdm(self)
+            obj.add_gm(self)
+            print("add to bdm list")
+
         else:
             raise ValueError("Must be ShowBase!")
 

@@ -3,6 +3,7 @@ import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
 import basis.robot_math as rm
+import modeling.dynamics.bullet.bdmodel as bdm
 
 
 class JLChainMesh(object):
@@ -13,7 +14,7 @@ class JLChainMesh(object):
     will change the attached model directly
     """
 
-    def __init__(self, jlobject, cdprimitive_type='box', cdmesh_type='triangles'):
+    def __init__(self, jlobject, cdprimitive_type='box', cdmesh_type='triangles', dynamic = True):
         """
         author: weiwei
         date: 20200331
@@ -26,8 +27,12 @@ class JLChainMesh(object):
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'],
                                                                              cdprimit_type=cdprimitive_type,
                                                                              cdmesh_type=cdmesh_type)
-                self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
 
+                self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
+                self.jlobject.lnks[id]['dynamicmodel'] = bdm.BDModel(self.jlobject.lnks[id]['meshfile'], mass=0,
+                                                                     dynamic=True,
+                                                                     type="convex")
+                self.jlobject.lnks[id]['dynamicmodel'].set_scale(self.jlobject.lnks[id]['scale'])
     def gen_meshmodel(self,
                       tcp_jntid=None,
                       tcp_loc_pos=None,
@@ -46,6 +51,41 @@ class JLChainMesh(object):
                 this_rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
                 this_collisionmodel.set_rgba(this_rgba)
                 this_collisionmodel.attach_to(mm_collection)
+        # tool center coord
+        if toggle_tcpcs:
+            self._toggle_tcpcs(mm_collection,
+                               tcp_jntid,
+                               tcp_loc_pos,
+                               tcp_loc_rotmat,
+                               tcpic_rgba=np.array([.5, 0, 1, 1]), tcpic_thickness=.0062)
+        # toggle all coord
+        if toggle_jntscs:
+            alpha = 1 if rgba == None else rgba[3]
+            self._toggle_jntcs(mm_collection,
+                               jntcs_thickness=.0062,
+                               alpha=alpha)
+        return mm_collection
+
+    def gen_dynamicmodel(self, base = None,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=True,
+                      toggle_jntscs=False,
+                      name='robot_mesh',
+                      rgba=None):
+        mm_collection = mc.ModelCollection(name=name)
+        for id in range(self.jlobject.ndof + 1):
+            if self.jlobject.lnks[id]['dynamicmodel'] is not None:
+                this_collisionmodel = self.jlobject.lnks[id]['dynamicmodel'].copy()
+                pos = self.jlobject.lnks[id]['gl_pos']
+                rotmat = self.jlobject.lnks[id]['gl_rotmat']
+                this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
+                this_rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
+                this_collisionmodel.set_rgba(this_rgba)
+                this_collisionmodel.attach_to(mm_collection)
+                base.attach_internal_update_obj(this_collisionmodel)
+                print("dynamic model generated")
         # tool center coord
         if toggle_tcpcs:
             self._toggle_tcpcs(mm_collection,

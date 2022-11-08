@@ -305,7 +305,7 @@ class Element(object):
 
         this_dir, this_filename = os.path.split(__file__)
         # file = f"{this_dir}/space_boolean/{self.id}-"
-        file = f"{this_dir}/41-41/{self.id}-"
+        file = f"{this_dir}/37-37-10/{self.id}-"
 
         t_c1_objtrm.export(f"{file}t_c1.stl")
         t_c2_objtrm.export(f"{file}t_c2.stl")
@@ -454,10 +454,10 @@ if __name__ == '__main__':
     for model in cut_list:
         model.attach_to(base)
     grid = Grid(np.array(matrix), interval)
-    node = Node(grid, height=0.006, origin_offset=0.001)
+    node = Node(grid, height=0.006, origin_offset=0.0011)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list, support = True)
+        element = Element(matrix_infos[key], radius=0.00072, id = key, cut = cut_list, support = False)
         # element.get_stl()
 
     def update(textNode, task):

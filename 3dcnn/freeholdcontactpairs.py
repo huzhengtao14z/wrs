@@ -7,6 +7,7 @@ from direct.gui.OnscreenText import OnscreenText
 import visualization.panda.world as wd
 import numpy as np
 import copy
+import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
 import modeling.geometric_model as gm
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletTriangleMesh
@@ -31,10 +32,11 @@ import hufunc
 import random
 import basis.data_adapter as da
 import basis.robot_math as rm
+import trimesh as trio
 
 class FreeholdContactpairs(object):
 
-    def __init__(self, objpath, faceangle=.90, segangle=.90, refine1min=2, refine1max=30,
+    def __init__(self, objpath, faceangle=.97, segangle=.97, refine1min=2, refine1max=30,
                  refine2radius=10, verticalthreshold=.995, useoverlap=True):
         """
         :param objpath: path of the object
@@ -51,7 +53,7 @@ class FreeholdContactpairs(object):
         """
 
         self.objcm = cm.CollisionModel(initor=objpath, name=os.path.splitext(os.path.basename(objpath))[0])
-        # self.objcm.set_scale([0.001, 0.001, 0.001])
+        self.objcm.set_scale([0.001, 0.001, 0.001])
         self.objtrimesh = self.objcm.objtrm  #trimesh the STL files
         self.com = self.objtrimesh.center_mass
         # print("check faces","there are",len(self.objtrimesh.faces),self.objtrimesh.faces)
@@ -490,30 +492,90 @@ if __name__=='__main__':
     #     scale=0.1,
     #     fg=(1., 0, 0, 1),
     #     align=TextNode.ALeft, mayChange=1)
-
+    # gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
-    objpath = os.path.join(this_dir, "kit", "Tortoise_800_tex.obj")
+
+
+    objpath = os.path.join(this_dir, "objects", "rightangle.STL")
     objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
-    freehold = FreeholdContactpairs(objpath)
-    freehold.getFacetsCenter()
-    freehold.planHoldpairs()
-    freehold.getFacetsArea()
-    freehold.getHoldingpairSptPnt()
-    freehold.getRotMat()
-    freehold.getplacementRotMat()
 
-    freehold.showbaseframe()
-    freehold.showlargeFacets()
-    # freehold.showallFaces()
+    fingerpadpath = os.path.join(this_dir, "objects", "fingerpad.STL")
+    fingerpadpath = fingerpadpath.replace('\\', '/')
+    fingerpad = cm.CollisionModel(fingerpadpath)
+    fingerpad.set_scale((0.1, 0.1, 0.1))
+    obj = cm.CollisionModel(objpath)
+    obj.set_rgba([1, 1, 0, 0.8])
+    obj.set_scale([0.001, 0.001, 0.001])
+    obj.attach_to(base)
+    edge = obj.objtrm.edges_unique
+    gripper_s = rtqhe.RobotiqHE()
+
+    # gripper_s.gen_meshmodel().attach_to(base)
+    rot1 = rm.rotmat_from_axangle((0,1,0), np.pi/2)
+    homo1 = rm.homomat_from_posrot(rot = rot1)
+    gripper_s.grip_at_with_jcpose(gl_jaw_center_pos=(0,0.05,0.0150),gl_jaw_center_rotmat=rot1, jaw_width=0.050)
+    grippermesh = gripper_s.gen_meshmodel()
+    grippermesh.attach_to(base)
+    vertices = obj.objtrm.vertices
+    for i in range(len(edge)):
+        if i == 2:
+            continue
+        elif i ==6:
+            continue
+        gm.gen_stick(vertices[edge[i][1]], vertices[edge[i][0]]).attach_to(base)
+    facet = obj.objtrm.facets_boundary
+    # print(edge)
+    base.run()
+    normal = obj.objtrm.face_normals
+    normal[4] = normal[4] *(-1)
+    normal[5] = normal[5] * (-1)
+    # print(normal)
+    sample_pnt, sample_fid = obj.objtrm.sample_surface(50, radius=None, toggle_faceid=True)
+
+
+    for i, item in enumerate(sample_pnt):
+        # print(sample_fid[i])
+        if sample_fid[i] == 3:
+            continue
+        surfacenormal = normal[sample_fid[i]]
+        # if sample_fid[i] == 0 or 1:
+        #     surfacenormal = -surfacenormal
+        # if sample_fid[i] ==5:
+        #     surfacenormal = -surfacenormal
+        gm.gen_sphere(item, 0.001).attach_to(base)
+        gm.gen_arrow(item, item - (0.04 * surfacenormal), thickness=0.002, rgba=(1, 0, 0, 1)).attach_to(base)
+        pos = item - (0.01 * surfacenormal)
+        sample_z = rm.rotmat_from_axangle((0, 0, 1), random.random() * np.pi)
+        rot = rm.rotmat_between_vectors(np.array([0, 0, 1]), surfacenormal)
+        sample_z_homo = rm.homomat_from_posrot([0, 0, 0], sample_z)
+        grp_homo = np.dot(rm.homomat_from_posrot(pos, rot), sample_z_homo)
+        fingerpad_sam = copy.deepcopy(fingerpad)
+        fingerpad_sam.set_homomat(grp_homo)
+        fingerpad_sam.set_rgba((0, 1, 0, 0.2))
+        fingerpad_sam.attach_to(base)
+
+
+
+    # freehold = FreeholdContactpairs(objpath)
+    # freehold.getFacetsCenter()
+    # freehold.planHoldpairs()
+    # freehold.getFacetsArea()
+    # freehold.getHoldingpairSptPnt()
+    # freehold.getRotMat()
+    # freehold.getplacementRotMat()
+    #
+    # freehold.showbaseframe()
+    # freehold.showlargeFacets()
+    # # freehold.showallFaces()
     # freehold.showallNormal()
-    freehold.showsingleNormal(num = 1)
-    # freehold.showSptAxis(num = 1)
-    # freehold.showplanedfacetvertices(num =1)
-
-    # checkobj = cm.CollisionModel(objpath)
-    # checkobj.set_scale((0.001,0.001,0.001))
-    # checkobj.set_homomat(da.pdmat4_to_npmat4(freehold.pRotMat[3]))
-    # checkobj.attach_to(base)
+    # # freehold.showsingleNormal(num = 1)
+    # # freehold.showSptAxis(num = 1)
+    # # freehold.showplanedfacetvertices(num =1)
+    #
+    # # checkobj = cm.CollisionModel(objpath)
+    # # checkobj.set_scale((0.001,0.001,0.001))
+    # # checkobj.set_homomat(da.pdmat4_to_npmat4(freehold.pRotMat[3]))
+    # # checkobj.attach_to(base)
 
     def update(textNode, task):
         if textNode[0] is not None:

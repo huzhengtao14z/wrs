@@ -37,12 +37,12 @@ if __name__ == '__main__':
 
     # name = "mug"
     # name = "airplaneremesh"
-    # name = "FruitDrink_800_tex"
+    name = "CoughDropsBerries_800_tex"
     # name = "armadillo"
-    name = "mug"
-    mesh = tw.TrimeshHu("./3dcnnobj/", name+".stl")
+    # name = "mug"
+    mesh = tw.TrimeshHu("./kit/", name+".obj")
     d = cm.CollisionModel(mesh.outputTrimesh)
-    d.set_rgba((0.4,0.5,0,1))
+    d.set_rgba((0.4,0.5,0,0.4))
     d.attach_to(base)
 
     name2 = 'CatLying_800_tex'
@@ -60,7 +60,9 @@ if __name__ == '__main__':
 
     blocksize = mesh.get_blocksize
     extents = [blocksize*50] * 3
-    gm.gen_frame_box(extents, mesh.boxhomo).attach_to(base)
+    # a = rm.homomat_from_posrot(np.array([ 0.00375543,  0.041199  , -0.00062423]))
+    a = np.eye(4)
+    # gm.gen_frame_box(extents, np.dot(a, mesh.boxhomo)).attach_to(base)
     mesh.meshTransform(rotaxis=np.array([0, 0, 1]), angle=np.radians(0), translation=np.array([0, 0, 0]))
     # mesh.voxelization(0.0015, hollow=True) #"muster"
     # mesh.voxelization(0.001, hollow=True) #"bunnysim04"
@@ -78,8 +80,14 @@ if __name__ == '__main__':
     grasp_info_list = gpa.load_pickle_file(name, './', 'grasp/hande.pickle')
     hnd_rotmat = [grasp_info_list[i][4] for i in range(len(grasp_info_list))]
     gripper_s = rtqhe.RobotiqHE()
+    t = rm.rotmat_from_axangle([0,0,1], np.deg2rad(90))
+    t2 = rm.rotmat_from_axangle([1, 0, 0], np.deg2rad(10))
 
-    mesh.cpt_briefgrasp(observe_origin=(1, +0.40, -1), target=base, gripper=gripper_s,
+    t = np.dot(t2,t)
+
+    gripper_s.grip_at_with_jcpose(gl_jaw_center_rotmat=t,jaw_width = 0.050, gl_jaw_center_pos=[0,0.01,0.002])
+    gripper_s.gen_meshmodel().attach_to(base)
+    mesh.cpt_briefgrasp(observe_origin=(0, +0.40, 0), target=base, gripper=gripper_s,
                         grasp_info_list=grasp_info_list)
     # mesh.export(this_dir, "box_vox")
     c = cm.CollisionModel(mesh.outputTrimesh)

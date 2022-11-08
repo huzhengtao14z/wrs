@@ -36,13 +36,17 @@ if __name__ == "__main__":
     fvsd3_fg_85 = pickle.load(open("f_g_85_20_7.pickle", "rb"))
     fvsd4_fg_85 = pickle.load(open("f_g_85_20_8.pickle", "rb"))
 
-
-
-    fig = plt.figure(1, figsize=(16, 9))
-    ax = fig.add_subplot(111)
-    plt.xlim([0, 21])
-
-
+    fig = plt.figure(figsize=(16, 9))
+    plt.subplots_adjust(left=0.25, right=0.95, top=0.95, bottom=0.21)
+    ax = plt.gca()
+    plt.xlim([0, 20])
+    plt.ylim([0, 35])
+    bwith = 2
+    ax.spines["bottom"].set_linewidth(bwith)
+    ax.spines['left'].set_linewidth(bwith)
+    ax.spines['top'].set_linewidth(bwith)
+    ax.spines['right'].set_linewidth(bwith)
+    plt.tick_params(axis='both', direction='in', length=6, width=2, labelsize=30, pad=15)
 
     def case(fvsd0, fvsd1, fvsd2, fvsd3, fvsd4, color, rate =1.0):
         x = [item[0] for item in fvsd0]

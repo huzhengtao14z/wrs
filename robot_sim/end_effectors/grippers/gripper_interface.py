@@ -8,14 +8,14 @@ import robot_sim._kinematics.collision_checker as cc
 
 class GripperInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='yumi_gripper', dynamic = False):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
         self.cdmesh_type = cdmesh_type # aabb, convexhull, or triangles
         # joints
         # - coupling - No coupling by default
-        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
+        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling', dynamic = dynamic)
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
         self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # toggle on the following part to assign an explicit mesh model to a coupling

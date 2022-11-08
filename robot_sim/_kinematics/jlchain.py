@@ -22,7 +22,8 @@ class JLChain(object):
                  homeconf=np.zeros(6),
                  name='jlchain',
                  cdprimitive_type='box',
-                 cdmesh_type='triangles'):
+                 cdmesh_type='triangles',
+                 dynamic = False):
         """
         initialize a manipulator
         naming rules
@@ -54,7 +55,7 @@ class JLChain(object):
         # mesh generator
         self.cdprimitive_type = cdprimitive_type
         self.cdmesh_type = cdmesh_type
-        self._mt = jlm.JLChainMesh(self, cdprimitive_type=cdprimitive_type, cdmesh_type=cdmesh_type)  # t = tool
+        self._mt = jlm.JLChainMesh(self, cdprimitive_type=cdprimitive_type, cdmesh_type=cdmesh_type, dynamic = dynamic)  # t = tool
         self._ikt = jlik.JLChainIK(self)  # t = tool
 
     def _init_jlchain(self):
@@ -80,6 +81,7 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
+            lnks[id]['dynamicmodel'] = None
             lnks[id]['cdprimit_childid'] = -1  # id of the CollisionChecker.np.Child
             lnks[id]['scale'] = [1, 1, 1]  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
@@ -405,6 +407,21 @@ class JLChain(object):
                       rgba=None,
                       name='jlcmesh'):
         return self._mt.gen_meshmodel(tcp_jntid=tcp_jntid,
+                                      tcp_loc_pos=tcp_loc_pos,
+                                      tcp_loc_rotmat=tcp_loc_rotmat,
+                                      toggle_tcpcs=toggle_tcpcs,
+                                      toggle_jntscs=toggle_jntscs,
+                                      name=name, rgba=rgba)
+
+    def gen_dynamicmodel(self, base = None,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=True,
+                      toggle_jntscs=False,
+                      rgba=None,
+                      name='jlcmesh'):
+        return self._mt.gen_dynamicmodel(base = base, tcp_jntid=tcp_jntid,
                                       tcp_loc_pos=tcp_loc_pos,
                                       tcp_loc_rotmat=tcp_loc_rotmat,
                                       toggle_tcpcs=toggle_tcpcs,

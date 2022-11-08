@@ -5,6 +5,7 @@ import visualization.panda.inputmanager as im
 import visualization.panda.filter as flt
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletDebugNode
+
 import os
 import math
 import time
@@ -132,6 +133,9 @@ class World(ShowBase, object):
         taskMgr.add(self._external_update, "external_update", appendTask=True)
         # for stationary models
         self._noupdate_model_list = []
+
+        #constraints
+
 
     def _interaction_update(self, task):
         # reset aspect ratio
