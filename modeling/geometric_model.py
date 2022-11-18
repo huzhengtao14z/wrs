@@ -798,6 +798,51 @@ def gen_torus(axis=np.array([1, 0, 0]),
     torus_sgm.set_rgba(rgba=rgba)
     return torus_sgm
 
+def gen_curveline(pseq, r, section=5,  toggledebug=False):
+    def get_rotseq_by_pseq(pseq):
+        rotseq = []
+        pre_n = None
+        for i in range(1, len(pseq) - 1):
+            v1 = pseq[i - 1] - pseq[i]
+            v2 = pseq[i] - pseq[i + 1]
+            n = np.cross(rm.unit_vector(v1), rm.unit_vector(v2))
+            if pre_n is not None:
+                if rm.angle_between_vectors(n, pre_n) > np.pi / 2:
+                    n = -n
+            x = np.cross(v1, n)
+            rot = np.asarray([rm.unit_vector(x), rm.unit_vector(v1), rm.unit_vector(n)]).T
+            rotseq.append(rot)
+            pre_n = n
+        rotseq = [rotseq[0]] + rotseq + [rotseq[-1]]
+        return rotseq
+
+    rotseq = get_rotseq_by_pseq(pseq)
+    gen_sphere(pseq[0], radius=0.0002, rgba=[0, 1, 0, 1]).attach_to(base)
+    return GeometricModel(trihelper.gen_curveline(pseq, rotseq, r, section, toggledebug))
+
+def gen_ellipse(center, points, r, section, toggledebug=False):
+    a = np.linalg.norm(points[0]-center)
+    b = np.linalg.norm(points[1]-center)
+    import humath as hm
+    surface = hm.getsurfacefrom3pnt(points[:3])
+    normal = np.asarray(surface[:3])
+    rotmat = rm.rotmat_between_vectors(np.array([0,0,1]), normal)
+    pos = center
+    homomat = rm.homomat_from_posrot(pos, rotmat)
+    def ellipse_curve(a = 0.01, b=0.02, homomat = np.eye(4)):
+        disc = 50
+        theta_list = np.linspace(0,2*np.pi*(disc+1)/disc,disc+1)
+        xy_list = []
+        for theta in theta_list:
+            r = (a*b)/(np.sqrt((b*b*np.cos(theta)*np.cos(theta))+(a*a*np.sin(theta)*np.sin(theta))))
+            coordinat = rm.homomat_transform_points(homomat,np.array([r*np.cos(theta),r*np.sin(theta),0]))
+            xy_list.append(coordinat)
+        return xy_list
+    curve = ellipse_curve(a, b, homomat)
+
+    return gen_curveline(curve, r, section=section, toggledebug=False)
+
+
 
 def gen_dashtorus(axis=np.array([1, 0, 0]),
                   portion=.5,
@@ -977,6 +1022,7 @@ def gen_surface(surface_callback, rng, granularity=.01):
     surface_trm = trihelper.gen_surface(surface_callback, rng, granularity)
     surface_gm = GeometricModel(surface_trm, btwosided=True)
     return surface_gm
+
 
 
 if __name__ == "__main__":

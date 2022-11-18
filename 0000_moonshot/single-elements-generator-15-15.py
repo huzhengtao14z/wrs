@@ -371,10 +371,10 @@ if __name__ == '__main__':
     # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 27
-    wid_num = 27
-    # len_num =9
-    # wid_num = 9
+    # len_num = 27
+    # wid_num = 27
+    len_num =9
+    wid_num = 9
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
     # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
     #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],

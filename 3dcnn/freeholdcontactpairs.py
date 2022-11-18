@@ -492,11 +492,12 @@ if __name__=='__main__':
     #     scale=0.1,
     #     fg=(1., 0, 0, 1),
     #     align=TextNode.ALeft, mayChange=1)
-    # gm.gen_frame().attach_to(base)
+    gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
 
 
-    objpath = os.path.join(this_dir, "objects", "rightangle.STL")
+    # objpath = os.path.join(this_dir, "objects", "rightangle.STL")
+    objpath = os.path.join(this_dir,  "partial_bunny.stl")
     objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
 
     fingerpadpath = os.path.join(this_dir, "objects", "fingerpad.STL")
@@ -505,24 +506,24 @@ if __name__=='__main__':
     fingerpad.set_scale((0.1, 0.1, 0.1))
     obj = cm.CollisionModel(objpath)
     obj.set_rgba([1, 1, 0, 0.8])
-    obj.set_scale([0.001, 0.001, 0.001])
+    # obj.set_scale([0.001, 0.001, 0.001])
     obj.attach_to(base)
     edge = obj.objtrm.edges_unique
     gripper_s = rtqhe.RobotiqHE()
-
+    # base.run()
     # gripper_s.gen_meshmodel().attach_to(base)
     rot1 = rm.rotmat_from_axangle((0,1,0), np.pi/2)
     homo1 = rm.homomat_from_posrot(rot = rot1)
     gripper_s.grip_at_with_jcpose(gl_jaw_center_pos=(0,0.05,0.0150),gl_jaw_center_rotmat=rot1, jaw_width=0.050)
     grippermesh = gripper_s.gen_meshmodel()
-    grippermesh.attach_to(base)
+    # grippermesh.attach_to(base)
     vertices = obj.objtrm.vertices
-    for i in range(len(edge)):
-        if i == 2:
-            continue
-        elif i ==6:
-            continue
-        gm.gen_stick(vertices[edge[i][1]], vertices[edge[i][0]]).attach_to(base)
+    # for i in range(len(edge)):
+    #     if i == 2:
+    #         continue
+    #     elif i ==6:
+    #         continue
+    #     gm.gen_stick(vertices[edge[i][1]], vertices[edge[i][0]]).attach_to(base)
     facet = obj.objtrm.facets_boundary
     # print(edge)
     base.run()

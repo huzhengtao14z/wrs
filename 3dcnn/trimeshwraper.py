@@ -165,11 +165,12 @@ class TrimeshHu(object):
 
         pcd = vdda.nparray_to_o3dpcd(np.asarray(hited_list))
         cl, ind = pcd.remove_radius_outlier(nb_points=15, radius=self.blocksize*3)
-        # display_inlier_outlier(pcd, ind)
+        display_inlier_outlier(pcd, ind)
         hited_list = vdda.o3dpcd_to_parray(cl)
 
 
-        # partialmesh = self.triWantotri(gm.gen_box(extent=[self.voxel]*3, homomat = rm.homomat_from_posrot(hited_list[0])).objtrm)
+        partialmesh = self.triWantotri(gm.gen_box(extent=[self.voxel]*3, homomat = rm.homomat_from_posrot(hited_list[0])).objtrm)
+        partialmesh.export("partial_bunny.stl")
         partialmesh_cklist = []
         center = np.average(hited_list, axis = 0)
 
@@ -352,6 +353,7 @@ if __name__ == '__main__':
 
     import open3d as o3d
     import vision.depth_camera.pcd_data_adapter as vdda
+    import freeholdcontactpairs as f
     calib_mat = pickle.load(open("phoxi_calibmat.pkl", "rb"))
     pcd_list = pickle.load(open("pc/bunnypcd.pkl", "rb"))[2]
 
@@ -364,13 +366,25 @@ if __name__ == '__main__':
 
     # pcd_list = [pcd for pcd in pcd_list if pcd[2]>785]
     pcd = vdda.nparray_to_o3dpcd(np.asarray(n_pcd_list))
-    # o3d.visualization.draw_geometries([pcd])
-    alpha = 8
+    pcd, ind = pcd.remove_radius_outlier(nb_points=15, radius=5)
+    o3d.visualization.draw_geometries([pcd])
+    alpha = 20
     mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+    radii = np.array([0.005, 0.01, 0.02, 0.04])
+    # mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
     mmesh.compute_vertex_normals()
-    # o3d.visualization.draw_geometries([mmesh], mesh_show_back_face=True)
+    o3d.visualization.draw_geometries([mmesh], mesh_show_back_face=True)
     mmesh_trimesh = vdda.o3dmesh_to_trimesh(mmesh)
+    p_obj = cm.CollisionModel(mmesh_trimesh)
+    p_obj.set_scale((0.001,0.001,0.001))
+    p_obj.set_rgba((0.5, 0.5, 0.5, 1))
+    p_obj.attach_to(base)
 
+    mmesh_trimesh.export("partial_bunny.stl")
+    partial = f.FreeholdContactpairs("partial_bunny.stl")
+    partial.showallFaces()
+
+    base.run()
 
 
     mmesh_hu = TrimeshHu(mesh = mmesh_trimesh)
@@ -386,6 +400,7 @@ if __name__ == '__main__':
 
     # pctrim = vdda.o3dmesh_to_trimesh(pcd)
     radii = [0.005, 0.01, 0.02, 0.04]
+    cl, ind = pcd.remove_radius_outlier(nb_points=15, radius=0.003)
     rec_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
     # objpdnp_raw.reparentTo(self._objpdnp)
     a = gm.GeometricModel(pcd)

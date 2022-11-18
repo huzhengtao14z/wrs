@@ -190,6 +190,25 @@ def getsurfaceequation(normal,pnt):
     surfaceequation = [normal[0],normal[1],normal[2],D]
     return surfaceequation
 
+def getsurfacefrom3pnt(p):
+    '''
+    generate a surface equation using 3 points
+    :param p: a list of points
+    :return: a vector shows the surface equation Ax+By+Cz+D=0
+    A = surfaceequation[0];B = surfaceequation[1]L;C = surfaceequation[2];D = surfaceequation[3]
+    '''
+
+    a = ((p[1][1] - p[0][1]) * (p[2][2] - p[0][2]) - (p[1][2] - p[0][2]) * (p[2][1] - p[0][1]))
+
+    b = ((p[1][2] - p[0][2]) * (p[2][0] - p[0][0]) - (p[1][0] - p[0][0]) * (p[2][2] - p[0][2]))
+
+    c = ((p[1][0] - p[0][0]) * (p[2][1] - p[0][1]) - (p[1][1] - p[0][1]) * (p[2][0] - p[0][0]))
+
+    d = (0 - (a * p[0][0] + b * p[0][1] + c * p[0][2]))
+
+    surfaceequation = [a,b,c,d]
+    return surfaceequation
+
 def getpointfromonesurface(surfaceequation,x,y):
     '''
     get coordinate of a point with given X, Y and surface equation.

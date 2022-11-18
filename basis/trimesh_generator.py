@@ -354,6 +354,37 @@ def gen_torus(axis=np.array([1, 0, 0]),
     else:
         return trm.Trimesh()
 
+def gen_curveline(pseq, rotseq, r, section=5, toggledebug=False):
+    vertices = []
+    faces = []
+    for i, p in enumerate(pseq):
+        for a in np.linspace(-np.pi, np.pi, section + 1):
+            vertices.append(p + rotseq[i][:, 0] * r * np.sin(a)
+                            + rotseq[i][:, 2] * r * np.cos(a))
+    vertices.append(pseq[0])
+    vertices.append(pseq[-1])
+    for i in range((section + 1) * (len(pseq) - 1)):
+        if i % (section + 1) == 0:
+            for v in range(i, i + section):
+                faces.extend([[v, v + section + 1, v + section + 2],
+                              [v, v + section + 2, v + 1]])
+    for i in range(0, section):
+        faces.extend([[i,len(vertices)-2, i+1]])
+    for i in range(len(vertices)-section-3, len(vertices)-3):
+        faces.extend([[i, len(vertices) - 1, i + 1]])
+
+    if toggledebug:
+        # show_pseq(pseq, rgba=[1, 0, 0, 1], radius=0.0002)
+        # show_pseq(vertices, rgba=[1, 1, 0, 1], radius=0.0002)
+        tmp_trm = trm.Trimesh(vertices=np.asarray(vertices), faces=np.asarray(faces))
+        tmp_cm = gm.GeometricModel(initor=tmp_trm, btwosided=True)
+        tmp_cm.set_rgba((.7, .7, 0, .7))
+        tmp_cm.attach_to(base)
+
+
+    objtrm = trm.Trimesh(vertices=np.asarray(vertices), faces=np.asarray(faces))
+    objtrm.fix_normals()
+    return objtrm
 
 def gen_dashtorus(axis=np.array([1, 0, 0]),
                   portion=.5,
