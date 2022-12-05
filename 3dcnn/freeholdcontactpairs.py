@@ -526,7 +526,6 @@ if __name__=='__main__':
     #     gm.gen_stick(vertices[edge[i][1]], vertices[edge[i][0]]).attach_to(base)
     facet = obj.objtrm.facets_boundary
     # print(edge)
-    base.run()
     normal = obj.objtrm.face_normals
     normal[4] = normal[4] *(-1)
     normal[5] = normal[5] * (-1)

@@ -357,23 +357,29 @@ if __name__ == '__main__':
 
     # pcd_list = [pcd for pcd in pcd_list if pcd[2]>785]
     pcd = vdda.nparray_to_o3dpcd(np.asarray(n_pcd_list))
+    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=10, max_nn=30))
+    pcd.voxel_down_sample(voxel_size=5)
     o3d.visualization.draw_geometries([pcd])
-    alpha = 8
-    mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+    # alpha = 8
+    # mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+    radii = [10, 10, 10, 10]
+    mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
+    o3d.visualization.draw_geometries([pcd, mmesh])
+
     mmesh.compute_vertex_normals()
     o3d.visualization.draw_geometries([mmesh], mesh_show_back_face=True)
     mmesh_trimesh = vdda.o3dmesh_to_trimesh(mmesh)
 
+    mmesh_trimesh.export("test.stl")
 
-
-    mmesh_hu = TrimeshHu(mesh = mmesh_trimesh)
-    mmesh_hu.voxelization(3, hollow=True)
-    mmesh_hu.get_node_matrix()
-    mmesh_hu.get_transform()
-    t = cm.CollisionModel(mmesh_hu.outputTrimesh)
-    t.set_scale((0.001, 0.001, 0.001))
-    t.set_rgba((0, 1, 0, .11))
-    t.attach_to(base)
+    # mmesh_hu = TrimeshHu(mesh = mmesh_trimesh)
+    # mmesh_hu.voxelization(3, hollow=True)
+    # mmesh_hu.get_node_matrix()
+    # mmesh_hu.get_transform()
+    # t = cm.CollisionModel(mmesh_hu.outputTrimesh)
+    # t.set_scale((0.001, 0.001, 0.001))
+    # t.set_rgba((0, 1, 0, .11))
+    # t.attach_to(base)
     base.run()
 
 

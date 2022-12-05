@@ -305,7 +305,7 @@ class Element(object):
 
         this_dir, this_filename = os.path.split(__file__)
         # file = f"{this_dir}/space_boolean/{self.id}-"
-        file = f"{this_dir}/5-5/{self.id}-"
+        file = f"{this_dir}/41-41/{self.id}-"
 
         t_c1_objtrm.export(f"{file}t_c1.stl")
         t_c2_objtrm.export(f"{file}t_c2.stl")
@@ -373,8 +373,8 @@ if __name__ == '__main__':
     interval = 0.006
     # len_num = 27
     # wid_num = 27
-    len_num =9
-    wid_num = 9
+    len_num =45
+    wid_num =45
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
     # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
     #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],

@@ -500,8 +500,8 @@ if __name__ == '__main__':
     # gm.gen_ellipse(center,points,0.001,15).attach_to(base)
 
     interval = 0.005
-    len_num = 27
-    wid_num = 27
+    len_num = 39
+    wid_num = 39
     # len_num =9
     # wid_num = 9
     n = 32
@@ -515,7 +515,7 @@ if __name__ == '__main__':
     node = Node(grid, height=0.003, origin_offset=0.0008)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], dict="3-3",radius=0.0006, id = key, cut = cut_list, support = False, secondlayer = False)
+        element = Element(matrix_infos[key], dict="thin",radius=0.0006, id = key, cut = cut_list, support = False, secondlayer = False)
 
     # grid_double = Grid(np.array(matrix_second), interval)
     # node_double = Node(grid_double , height=0.006, origin_offset=0.001)
