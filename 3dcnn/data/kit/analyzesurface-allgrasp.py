@@ -328,7 +328,7 @@ class FreeholdContactpairs(object):
         :param color:
         :return:
         '''
-        # print("faces in plotsurface",faces)
+
         surface_vertices = np.array([vertices[faces[0]], vertices[faces[1]], vertices[faces[2]]])
         surface = humath.centerPoftrangle(surface_vertices[0], surface_vertices[1], surface_vertices[2])
         surface = trimesh.Trimesh(surface)

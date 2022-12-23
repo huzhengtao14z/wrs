@@ -488,19 +488,17 @@ if __name__=='__main__':
 
     base = wd.World(cam_pos=[0.600,.600,0], w=960, h=540, lookat_pos=[0, 0, 0.0])
     pos=[600,600,0]
-    # textNPose = OnscreenText(
-    #     text=str("Camera pos is: (%.3f,%.3f,%.3f)" % (pos[0], pos[1], pos[2])), pos=(-.9, -.9, 0),
-    #     scale=0.1,
-    #     fg=(1., 0, 0, 1),
-    #     align=TextNode.ALeft, mayChange=1)
+    textNPose = OnscreenText(
+        text=str("plan contact"), pos=(-.9, -.9, 0),
+        scale=0.1,
+        fg=(1., 0, 0, 1),
+        align=TextNode.ALeft, mayChange=1)
     # gm.gen_frame().attach_to(base)
+
     this_dir, this_filename = os.path.split(__file__)
-
-
     # objpath = os.path.join(this_dir, "objects", "rightangle.STL")
     objpath = os.path.join(this_dir,  "test_bunny.stl")
     objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
-
     # freehold = FreeholdContactpairs(objpath, faceangle=.9, segangle=.9, verticalthreshold=.995, useoverlap=False)
     # freehold.getFacetsCenter()
     # freehold.planHoldpairs()
@@ -508,11 +506,9 @@ if __name__=='__main__':
     # freehold.getHoldingpairSptPnt()
     # freehold.getRotMat()
     # freehold.getplacementRotMat()
-    #
     # freehold.showbaseframe()
     # freehold.showlargeFacets()
     # base.run()
-
 
     fingerpadpath = os.path.join(this_dir, "fingerpad.STL")
     fingerpadpath = fingerpadpath.replace('\\', '/')
@@ -551,10 +547,6 @@ if __name__=='__main__':
         if sample_fid[i] == 3:
             continue
         surfacenormal = normal[sample_fid[i]]
-        # if sample_fid[i] == 0 or 1:
-        #     surfacenormal = -surfacenormal
-        # if sample_fid[i] ==5:
-        #     surfacenormal = -surfacenormal
         gm.gen_sphere(item, 0.001).attach_to(base)
         gm.gen_arrow(item, item - (0.04 * surfacenormal), thickness=0.002, rgba=(1, 0, 0, 1)).attach_to(base)
         pos = item - (0.01 * surfacenormal)
@@ -567,28 +559,8 @@ if __name__=='__main__':
         fingerpad_sam.set_rgba((0, 1, 0, 0.2))
         fingerpad_sam.attach_to(base)
 
-
     base.run()
-    freehold = FreeholdContactpairs(objpath)
-    # freehold.getFacetsCenter()
-    # freehold.planHoldpairs()
-    # freehold.getFacetsArea()
-    # freehold.getHoldingpairSptPnt()
-    # freehold.getRotMat()
-    # freehold.getplacementRotMat()
-    #
-    # freehold.showbaseframe()
-    freehold.showlargeFacets()
-    # # freehold.showallFaces()
-    # freehold.showallNormal()
-    # # freehold.showsingleNormal(num = 1)
-    # # freehold.showSptAxis(num = 1)
-    # # freehold.showplanedfacetvertices(num =1)
-    #
-    # # checkobj = cm.CollisionModel(objpath)
-    # # checkobj.set_scale((0.001,0.001,0.001))
-    # # checkobj.set_homomat(da.pdmat4_to_npmat4(freehold.pRotMat[3]))
-    # # checkobj.attach_to(base)
+
 
     def update(textNode, task):
         if textNode[0] is not None:
