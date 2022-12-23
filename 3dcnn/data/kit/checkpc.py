@@ -41,23 +41,24 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
 
-    # name = "mug.stl"
-    # name = "airplaneremesh"
     name = "Amicelli_800_tex"
-    # name = "armadillo.stl"
-    # name = "mug"
-    # obj = tw.TrimeshHu("./kit/", name,scale=0.001)
-    # mesh = obj.outputTrimesh
-    # testmesh = gm.GeometricModel(mesh)
-    # testmesh.set_rgba([1, 0, 0, 1])
-    # # testmesh.attach_to(base)
+
     n = str(1)
     pcd = o3d.io.read_point_cloud('./pairtial/pairtial_pc/'+name+n+".ply")
     pcd.paint_uniform_color([0,0,0.5])
     pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
     normals = np.asarray(pcd.normals)
     print(normals)
-    o3d.visualization.draw_geometries([pcd])
+    # o3d.visualization.draw_geometries([pcd])
+
+    pcd_list = vdda.o3dpcd_to_parray(pcd)
+
+    with open('pairtial/comlist.pickle', 'wb') as f:
+        com_list = pickle.load(f)
+    com = com_list[name+n]
+    gm.gen_sphere(com).attach_to(base)
+    gm.gen_pointcloud(pcd_list).attach_to(base)
+    base.run()
 
 
     def apply_noise(pcd, mu, sigma):
@@ -73,7 +74,6 @@ if __name__ == '__main__':
     print("Source PointCloud + noise:")
 
     def update(textNode, count, task):
-
 
         if textNode[0] is not None:
             textNode[0].detachNode()
