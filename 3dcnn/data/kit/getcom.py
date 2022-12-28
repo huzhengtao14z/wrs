@@ -40,7 +40,7 @@ if __name__ == '__main__':
                     h=540, lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
-    objmodeldir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/kit'
+    objmodeldir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/kit_model'
     namelist = os.listdir(objmodeldir)
     comdir = {}
     for name in namelist:

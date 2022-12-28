@@ -513,9 +513,12 @@ if __name__=='__main__':
     objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
     objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
     obj = cm.CollisionModel(objpath)
+    print(obj.get_com())
+    gm.gen_sphere(np.array([obj.get_com()])*0.001,radius=0.003, rgba=(1,0,0,1)).attach_to(base)
     obj.set_scale((0.001,0.001,0.001))
     obj.set_rgba((0,1,0,0.1))
     obj.attach_to(base)
+    base.run()
     fingerpadpath = os.path.join(this_dir, "objects", "fingerpad.STL")
     fingerpadpath = fingerpadpath.replace('\\', '/')
     fingerpad = cm.CollisionModel(fingerpadpath)

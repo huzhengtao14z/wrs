@@ -40,13 +40,13 @@ if __name__ == '__main__':
     name = "CoughDropsBerries_800_tex"
     # name = "armadillo"
     # name = "mug"
-    mesh = tw.TrimeshHu("./kit/", name+".obj")
+    mesh = tw.TrimeshHu("./kit_model/", name+".obj")
     d = cm.CollisionModel(mesh.outputTrimesh)
     d.set_rgba((0.4,0.5,0,0.4))
     d.attach_to(base)
 
     name2 = 'CatLying_800_tex'
-    mesh2 = tw.TrimeshHu("./kit/", name2 + ".obj")
+    mesh2 = tw.TrimeshHu("./kit_model/", name2 + ".obj")
     e = cm.CollisionModel(mesh2.outputTrimesh)
     e.set_rgba((0.4, 0.5, 0, 1))
     e.set_pos((0,0,0.081))

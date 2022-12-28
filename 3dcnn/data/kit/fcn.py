@@ -18,7 +18,7 @@ from keras.callbacks import TensorBoard
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 model = Sequential()
 
-model.add(Dense(64, input_shape=(100,3)))  # 输入层
+model.add(Dense(64, input_shape=(500,3)))  # 输入层
 model.add(Activation('tanh'))
 # model.add(Dropout(0.5))  # 50% dropout
 
@@ -42,22 +42,29 @@ model.add(Flatten())
 model.add(Dense(3, activation='linear'))
 
 sgd = SGD(lr=0.0001, momentum=0.9, nesterov=True)  # 设定学习效率等参数
-model.compile(loss=tf.keras.losses.MeanSquaredError(), optimizer='sgd')  # 使用交叉熵作为loss
 
-with open('pairtial/comdir.pickle', 'rb') as f:
+# lossfunction = tf.keras.metrics.RootMeanSquaredError
+# model.compile(loss=tf.keras.losses.MeanSquaredError(), optimizer='sgd')  # 使用交叉熵作为loss
+model.compile(
+    optimizer='sgd',
+    loss='mse',
+    metrics=[tf.keras.metrics.RootMeanSquaredError()])
+
+with open('pairtial/com_v2.pickle', 'rb') as f:
     comdir = pickle.load(f)
 this_dir, this_filename = os.path.split(__file__)
-objmodeldir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/kit'
-plydir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/data/kit/pairtial/pairtial_pc'
+objmodeldir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/kit_model'
+plydir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/data/kit/pc_500'
 namelist = os.listdir(plydir)
 data_x = []
 data_y = []
 for name in namelist:
     objname = name.split('.')[0]
-    data_y.append(comdir[objname])
+    data_y.append(comdir[objname]*1000)
     pcd = o3d.io.read_point_cloud(plydir + '/' + name)
-    dc_pcd = pcd.uniform_down_sample(100)
-    data_x.append(vdda.o3dpcd_to_parray(dc_pcd))
+    # dc_pcd = pcd.uniform_down_sample(100)
+    data_x.append(vdda.o3dpcd_to_parray(pcd)*1000)
+
 
 data_x = np.asarray(data_x)
 data_y = np.asarray(data_y)
@@ -78,7 +85,7 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(
 )
 
 
-model.fit(x, y, batch_size=8, epochs=100, validation_split=0.2, callbacks=[tensorboard_callback])
+model.fit(x, y, batch_size=32, epochs=100, validation_split=0.2, callbacks=[tensorboard_callback])
 
 # model = load_model('fcn-com.h5')
 model.save('fcn-com.h5')

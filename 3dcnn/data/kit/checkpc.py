@@ -1,5 +1,6 @@
 import copy
 import math
+from keras.models import Sequential, Model, load_model
 import visualization.panda.world as wd
 import modeling.collision_model as cm
 import humath as hm
@@ -38,26 +39,37 @@ import vision.depth_camera.pcd_data_adapter as vdda
 if __name__ == '__main__':
     base = wd.World(cam_pos=[2.01557, 0.637317, 1.88133], w=960,
                     h=540, lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
+    # gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
+    plydir = 'C:/Users/GL65/Documents/GitHub/wrs/3dcnn/data/kit/pc_500'
+    # name = "Amicelli_800_tex"
+    namelist = os.listdir(plydir)
+    name =  namelist[603].split('.')[0]
+    # n = str(1)
+    # pcd = o3d.io.read_point_cloud('./pairtial/pairtial_pc/'+name+n+".ply")
 
-    name = "Amicelli_800_tex"
+    # pcd = o3d.io.read_point_cloud('./pc_500/' + name + ".ply")
+    # pcd.paint_uniform_color([0,0,0.5])
+    # pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+    # normals = np.asarray(pcd.normals)
+    # print(normals)
 
-    n = str(1)
-    pcd = o3d.io.read_point_cloud('./pairtial/pairtial_pc/'+name+n+".ply")
-    pcd.paint_uniform_color([0,0,0.5])
-    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-    normals = np.asarray(pcd.normals)
-    print(normals)
     # o3d.visualization.draw_geometries([pcd])
 
-    pcd_list = vdda.o3dpcd_to_parray(pcd)
+    # p_bunny = trimesh.Trimesh()
+    mesh = o3d.io.read_triangle_mesh('test_bunny.stl')
+    pcd = mesh.sample_points_poisson_disk(500)
 
-    with open('pairtial/comlist.pickle', 'wb') as f:
+    model = load_model('fcn-com.h5')
+    pcd_list = vdda.o3dpcd_to_parray(pcd)
+    result = model.predict(np.expand_dims(pcd_list, axis=0),  verbose=1)
+
+    with open('pairtial/com_v2.pickle', 'rb') as f:
         com_list = pickle.load(f)
-    com = com_list[name+n]
-    gm.gen_sphere(com).attach_to(base)
+    com = com_list[name]
+    # gm.gen_sphere(com, radius=0.003).attach_to(base)
     gm.gen_pointcloud(pcd_list).attach_to(base)
+    gm.gen_sphere(result[0], radius=0.003, rgba=(0,0,1,1)).attach_to(base)
     base.run()
 
 

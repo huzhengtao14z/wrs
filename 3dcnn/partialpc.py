@@ -44,7 +44,7 @@ if __name__ == '__main__':
     name = "CoughDropsBerries_800_tex.obj"
     # name = "armadillo.stl"
     # name = "mug"
-    obj = tw.TrimeshHu("./kit/", name,scale=0.001)
+    obj = tw.TrimeshHu("./kit_model/", name,scale=0.001)
     mesh = obj.outputTrimesh
     testmesh = gm.GeometricModel(mesh)
     testmesh.set_rgba([1, 0, 0, 1])

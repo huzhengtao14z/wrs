@@ -17,7 +17,7 @@ name = 'CatLying_800_tex'
 # address = "3dcnnobj/"+name+".stl"
 
 # address = "3dcnnobj/"+name+".stl"
-address = "kit/"+name+".obj"
+address = "kit_model/"+name+".obj"
 # address = "3dcnnobj/"
 mesh = tw.TrimeshHu(meshpath = address, name = name )
 m =mesh.outputTrimesh
