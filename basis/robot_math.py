@@ -695,7 +695,7 @@ def fit_plane(points):
 
 def project_to_plane(point, plane_center, plane_normal):
     dist = abs((point - plane_center).dot(plane_normal))
-    print((point - plane_center).dot(plane_normal))
+    # print((point - plane_center).dot(plane_normal))
     if (point - plane_center).dot(plane_normal) < 0:
         plane_normal = - plane_normal
     projected_point = point - dist * plane_normal

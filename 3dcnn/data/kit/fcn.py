@@ -41,7 +41,7 @@ model.add(Dropout(0.4))
 model.add(Flatten())
 model.add(Dense(3, activation='linear'))
 
-sgd = SGD(lr=0.0001, momentum=0.9, nesterov=True)  # 设定学习效率等参数
+sgd = SGD(lr=0.001, momentum=0.9, nesterov=True)  # 设定学习效率等参数
 
 # lossfunction = tf.keras.metrics.RootMeanSquaredError
 # model.compile(loss=tf.keras.losses.MeanSquaredError(), optimizer='sgd')  # 使用交叉熵作为loss

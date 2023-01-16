@@ -60,6 +60,14 @@ if __name__ == '__main__':
     mesh = o3d.io.read_triangle_mesh('test_bunny.stl')
     pcd = mesh.sample_points_poisson_disk(500)
 
+    # for name in namelist:
+    #     objname = name.split('.')[0]
+    #     data_y.append(comdir[objname] * 1000)
+    #     pcd = o3d.io.read_point_cloud(plydir + '/' + name)
+    #     # dc_pcd = pcd.uniform_down_sample(100)
+    #     data_x.append(vdda.o3dpcd_to_parray(pcd) * 1000)
+
+
     model = load_model('fcn-com.h5')
     pcd_list = vdda.o3dpcd_to_parray(pcd)
     result = model.predict(np.expand_dims(pcd_list, axis=0),  verbose=1)
