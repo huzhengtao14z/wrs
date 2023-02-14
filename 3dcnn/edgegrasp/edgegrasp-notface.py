@@ -301,9 +301,23 @@ class FreeholdContactpairs(object):
     def showlargeFacets(self):
         vertices = self.vertices
         for i,facets in enumerate(self.facets):
-            color = (random.random(),random.random(),random.random(),0.3)
+            color = (random.random(),random.random(),random.random(),1)
             for facet in facets:
                 self.drawSingleFaceSurface(base, vertices,self.faces[facet],color=color)
+
+            length = 0.05
+            facetpair = 0
+            gm.gen_arrow(spos=np.array([self.largefacetscenter[facetpair][0],
+                                        self.largefacetscenter[facetpair][1],
+                                        self.largefacetscenter[facetpair][2]]),
+                         epos=([self.largefacetscenter[facetpair][0] + length *
+                                self.largefacet_normals[facetpair][0],
+                                self.largefacetscenter[facetpair][1] + length *
+                                self.largefacet_normals[facetpair][1],
+                                self.largefacetscenter[facetpair][2] + length *
+                                self.largefacet_normals[facetpair][2]]), thickness=0.003, rgba=color).attach_to(base)
+
+            break
 
     def drawSingleFaceSurface(self, base, vertices, faces, color):
         '''
@@ -484,7 +498,7 @@ class FreeholdContactpairs(object):
 
 
 if __name__=='__main__':
-
+    import humath as hm
     base = wd.World(cam_pos=[0.600,.600,0], w=960, h=540, lookat_pos=[0, 0, 0.0])
     pos=[600,600,0]
     # textNPose = OnscreenText(
@@ -492,43 +506,123 @@ if __name__=='__main__':
     #     scale=0.1,
     #     fg=(1., 0, 0, 1),
     #     align=TextNode.ALeft, mayChange=1)
-    gm.gen_frame().attach_to(base)
+    # gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
 
 
-    objpath = os.path.join(this_dir, "objects", "rightangle.STL")
-    # objpath = os.path.join(this_dir,  "partial_bunny.stl")
-    objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
+    # objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
+    # objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
+    # obj = cm.CollisionModel(objpath)
+    # obj.set_scale((0.001,0.001,0.001))
+    # obj.set_rgba((0,1,0,0.1))
+    # obj.attach_to(base)
+    # fingerpadpath = os.path.join(this_dir, "objects", "fingerpad.STL")
+    # fingerpadpath = fingerpadpath.replace('\\', '/')
+    # object = cm.CollisionModel('rightangle.STL')
+    # object.attach_to(base)
+    # base.run()
 
-    fingerpadpath = os.path.join(this_dir, "objects", "fingerpad.STL")
-    fingerpadpath = fingerpadpath.replace('\\', '/')
-    fingerpad = cm.CollisionModel(fingerpadpath)
-    fingerpad.set_scale((0.1, 0.1, 0.1))
-    obj = cm.CollisionModel(objpath)
+    # fingerpad.set_scale((0.1, 0.1, 0.1))
+    # objforgrasp = FreeholdContactpairs(objpath, faceangle=.8, segangle=.8, useoverlap=False)
+    # objforgrasp.getFacetsCenter()
+    # objforgrasp.showlargeFacets()
+    # objforgrasp.showallNormal()
+    # surface = hm.getsurfaceequation(objforgrasp.largefacet_normals[0],objforgrasp.largefacetscenter[0])
+    # distance = hm.distance_pnt2surface(surface,objforgrasp.com)
+    # gm.gen_stick(objforgrasp.largefacetscenter[0],objforgrasp.largefacetscenter[0]-(objforgrasp.largefacet_normals[0]*distance*2)).attach_to(base)
+    # gm.gen_sphere(objforgrasp.com,radius=0.003).attach_to(base)
+    # fingerpad.set_pos(objforgrasp.largefacetscenter[0]-(objforgrasp.largefacet_normals[0]*distance*2))
+    # fingerpad.set_rotmat(rm.rotmat_between_vectors(np.array([0,0,1]),np.array([surface[0],surface[1],surface[2]])))
+    # fingerpad.attach_to(base)
+    # base.run()
+
+    # obj = cm.CollisionModel(objpath)
+    # obj = cm.CollisionModel('thickenscurveedge.STL')
+    obj = cm.CollisionModel('thickenrightangleedge.STL')
+    obj = cm.CollisionModel('thickenhalfmomoedge.STL')
     obj.set_rgba([1, 1, 0, 0.8])
     obj.set_scale([0.001, 0.001, 0.001])
     obj.attach_to(base)
     edge = obj.objtrm.edges_unique
+    fue = obj.objtrm.faces_unique_edges
+    facets = obj.objtrm.facets()
+    faces = obj.objtrm.faces
+    normal = obj.objtrm.face_normals
+    facets_boundary = obj.objtrm.facets_boundary
+    vertices = obj.objtrm.vertices
+    singledge = np.unique(fue)
+    # print(fue)
     gripper_s = rtqhe.RobotiqHE()
-    # base.run()
+
+
+    samplepnts, samplepnts_faceid = obj.objtrm.sample_surface(count=15, radius=0.005, toggle_faceid=True)
+    print(samplepnts_faceid)
+    for index, point in enumerate(samplepnts):
+        gm.gen_sphere(point, radius=0.0015, rgba=(0,1,1,1)).attach_to(base)
+        gm.gen_arrow(point, point+normal[samplepnts_faceid[index]]*0.015, thickness=0.001).attach_to(base)
+    # graspobj = FreeholdContactpairs('thickenrightangle.STL', faceangle=.8, segangle=.8, useoverlap=False)
+
+
+
     # gripper_s.gen_meshmodel().attach_to(base)
     rot1 = rm.rotmat_from_axangle((0,1,0), np.pi/2)
     homo1 = rm.homomat_from_posrot(rot = rot1)
     gripper_s.grip_at_with_jcpose(gl_jaw_center_pos=(0,0.05,0.0150),gl_jaw_center_rotmat=rot1, jaw_width=0.050)
     grippermesh = gripper_s.gen_meshmodel()
     # grippermesh.attach_to(base)
-    vertices = obj.objtrm.vertices
-    for i in range(len(edge)):
-        if i == 2:
-            continue
-        elif i ==6:
-            continue
-        gm.gen_stick(vertices[edge[i][1]], vertices[edge[i][0]]).attach_to(base)
+    # vertices = obj.objtrm.vertices
+    temp = []
+    a = fue.flatten()
+    b = list(fue.flatten())
+    for i in range(len(a)):
+        t = b.pop(0)
+        if t not in b:
+            temp.append(t)
+        else:
+            b.append(t)
+
+
+    # for i in temp:
+    #     edge_cm = cm.gen_stick(vertices[edge[i][1]], vertices[edge[i][0]], sections=7, thickness=0.001)
+    #
+    #     # edge_cm_list.append(edge_cm)
+    #     # if i in randid:
+    #     edge_cm.attach_to(base)
+
+
+    # obj2 = cm.CollisionModel('scurvesharp.STL')
+    # obj2 = cm.CollisionModel('rightangle2.STL')
+    obj2 = cm.CollisionModel('halfmomo.STL')
+    obj2.set_rgba([1, 1, 0, 0.8])
+    obj2.set_scale([0.001, 0.001, 0.001])
+    obj2.attach_to(base)
+    edge2 = obj2.objtrm.edges_unique
+    fue2 = obj2.objtrm.faces_unique_edges
+    temp2 = []
+    a2= fue2.flatten()
+    b2 = list(fue2.flatten())
+    vertices2 = obj2.objtrm.vertices
+    for i in range(len(a2)):
+        t = b2.pop(0)
+        if t not in b2:
+            temp2.append(t)
+        else:
+            b2.append(t)
+    for i in temp2:
+        edge_cm = cm.gen_stick(vertices2[edge2[i][1]], vertices2[edge2[i][0]], sections=7, thickness=0.001)
+
+        # edge_cm_list.append(edge_cm)
+        # if i in randid:
+        edge_cm.attach_to(base)
+
+
+
     facet = obj.objtrm.facets_boundary
     # print(edge)
-    normal = obj.objtrm.face_normals
-    # normal[4] = normal[4] *(-1)
-    # normal[5] = normal[5] * (-1)
+    base.run()
+    normal = obj.objtrm.face_normalsr
+    normal[4] = normal[4] * (-1)
+    normal[5] = normal[5] * (-1)
     # print(normal)
     sample_pnt, sample_fid = obj.objtrm.sample_surface(50, radius=None, toggle_faceid=True)
 
