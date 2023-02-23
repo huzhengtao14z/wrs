@@ -538,7 +538,7 @@ if __name__=='__main__':
 
     # obj = cm.CollisionModel(objpath)
     # obj = cm.CollisionModel('thickenscurveedge.STL')
-    obj = cm.CollisionModel('thickenrightangleedge.STL')
+    # obj = cm.CollisionModel('thickenrightangleedge.STL')
     obj = cm.CollisionModel('thickenhalfmomoedge.STL')
     obj.set_rgba([1, 1, 0, 0.8])
     obj.set_scale([0.001, 0.001, 0.001])

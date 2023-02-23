@@ -483,19 +483,6 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960, h=540, lookat_pos=[0, 0, 0.0])
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
-
-
-    # p=np.array([[0.010, 0,0],[0.007,0.007,0],[0,0.01,0],[-0.007,0.007,0],[-0.01,0,0],[-0.007,-0.007,0],[0,-0.01,0],[0.007,-0.007,0],[0.010, 0 ,0],[0.007,0.007,0]])
-    # p = np.array(
-    #     [[0.010, 0, 0], [0.007, 0.007, 0], [0, 0.01, 0], [-0.007, 0.007, 0], [-0.01, 0, 0], [-0.007, -0.007, 0],
-    #      [0, -0.01, 0]])
-    # a = gm.gen_curveline(p,0.001, 16)
-    # a.set_rgba([1,0,0,1])
-    # a.attach_to(base)
-    # center = np.array([0.0+0.05,0.0+0.05,0.0+0.05])
-    # points = np.array([[0.02+0.05,0+0.05,0+0.05],[0+0.05,0.01+0.05,0.01+0.05],[-0.02+0.05,0+0.05,0+0.05],[0+0.05,-0.01+0.05,0.01+0.05]])
-    # gm.gen_ellipse(center,points,0.001,15).attach_to(base)
-
     interval = 0.006
     # len_num = 39
     # wid_num = 39
@@ -513,13 +500,6 @@ if __name__ == '__main__':
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
         element = Element(matrix_infos[key], dict="thin",radius=0.0006, id = key, cut = cut_list, support = False, secondlayer = False)
-
-    # grid_double = Grid(np.array(matrix_second), interval)
-    # node_double = Node(grid_double , height=0.006, origin_offset=0.001)
-    # matrix_infos = node_double.node_matrix_infos
-    # for key in matrix_infos.keys():
-    #     element = Element(matrix_infos[key], dict="5-5", radius=0.0006, id=key, cut=cut_list, support=False,
-    #                       secondlayer=False)
 
     def update(textNode, task):
         if textNode[0] is not None:

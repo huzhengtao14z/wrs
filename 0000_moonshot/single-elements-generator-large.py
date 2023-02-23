@@ -371,10 +371,10 @@ if __name__ == '__main__':
     # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 39+8
-    wid_num = 39+8
-    # len_num =9
-    # wid_num = 9
+    # len_num = 39+8
+    # wid_num = 39+8
+    len_num =27
+    wid_num = 27
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
     # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
     #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
@@ -461,17 +461,17 @@ if __name__ == '__main__':
     #                                                                                          [0, 0, 1],
     #                                                                                          0 * np.pi / 2)),
     #                 rgba=[0, 0, 0, 0.2])
-    cut_list = [c1,c2, c3, c4, c5, c6, c7]
-    # cut_list = [c1]
+    # cut_list = [c1,c2, c3, c4, c5, c6, c7]
+    cut_list = []
     gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
     # cut_list = []
     for model in cut_list:
         model.attach_to(base)
     grid = Grid(np.array(matrix), interval)
-    node = Node(grid, height=0.006, origin_offset=0.001)
+    node = Node(grid, height=0.012, origin_offset=0.0011)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list, support = True)
+        element = Element(matrix_infos[key], radius=0.0008, id = key, cut = cut_list, support = False)
         # element.get_stl()
 
     def update(textNode, task):
