@@ -46,7 +46,7 @@ if __name__ == '__main__':
     pcd1 = Mesh.sample_points_poisson_disk(number_of_points=500)
     pcd1, ind = pcd1.remove_radius_outlier(nb_points=15, radius=5)
     pcd1_np = vdda.o3dpcd_to_parray(pcd1)
-    gm.gen_pointcloud(pcd1_np).attach_to(base)
+    # gm.gen_pointcloud(pcd1_np).attach_to(base)
 
     radii = [3, 3, 3, 3]
     mmesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd1, o3d.utility.DoubleVector(radii))
@@ -57,7 +57,8 @@ if __name__ == '__main__':
     mmesh_trimesh = vdda.o3dmesh_to_trimesh(mmesh)
 
     mmesh_trimesh.export("edgenooltst.stl")
-    obj_mmesh = cm.CollisionModel('edgenool.stl')
+    # obj_mmesh = cm.CollisionModel('edgenool.stl')
+    obj_mmesh = cm.CollisionModel('edge.stl')
     obj_mmesh.set_rgba((0,1,1,1))
     obj_mmesh.attach_to(base)
 

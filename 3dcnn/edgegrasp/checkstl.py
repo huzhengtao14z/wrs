@@ -33,7 +33,7 @@ import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
 import open3d as o3d
 # import open3d.geometry as o3dg
 import vision.depth_camera.pcd_data_adapter as vdda
-
+from sklearn.cluster import KMeans
 
 
 if __name__ == '__main__':
@@ -41,16 +41,35 @@ if __name__ == '__main__':
                     h=540, lookat_pos=[0, 0, 0])
     # gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
-    # pcd = o3d.io.read_point_cloud('edgewithotl.ply')
-    pcd = o3d.io.read_point_cloud('pairtial/pairtial_pc/Amicelli_800_tex2.ply')
-    # o3d.visualization.draw_geometries([pcd])
-    pcd_list = vdda.o3dpcd_to_parray(pcd)
-    gm.gen_pointcloud(pcd_list).attach_to(base)
-
+    obj = cm.CollisionModel('cutplanePlane.STL')
+    obj.set_rgba([1, 1, 0, 0.5])
+    obj.attach_to(base)
+    # obj.set_scale([1000, 1000,1000])
     obj2 = cm.CollisionModel('edgenool.STL')
     obj2.set_rgba([0, 1, 1, 1])
-    obj2.set_scale([0.001, 0.001, 0.001])
     obj2.attach_to(base)
+    # base.run()
+    Mesh = o3d.io.read_triangle_mesh('cutplane-intersectionEdgenool-1.stl')
+    # Mesh.compute_vertex_normals()
+    pcd1 = Mesh.sample_points_poisson_disk(number_of_points=50)
+    # pcd1, ind = pcd1.remove_radius_outlier(nb_points=15, radius=5)
+    pcd1_np = vdda.o3dpcd_to_parray(pcd1)
+    center1 = pcd1_np.mean(axis=0)
+
+    Mesh2 = o3d.io.read_triangle_mesh('cutplane-intersectionEdgenool-2.stl')
+    # Mesh.compute_vertex_normals()
+    pcd2 = Mesh2.sample_points_poisson_disk(number_of_points=50)
+    # pcd1, ind = pcd1.remove_radius_outlier(nb_points=15, radius=5)
+    pcd2_np = vdda.o3dpcd_to_parray(pcd2)
+    center2 = pcd2_np.mean(axis=0)
+    # pcd = o3d.io.read_point_cloud('cutplane-intersectionEdgenool.stl')
+    # pcd = o3d.io.read_point_cloud('pairtial/pairtial_pc/Amicelli_800_tex0.ply')
+    # o3d.visualization.draw_geometries([pcd])
+    # pcd_list = vdda.o3dpcd_to_parray(pcd1_np)
+    # kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(pcd1_np)
+    gm.gen_sphere(center1, radius=1.5).attach_to(base)
+    gm.gen_sphere(center2, radius=1.5).attach_to(base)
+    # gm.gen_pointcloud(pcd1_np, pntsize=5).attach_to(base)
     base.run()
 
     def update(textNode, count, task):

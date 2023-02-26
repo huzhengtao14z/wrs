@@ -546,14 +546,14 @@ if __name__=='__main__':
         # Mesh = o3d.io.read_triangle_mesh("edge.stl")
         mesh = o3d.io.read_triangle_mesh(objpath)
         mesh.compute_vertex_normals()
-        pcd1 = mesh.sample_points_poisson_disk(number_of_points=20000)
-        pcd1, ind = pcd1.remove_radius_outlier(nb_points=600, radius=5)
+        pcd1 = mesh.sample_points_poisson_disk(number_of_points=2000)
+        pcd1, ind = pcd1.remove_radius_outlier(nb_points=60, radius=5)
         pcd1_np = vdda.o3dpcd_to_parray(pcd1)
         gm.gen_pointcloud(pcd1_np).attach_to(base)
 
-        # pcd_sample = pcd1.uniform_down_sample(100)
+        # pcd_sample = pcd1.uniform_down_sample(1000)
         # pcd_sample = pcd1.voxel_down_sample(25)
-        pcd_sample = pcd1.random_down_sample(0.001)
+        pcd_sample = pcd1.random_down_sample(0.01)
 
         pcd_sample_np = vdda.o3dpcd_to_parray(pcd_sample)
         print(pcd_sample_np.shape)
@@ -615,12 +615,17 @@ if __name__=='__main__':
         interception = cm.gen_sphere(pos=datamean, radius=1.2)
         interception.set_rgba((0, 0, 1, 1))
         interception.attach_to(base)
-        cm.gen_stick(datamean - vv[1] * 5, datamean + vv[1] * 5, thickness=1.2 * 2,
-                     rgba=[1, 0, 0, 0.3], sections=40).attach_to(base)
-        cm.gen_stick(datamean - vv[0] * 5, datamean + vv[0] * 5, thickness=1.2 * 2,
-                     rgba=[0, 1, 0, 0.3], sections=40).attach_to(base)
-        cm.gen_stick(datamean - vv[2] * 5, datamean + vv[2] * 5, thickness=1.2 * 2,
-                     rgba=[0, 0, 1, 0.3], sections=40).attach_to(base)
+        # cm.gen_stick(datamean - vv[1] * 5, datamean + vv[1] * 5, thickness=1.2 * 2,
+        #              rgba=[1, 0, 0, 0.3], sections=40).attach_to(base)
+        # cm.gen_stick(datamean - vv[0] * 5, datamean + vv[0] * 5, thickness=1.2 * 1,
+        #              rgba=[0, 1, 0, 0.3], sections=40).attach_to(base)
+        # cm.gen_stick(datamean - vv[2] * 5, datamean + vv[2] * 5, thickness=1.2 * 2,
+        #              rgba=[0, 0, 1, 0.3], sections=40).attach_to(base)
+        print(dd)
+        if dd[1]/dd[0]>0.3 or dd[2]/dd[0]>0.3:
+            interception = cm.gen_sphere(pos=datamean, radius=1.2)
+            interception.set_rgba((1, 0, 1, 1))
+            interception.attach_to(base)
 
 
         return pcd_sample_np
