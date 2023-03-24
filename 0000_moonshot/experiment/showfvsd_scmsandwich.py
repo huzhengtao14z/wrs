@@ -40,8 +40,8 @@ if __name__ == "__main__":
 
     fig = plt.figure(1, figsize=(16, 9))
     ax = fig.add_subplot(111)
-    plt.xlim([0, 21])
-
+    plt.xlim([0, 6])
+    plt.ylim([-1, 30])
 
 
     def case(fvsd0, fvsd1, fvsd2, fvsd3, fvsd4, color, rate =1.0):
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     # case(fvsd0_fgb_45, fvsd1_fgb_45, fvsd2_fgb_45, fvsd3_fgb_45, fvsd4_fgb_45, "yellow", rate=1)
     # case(fvsd0_fgs_45, fvsd1_fgs_45, fvsd2_fgs_45, fvsd3_fgs_45, fvsd4_fgs_45, "brown", rate=1)
 
-    def analytical(Ep =66000000, t = 45000,color = "black", markercolor = "black"):
+    def analytical(Ep =36000000, t = 45000,color = "black", markercolor = "black"):
         x = np.linspace(0,5,100,endpoint=True)
 
         b = 0.042
@@ -103,14 +103,14 @@ if __name__ == "__main__":
         x_new = []
         y_new = []
         for i, y_item in enumerate(y):
-            if y_item<=2*0.3*t*b*tcm:
+            if y_item<=2*0.8*t*b*tcm*0.1:
                 x_new.append(x[i])
                 y_new.append(y_item)
         ax.plot(x_new, y_new, color=color, linewidth=3)
         ax.scatter(x_new[-1], y_new[-1],marker="x", color = markercolor, s = 500, linewidths=5)
         print(2*0.3*45000*b*tcm)
     analytical(markercolor="red", t = 85000)
-    analytical(Ep = 36000000, t = 45000, markercolor="green")
+    analytical( t = 45000, markercolor="green")
     ax.set_xlabel("Displacement/mm")
     ax.set_ylabel("Force/N")
     # ax.plot(x, y_max, linewidth=5)
