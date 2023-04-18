@@ -372,10 +372,10 @@ if __name__ == '__main__':
     # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    # len_num = 27
-    # wid_num = 27
-    len_num =9
-    wid_num =9
+    len_num = 45
+    wid_num = 45
+    # len_num =9
+    # wid_num =9
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
 
     # c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
@@ -394,7 +394,7 @@ if __name__ == '__main__':
     node = Node(grid, height=0.006, origin_offset=0.001)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list, support = True, filename = "41-41")
+        element = Element(matrix_infos[key], radius=0.00075, id = key, cut = cut_list, support = False, filename = "45-45")
         # element.get_stl()
 
     def update(textNode, task):
