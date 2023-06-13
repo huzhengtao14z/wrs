@@ -32,7 +32,7 @@ class TrimeshHu(object):
 
         if not mesh:
             self.name = name
-            self.meshpath = meshpath + name
+            self.meshpath = meshpath +'/'+ name
             self.mesh = trimesh.load(self.meshpath)
         else:
             self.mesh = mesh

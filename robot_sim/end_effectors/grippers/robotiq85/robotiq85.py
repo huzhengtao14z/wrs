@@ -5,7 +5,7 @@ import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.grippers.gripper_interface as gp
-
+import modeling.geometric_model as gm
 
 class Robotiq85(gp.GripperInterface):
 
@@ -254,8 +254,8 @@ class Robotiq85(gp.GripperInterface):
                                      toggle_jntscs=toggle_jntscs,
                                      rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
+            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
