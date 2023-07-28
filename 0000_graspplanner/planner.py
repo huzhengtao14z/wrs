@@ -3,8 +3,8 @@ import math
 # from keras.models import Sequential, Model, load_model
 import visualization.panda.world as wd
 import modeling.collision_model as cm
-import humath as hm
-import hufunc as hf
+
+
 import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as hnde
 from direct.gui.OnscreenText import OnscreenText
@@ -19,14 +19,11 @@ import motion.probabilistic.rrt_connect as rrtc
 import manipulation.pick_place_planner as ppp
 import os
 import pickle
-import basis.data_adapter as da
-import slope
-import Sptpolygoninfo as sinfo
-import basis.trimesh as trimeshWan
+
 import trimesh as trimesh
 from trimesh.sample import sample_surface
 from panda3d.core import NodePath
-import trimeshwraper as tw
+
 import grasping.planning.antipodal as gpa
 import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq85
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
@@ -35,11 +32,11 @@ import open3d as o3d
 import vision.depth_camera.pcd_data_adapter as vdda
 
 class GraspPlanner():
-    def __init__(self, objpath, show_sample_contact = True):
+    def __init__(self, objpath, show_sample_contact = False):
         Mesh = o3d.io.read_triangle_mesh(objpath)
         self.collision_model = cm.CollisionModel(objpath)
         self.collision_model.set_rgba((0.5, 0.5, 0.5, 1))
-        # self.collision_model.attach_to(base)
+        self.collision_model.attach_to(base)
         # base.run()
         Mesh.compute_vertex_normals()
         pcd = Mesh.sample_points_poisson_disk(number_of_points=5000)
@@ -47,9 +44,9 @@ class GraspPlanner():
         self.pcd_np = vdda.o3dpcd_to_parray(pcd)
         self.pcd_normal_np = np.asarray(pcd.normals)[:, :]
 
-        self.showobj_pcd()
+        # self.showobj_pcd()
         # base.run()
-        self._sample_contact(rate = 0.0005, show = show_sample_contact)
+        self._sample_contact(rate = 0.005, show = show_sample_contact)
         # base.run()
         self.plan_poses()
 
@@ -273,10 +270,12 @@ if __name__ == '__main__':
                     h=540, lookat_pos=[0, 0, 0])
     # gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
-    objpath = "kit_model_stl/Amicelli_800_tex.stl"
+    # objpath = "kit_model_stl/Amicelli_800_tex.stl"
     # objpath = "test_obj/tetrahedron.stl"
     # objpath = "kit_model_stl/RedCup_800_tex.stl"
     # objpath = "test_obj/ratchet.stl"
+    # objpath = "kit_model_stl/InstantSoup_800_tex.stl"
+    objpath = "test_obj/cupramen.stl"
     graspplanner = GraspPlanner(objpath)
 
     # gm.gen_frame().attach_to(base)
