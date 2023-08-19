@@ -22,7 +22,7 @@ import robot_sim._kinematics.collision_checker as cc
 import robot_sim.end_effectors.grippers.gripper_interface as gi
 # import robot_sim.
 import os
-def capsule_link_start_end(start, end, radius = 0.0003, rgba = (.5,0.5,.5,1)):
+def capsule_link_start_end(start, end, radius = 0.0003, rgba = (1,1,0,1)):
     start = start
     end = end
     radius = radius
@@ -194,12 +194,13 @@ class Node(object):
 
 
 class Element(object):
-    def __init__(self, node, radius = 0.01, manualset = False, id = None, cut = None, support = None):
+    def __init__(self, node, radius = 0.01, manualset = False, id = None, cut = None, support = None, filename = "41-41"):
         # self.construct()
         self.radius = radius
         self.id = id
         self.parity = node["parity"]
         self.support = support
+        self.filename = filename
         if cut:
             a = cm.gen_sphere(node["origin"], radius = 0.001)
             if a.is_mcdwith(objcm_list=cut):
@@ -227,7 +228,6 @@ class Element(object):
     def construct(self):
         # self.bar_list = []
         # self.bar_list.append()
-
         self.t_c1 = capsule_link_start_end(self.t, self.c1, self.radius)
         self.t_c2 = capsule_link_start_end(self.t, self.c2, self.radius)
         self.t_c3 = capsule_link_start_end(self.t, self.c3, self.radius)
@@ -253,42 +253,40 @@ class Element(object):
         self.c2_c3.attach_to(base)
         self.c3_c4.attach_to(base)
         self.c4_c1.attach_to(base)
-
-        self.supportoffset = 0.015
         if self.support:
             if self.parity == "even-even":
-                self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), np.array([self.c4[0],self.c4[1], self.supportoffset]), 2.1*self.radius)
-                # self.stage.attach_to(base)
+                self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 2.1*self.radius)
+                self.stage.attach_to(base)
 
             elif self.parity == "even-odd":
-                self.pillar_a_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), np.array([self.c3[0], self.c3[1], self.supportoffset]),
-                                                     self.radius+0.0001)
-                self.pillar_a_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
-                                                          np.array([self.c4[0],self.c4[1], self.supportoffset]),
-                                                           self.radius+0.0001)
+                # self.pillar_a_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+                #                                      self.radius+0.0001)
+                # self.pillar_a_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
+                #                                           self.c4 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+                #                                            self.radius+0.0001)
                 self.pillar_a_1 = cylinder_link_start_end(self.c3,
-                                                          np.array([self.c3[0],self.c3[1],self.supportoffset]),
+                                                          np.array([self.c3[0],self.c3[1],-0.0056]),
                                                           self.radius *2.1)
                 self.pillar_a_2 = cylinder_link_start_end(self.c4 ,
-                                                          np.array([self.c4[0],self.c4[1],self.supportoffset]),
+                                                          np.array([self.c4[0],self.c4[1],-0.0056]),
                                                           self.radius *2.1)
-                # self.pillar_a_1.attach_to(base)
-                # self.pillar_a_2.attach_to(base)
+                self.pillar_a_1.attach_to(base)
+                self.pillar_a_2.attach_to(base)
 
             elif self.parity == "odd-even":
-                self.pillar_b_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), np.array([self.c3[0], self.c3[1], self.supportoffset]),
-                                                     self.radius)
-                self.pillar_b_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
-                                                        np.array([self.c4[0],self.c4[1], self.supportoffset]),
-                                                        self.radius)
+                # self.pillar_b_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+                #                                      self.radius)
+                # self.pillar_b_2 = cylinder_link_start_end(self.c4 + np.array([0, 0, 0.001]),
+                #                                         self.c4 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
+                #                                         self.radius)
                 self.pillar_b_1 = cylinder_link_start_end(self.c3,
-                                                          np.array([self.c3[0], self.c3[1], self.supportoffset]),
+                                                          np.array([self.c3[0],self.c3[1],-0.0056]),
                                                           self.radius *2.1)
                 self.pillar_b_2 = cylinder_link_start_end(self.c4,
-                                                          np.array([self.c4[0],self.c4[1], self.supportoffset]),
+                                                          np.array([self.c4[0],self.c4[1],-0.0056]),
                                                           self.radius *2.1)
-                # self.pillar_b_1.attach_to(base)
-                # self.pillar_b_2.attach_to(base)
+                self.pillar_b_1.attach_to(base)
+                self.pillar_b_2.attach_to(base)
         else:
             pass
 
@@ -308,7 +306,7 @@ class Element(object):
 
         this_dir, this_filename = os.path.split(__file__)
         # file = f"{this_dir}/space_boolean/{self.id}-"
-        file = f"{this_dir}/3-3/{self.id}-"
+        file = f"{this_dir}/{self.filename}/{self.id}-"
 
         t_c1_objtrm.export(f"{file}t_c1.stl")
         t_c2_objtrm.export(f"{file}t_c2.stl")
@@ -323,30 +321,30 @@ class Element(object):
         c3_c4_objtrm.export(f"{file}c3_c4.stl")
         c4_c1_objtrm.export(f"{file}c4_c1.stl")
 
-        t_c1_objtrm_temp = trimesh.load("space_boolean/t_c1.stl")
-
-        t_c2_objtrm_temp = trimesh.load("space_boolean/t_c2.stl")
-        # temp = tb.union([t_c1_objtrm, t_c2_objtrm],engine="blender")
-        t_c3_objtrm_temp = trimesh.load("space_boolean/t_c3.stl")
-        # temp = tb.union([temp, t_c3_objtrm], engine="blender")
-        t_c4_objtrm_temp = trimesh.load("space_boolean/t_c4.stl")
-        # temp = tb.union([temp, t_c4_objtrm], engine="blender")
-        b_c1_objtrm_temp = trimesh.load("space_boolean/b_c1.stl")
-        # temp = tb.union([temp, b_c1_objtrm], engine="blender")
-        b_c2_objtrm_temp = trimesh.load("space_boolean/b_c2.stl")
-        # temp = tb.union([temp, b_c2_objtrm ], engine="blender")
-        b_c3_objtrm_temp = trimesh.load("space_boolean/b_c3.stl")
-        # temp = tb.union([temp, b_c3_objtrm], engine="blender")
-        b_c4_objtrm_temp = trimesh.load("space_boolean/b_c4.stl")
-        # temp = tb.union([temp, b_c4_objtrm], engine="blender")
-        c1_c2_objtrm_temp = trimesh.load("space_boolean/c1_c2.stl")
-        # temp = tb.union([temp, c1_c2_objtrm], engine="blender")
-        c2_c3_objtrm_temp = trimesh.load("space_boolean/c2_c3.stl")
-        # temp = tb.union([temp, c2_c3_objtrm], engine="blender")
-        c3_c4_objtrm_temp = trimesh.load("space_boolean/c3_c4.stl")
-        # temp = tb.union([temp, c3_c4_objtrm], engine="blender")
-        c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
-        # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
+        # t_c1_objtrm_temp = trimesh.load("space_boolean/t_c1.stl")
+        #
+        # t_c2_objtrm_temp = trimesh.load("space_boolean/t_c2.stl")
+        # # temp = tb.union([t_c1_objtrm, t_c2_objtrm],engine="blender")
+        # t_c3_objtrm_temp = trimesh.load("space_boolean/t_c3.stl")
+        # # temp = tb.union([temp, t_c3_objtrm], engine="blender")
+        # t_c4_objtrm_temp = trimesh.load("space_boolean/t_c4.stl")
+        # # temp = tb.union([temp, t_c4_objtrm], engine="blender")
+        # b_c1_objtrm_temp = trimesh.load("space_boolean/b_c1.stl")
+        # # temp = tb.union([temp, b_c1_objtrm], engine="blender")
+        # b_c2_objtrm_temp = trimesh.load("space_boolean/b_c2.stl")
+        # # temp = tb.union([temp, b_c2_objtrm ], engine="blender")
+        # b_c3_objtrm_temp = trimesh.load("space_boolean/b_c3.stl")
+        # # temp = tb.union([temp, b_c3_objtrm], engine="blender")
+        # b_c4_objtrm_temp = trimesh.load("space_boolean/b_c4.stl")
+        # # temp = tb.union([temp, b_c4_objtrm], engine="blender")
+        # c1_c2_objtrm_temp = trimesh.load("space_boolean/c1_c2.stl")
+        # # temp = tb.union([temp, c1_c2_objtrm], engine="blender")
+        # c2_c3_objtrm_temp = trimesh.load("space_boolean/c2_c3.stl")
+        # # temp = tb.union([temp, c2_c3_objtrm], engine="blender")
+        # c3_c4_objtrm_temp = trimesh.load("space_boolean/c3_c4.stl")
+        # # temp = tb.union([temp, c3_c4_objtrm], engine="blender")
+        # c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
+        # # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
 
         if self.support:
             if self.parity == "even-even":
@@ -374,88 +372,21 @@ if __name__ == '__main__':
     # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 9
-    wid_num = 9
+    len_num = 45+6
+    wid_num = 45+6
     # len_num =9
-    # wid_num = 9
+    # wid_num =9
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
-    # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.006,0.006,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.0065,0.0065,0.0065,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.0068,0.0068,0.0068,0.0068,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.0065,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.006,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003]])
-    # offset_matrix = [[[0, 0, 0.008*math.sqrt(abs(8*8-(x-4.5)*(x-4.5)-(y-4.5)*(y-4.5)))] for x in range(len_num)] for y in range(wid_num)]
-    offset_matrix = [
-        [[0, 0, 0.006 * math.sqrt(abs(4 * 4 - 0.7*(x - 4) * (x - 4) ))] for x in range(len_num)]
-        for y in range(wid_num)]
-    for y in range(len_num):
-        for x in range(wid_num):
-            matrix[y][x] = matrix[y][x] + offset_matrix[y][x]
 
-            #
-            # if x ==1 :
-            #     matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
-            # elif x ==2:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
-            # elif x ==3:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
-            # elif x ==4:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
-            # elif x ==5:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.011])
-            # elif x == 6:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
-            # elif x == 7:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
-            # elif x == 8:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
-            # elif x == 9:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.003+0.001])
-
-
-
-            # if x ==11 :
-            #     matrix[y][x] = matrix[y][x]+np.array([0, 0, -0.003-0.001])
-            # elif x ==12:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.005-0.005])
-            # elif x ==13:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.006-0.008])
-            # elif x ==14:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0065-0.010])
-            # elif x ==15:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0068-0.011])
-            # elif x ==16:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0065-0.010])
-            # elif x == 17:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.006-0.008])
-            # elif x == 18:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.005-0.005])
-            # elif x == 19:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.003-0.001])
-
-    c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
-    c2 = cm.gen_box(extent=[.006*18.5, 0.006*12, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*29,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
-    c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
-               rgba=[0, 0, 0, 0.2])
-    c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
-
-    # c1 = cm.gen_box(extent=[.006 * 20, 0.006 * 30, .001], homomat=rm.homomat_from_posrot([0.006 * 19, 0.006 * 4.5, 0],
-    #                                                                                       rm.rotmat_from_axangle(
-    #                                                                                           [0, 0, 1],
-    #                                                                                           0 * np.pi / 2)),
-    #                                                                                             rgba=[0, 0, 0, 0.2])
-    # c2 = cm.gen_box(extent=[.006 * 3, 0.006 * 3, .001], homomat=rm.homomat_from_posrot([0.006 * 4, 0.006 * 12, 0],
-    #                                                                                      rm.rotmat_from_axangle(
-    #                                                                                          [0, 0, 1],
-    #                                                                                          0 * np.pi / 2)),
-    #                 rgba=[0, 0, 0, 0.2])
+    # c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
+    # c2 = cm.gen_box(extent=[.006*18.5, 0.006*12, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*29,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
+    # c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
+    #            rgba=[0, 0, 0, 0.2])
+    # c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
+    #
     # cut_list = [c1,c2]
-    # cut_list = [c1]
-    # gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
+    # # cut_list = [c1]
+    gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
     cut_list = []
     for model in cut_list:
         model.attach_to(base)
@@ -463,7 +394,7 @@ if __name__ == '__main__':
     node = Node(grid, height=0.006, origin_offset=0.001)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list, support = True)
+        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list, support = True, filename = "47-47")
         # element.get_stl()
 
     def update(textNode, task):

@@ -13,6 +13,7 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as gm
 import hupackage.hupackage as hu
+import hu.humath as hm
 import trimesh.boolean as tb
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
 import robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
@@ -41,7 +42,9 @@ def cylinder_link_start_end(start, end,  radius = 0.0003):
 
 
 def cpt_vec(vec_a, vec_b, offset):
-    result_vec = (vec_a - vec_b - rm.unit_vector(vec_a - vec_b) * offset) / 1.414
+    result_vec = (vec_a - vec_b)/1.414 - (rm.unit_vector(vec_a - vec_b) * offset)
+    # result_vec = (vec_a - vec_b - rm.unit_vector(vec_a - vec_b) * offset) / 1.414
+                 # + ((rm.unit_vector(vec_a - vec_b) * offset) / 1)
     return result_vec
 class Grid(object):
     def __init__(self, position_matrix, defaut_dis = 0.005):
@@ -52,15 +55,15 @@ class Grid(object):
         self.show()
     def get_origin(self, x, y):
         if 0<= x < self.len_num and 0<= y < self.wid_num:
-            return self.position_matrix[y][x]
+            return self.position_matrix[x][y]
         elif x<0 and 0<= y < self.wid_num:
-            return self.position_matrix[y][0]+np.array([-self.defaut_dis, 0, 0])
+            return self.position_matrix[0][y]+np.array([-self.defaut_dis, 0, 0])
         elif x>=self.len_num and 0<= y < self.wid_num:
-            return self.position_matrix[y][x-1]+np.array([self.defaut_dis, 0, 0])
+            return self.position_matrix[x-1][y]+np.array([self.defaut_dis, 0, 0])
         elif y<0 and 0<= x < self.len_num:
-            return self.position_matrix[0][x]+np.array([0, -self.defaut_dis, 0])
+            return self.position_matrix[x][0]+np.array([0, -self.defaut_dis, 0])
         elif y>=self.wid_num and 0<= x < self.len_num:
-            return self.position_matrix[y-1][x]+np.array([0, self.defaut_dis, 0])
+            return self.position_matrix[x][y-1]+np.array([0, self.defaut_dis, 0])
         elif x<0 and y<0:
             return self.position_matrix[0][0]+np.array([-self.defaut_dis, -self.defaut_dis, 0])
         elif x>self.len_num and y>self.wid_num:
@@ -73,7 +76,7 @@ class Grid(object):
     def show(self, thickness = 0.0003):
         for y in range(self.wid_num):
             for x in range(self.len_num):
-                gm.gen_sphere(pos = self.position_matrix[y][x], radius = 0.0003, rgba=(0,0,0,1)).attach_to(base)
+                gm.gen_sphere(pos = self.position_matrix[x][y], radius = 0.0003, rgba=(0,0,0,1)).attach_to(base)
                 if x == self.len_num - 1 and y < self.wid_num - 1:
                     # print("check")
                     gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1],
@@ -122,10 +125,15 @@ class Node(object):
                 id_infos["lft"] = self.grid.get_origin(x- 1, y )
                 id_infos["rgt"] = self.grid.get_origin(x+ 1, y )
                 id_infos["parity"] = parity
-                normal = - hu.normal_from_3point(self.grid.get_origin(x - 1, y), self.grid.get_origin(x + 1, y), self.grid.get_origin(x - 1, y - 1))
+                # gm.gen_sphere(self.grid.get_origin(x - 1, y), radius=0.0005).attach_to(base)
+                # gm.gen_sphere(self.grid.get_origin(x + 1, y), radius=0.0005).attach_to(base)
+                # gm.gen_sphere(self.grid.get_origin(x - 1, y-1), radius=0.0005).attach_to(base)
+                normal = - hu.normal_from_3point(self.grid.get_origin(x - 1, y+1), self.grid.get_origin(x + 1, y+1), self.grid.get_origin(x - 1, y - 1))
+                # gm.gen_stick(id_infos["origin"], id_infos["origin"]+normal*0.005, thickness=0.0005).attach_to(base)
                 id_infos["height"] = self.grid.get_origin(x, y) + normal * self.height
                 id_infos["low"] = self.grid.get_origin(x, y) - normal * self.height
-
+                # base.run()
+                # gm.gen_sphere(id_infos["height"], radius=0.002).attach_to(base)
                 self.node_infos[f"{x}-{y}"]=id_infos
 
         self.generate_matrix()
@@ -151,6 +159,8 @@ class Node(object):
                         self.node_infos[id]["origin"] - self.node_infos[id]["low"]) * self.origin_offset
 
                     matrix_id_infos["origin_sen"] = matrix_id_infos["origin"]+np.array([0,0,self.height])
+
+
 
                     def rot_point(point, center, angle):
                         frame_origin_sen = np.linalg.inv(rm.homomat_from_posrot(center))
@@ -194,20 +204,20 @@ class Node(object):
                     x = int(xy_list[0])
                     y = int(xy_list[1])
                     matrix_id_infos["center1"] = self.node_infos[id]["origin"] + cpt_vec(self.node_infos[f"{x}-{y+1}"]["height"], self.node_infos[f"{x}-{y}"]["origin"], self.origin_offset)
-                    matrix_id_infos["center2"] = self.node_infos[id]["origin"] + cpt_vec(self.node_infos[f"{x}-{y -1}"]["height"],self.node_infos[f"{x}-{y}"]["origin"], self.origin_offset)
+                    matrix_id_infos["center2"] = self.node_infos[id]["origin"] + cpt_vec(self.node_infos[f"{x}-{y-1}"]["height"],self.node_infos[f"{x}-{y}"]["origin"], self.origin_offset)
                     matrix_id_infos["center3"] = self.node_infos[id]["origin"] + cpt_vec(self.node_infos[f"{x}-{y-1}"]["low"], self.node_infos[f"{x}-{y}"]["origin"], self.origin_offset)
                     matrix_id_infos["center4"] = self.node_infos[id]["origin"] + cpt_vec(self.node_infos[f"{x}-{y+1}"]["low"], self.node_infos[f"{x}-{y}"]["origin"], self.origin_offset)
+
+
 
                 elif self.node_infos[id]["parity"] == "even-odd":
                     matrix_id_infos["top"] = self.node_infos[id]["up"] + rm.unit_vector(
                         self.node_infos[id]["origin"] - self.node_infos[id]["up"]) * self.origin_offset
                     matrix_id_infos["bottom"] = self.node_infos[id]["down"] + rm.unit_vector(
                         self.node_infos[id]["origin"] - self.node_infos[id]["down"]) * self.origin_offset
-
                     xy_list = id.split("-")
                     x = int(xy_list[0])
                     y = int(xy_list[1])
-
                     matrix_id_infos["center1"] = self.node_infos[id]["origin"] + cpt_vec(
                         self.node_infos[f"{x + 1}-{y}"]["height"], self.node_infos[f"{x}-{y}"]["origin"],
                         self.origin_offset)
@@ -220,6 +230,32 @@ class Node(object):
                     matrix_id_infos["center4"] = self.node_infos[id]["origin"] + cpt_vec(
                         self.node_infos[f"{x+1}-{y}"]["low"], self.node_infos[f"{x}-{y}"]["origin"],
                         self.origin_offset)
+
+                    matrix_id_infos["center1"] = self.node_infos[f"{x}-{y}"]["origin"] + (np.linalg.norm(self.node_infos[f"{x+1}-{y}"]["origin"]-self.node_infos[f"{x}-{y}"]["origin"])-self.origin_offset)*rm.unit_vector(self.node_infos[f"{x+1}-{y}"]["origin"]-self.node_infos[f"{x}-{y}"]["origin"]+self.node_infos[f"{x}-{y}"]["height"]-self.node_infos[f"{x}-{y}"]["origin"])
+                    matrix_id_infos["center2"] = self.node_infos[f"{x}-{y}"]["origin"] + (np.linalg.norm(
+                        self.node_infos[f"{x - 1}-{y}"]["origin"] - self.node_infos[f"{x}-{y}"][
+                            "origin"]) - self.origin_offset) * rm.unit_vector(
+                        self.node_infos[f"{x - 1}-{y}"]["origin"] - self.node_infos[f"{x}-{y}"]["origin"] +
+                        self.node_infos[f"{x}-{y}"]["height"] - self.node_infos[f"{x}-{y}"]["origin"])
+                    matrix_id_infos["center3"] = self.node_infos[f"{x}-{y}"]["origin"] + (np.linalg.norm(
+                        self.node_infos[f"{x - 1}-{y}"]["origin"] - self.node_infos[f"{x}-{y}"][
+                            "origin"]) - self.origin_offset) * rm.unit_vector(
+                        self.node_infos[f"{x - 1}-{y}"]["origin"] - self.node_infos[f"{x}-{y}"]["origin"] +
+                        self.node_infos[f"{x}-{y}"]["low"] - self.node_infos[f"{x}-{y}"]["origin"])
+                    matrix_id_infos["center4"] = self.node_infos[f"{x}-{y}"]["origin"] + (np.linalg.norm(
+                        self.node_infos[f"{x + 1}-{y}"]["origin"] - self.node_infos[f"{x}-{y}"][
+                            "origin"]) - self.origin_offset) * rm.unit_vector(
+                        self.node_infos[f"{x + 1}-{y}"]["origin"] - self.node_infos[f"{x}-{y}"]["origin"] +
+                        self.node_infos[f"{x}-{y}"]["low"] - self.node_infos[f"{x}-{y}"]["origin"])
+
+                    # gm.gen_sphere(self.node_infos[f"{x + 1}-{y}"]["height"], rgba=(0, 1, 0, 1), radius=0.002).attach_to(base)
+                    # gm.gen_sphere(self.node_infos[id]["origin"], rgba=(0, 1, 0, 1), radius=0.002).attach_to(base)
+                    # gm.gen_sphere(matrix_id_infos["top"] , rgba=(0,1,0,1), radius=0.001).attach_to(base)
+                    # gm.gen_sphere(matrix_id_infos["center1"], rgba=(0, 0, 1, 1), radius=0.001).attach_to(base)
+                    # gm.gen_sphere(matrix_id_infos["center2"] , rgba=(0, 1, 1, 1), radius=0.001).attach_to(base)
+                    # gm.gen_sphere(matrix_id_infos["center3"] , rgba=(1, 0, 1, 1), radius=0.001).attach_to(base)
+                    # gm.gen_sphere(matrix_id_infos["center4"] , rgba=(1, 1, 1, 1), radius=0.001).attach_to(base)
+                    # base.run()
                 else:
                     pass
 
@@ -267,47 +303,115 @@ class Element(object):
                         self.c3_sen = node["center3_sen"]
                         self.c4_sen = node["center4_sen"]
                 self.construct()
-                self.get_stl(dict)
+                # self.get_stl(dict)
 
     def construct(self):
+        section = 12
         if self.parity == "even-even":
-            self.t1 = gm.gen_ellipse(self.o,[self.t, self.c1,self.b,self.c3], self.radius, 12)
-            self.t2 = gm.gen_ellipse(self.o, [self.c2, self.c1, self.c4, self.c3], self.radius, 12)
-            self.t3 = gm.gen_ellipse(self.o, [self.t, self.c2, self.b, self.c4], self.radius, 12)
-            # print("check", [self.c1, self.c2,self.c3,self.c4])
-            self.t1.attach_to(base)
-            self.t2.attach_to(base)
-            # print("check", [self.c1, self.c2, self.c3, self.c4])
-            self.t3.attach_to(base)
+            section = 4
+            # gm.gen_sphere(self.b, rgba=(0,1,0,1), radius=0.002).attach_to(base)
+            # gm.gen_sphere(self.c1, rgba=(0, 0, 1, 1), radius=0.002).attach_to(base)
+            # gm.gen_sphere(self.c2, rgba=(0, 1, 1, 1), radius=0.002).attach_to(base)
+            # gm.gen_sphere(self.c3, rgba=(1, 0, 1, 1), radius=0.002).attach_to(base)
+            # gm.gen_sphere(self.c4, rgba=(1, 1, 1, 1), radius=0.002).attach_to(base)
 
+            self.t1_0 = gm.gen_halfellipse([self.c3, self.c2,self.c1], self.radius, section)
+            self.t2_0 = gm.gen_halfellipse([self.t, self.c2, self.b], self.radius, section)
+            self.t3_0 = gm.gen_halfellipse([self.t, self.c3, self.b], self.radius, section)
+
+            self.t1_1 = gm.gen_halfellipse([self.c3, self.c4, self.c1], self.radius, section)
+            self.t2_1 = gm.gen_halfellipse([self.t, self.c4, self.b], self.radius, section)
+            self.t3_1 = gm.gen_halfellipse([self.t, self.c1, self.b], self.radius, section)
+
+            self.t1_0.attach_to(base)
+            self.t2_0.attach_to(base)
+            self.t3_0.attach_to(base)
+
+            self.t1_1.attach_to(base)
+            self.t2_1.attach_to(base)
+            self.t3_1.attach_to(base)
+            # base.run()
+
+        elif self.parity == "odd-even":
+            self.t1_0 = gm.gen_halfellipse([self.b, self.c1,self.t], self.radius, section)
+            self.t2_0 = gm.gen_halfellipse([self.b, self.c4, self.t], self.radius, section)
+            self.t3_0 = gm.gen_halfellipse([self.c2, self.c1, self.c4], self.radius, section)
+
+            self.t1_1 = gm.gen_halfellipse([self.b, self.c2, self.t], self.radius, section)
+            self.t2_1 = gm.gen_halfellipse([self.b, self.c3, self.t], self.radius, section)
+            self.t3_1 = gm.gen_halfellipse([self.c2, self.c3, self.c4], self.radius, section)
+
+            self.t1_0.attach_to(base)
+            self.t2_0.attach_to(base)
+            self.t3_0.attach_to(base)
+
+            self.t1_1.attach_to(base)
+            self.t2_1.attach_to(base)
+            self.t3_1.attach_to(base)
 
         else:
-            self.t_c1 = capsule_link_start_end(self.t, self.c1, self.radius)
-            self.t_c2 = capsule_link_start_end(self.t, self.c2, self.radius)
-            self.t_c3 = capsule_link_start_end(self.t, self.c3, self.radius)
-            self.t_c4 = capsule_link_start_end(self.t, self.c4, self.radius)
-            self.b_c1 = capsule_link_start_end(self.b, self.c1, self.radius)
-            self.b_c2 = capsule_link_start_end(self.b, self.c2, self.radius)
-            self.b_c3 = capsule_link_start_end(self.b, self.c3, self.radius)
-            self.b_c4 = capsule_link_start_end(self.b, self.c4, self.radius)
-            self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius)
-            self.c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
-            self.c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
-            self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
+            self.t1_0 = gm.gen_halfellipse([self.b, self.c1,self.t], self.radius, section)
+            self.t2_0 = gm.gen_halfellipse([self.b, self.c4, self.t], self.radius, section)
+            self.t3_0 = gm.gen_halfellipse([self.c2, self.c1, self.c4], self.radius, section)
 
-            self.t_c1.attach_to(base)
-            self.t_c2.attach_to(base)
-            self.t_c3.attach_to(base)
-            self.t_c4.attach_to(base)
-            self.b_c1.attach_to(base)
-            self.b_c2.attach_to(base)
-            self.b_c3.attach_to(base)
-            self.b_c4.attach_to(base)
-            self.c1_c2.attach_to(base)
-            self.c2_c3.attach_to(base)
-            self.c3_c4.attach_to(base)
-            self.c4_c1.attach_to(base)
+            self.t1_1 = gm.gen_halfellipse([self.b, self.c2, self.t], self.radius, section)
+            self.t2_1 = gm.gen_halfellipse([self.b, self.c3, self.t], self.radius, section)
+            self.t3_1 = gm.gen_halfellipse([self.c2, self.c3, self.c4], self.radius, section)
 
+            self.t1_0.attach_to(base)
+            self.t2_0.attach_to(base)
+            self.t3_0.attach_to(base)
+
+            self.t1_1.attach_to(base)
+            self.t2_1.attach_to(base)
+            self.t3_1.attach_to(base)
+
+            circlecenter = hu.find_circle_center_3d(self.c1, self.c2, self.c3)
+            r = hm.distance(circlecenter, self.c1)
+            # gm.gen_sphere(hu.find_circle_center_3d(self.c1, self.c2, self.c3), radius=0.002).attach_to(base)
+            self.t4 = gm.gen_torus(axis=hu.normal_from_3point(self.c1, self.c2, self.c3),
+              starting_vector=None,
+              portion=1,
+              center=circlecenter,
+              radius=r,
+              thickness=self.radius,
+              rgba=[1, 1, 1, 1],
+              sections=12,
+              discretization=24)
+            # self.t4.attach_to(base)
+            # self.t1 = gm.gen_ellipse(self.o, [self.t, self.c1, self.b, self.c3], self.radius, section)
+            # self.t2 = gm.gen_ellipse(self.o, [self.c2, self.c1, self.c4, self.c3], self.radius, section)
+            # self.t3 = gm.gen_ellipse(self.o, [self.t, self.c2, self.b, self.c4], self.radius, section)
+            #
+            # self.t1.attach_to(base)
+            # self.t2.attach_to(base)
+            # self.t3.attach_to(base)
+
+            # self.t_c1 = capsule_link_start_end(self.t, self.c1, self.radius)
+            # self.t_c2 = capsule_link_start_end(self.t, self.c2, self.radius)
+            # self.t_c3 = capsule_link_start_end(self.t, self.c3, self.radius)
+            # self.t_c4 = capsule_link_start_end(self.t, self.c4, self.radius)
+            # self.b_c1 = capsule_link_start_end(self.b, self.c1, self.radius)
+            # self.b_c2 = capsule_link_start_end(self.b, self.c2, self.radius)
+            # self.b_c3 = capsule_link_start_end(self.b, self.c3, self.radius)
+            # self.b_c4 = capsule_link_start_end(self.b, self.c4, self.radius)
+            # self.c1_c2 = capsule_link_start_end(self.c1, self.c2, self.radius)
+            # self.c2_c3 = capsule_link_start_end(self.c2, self.c3, self.radius)
+            # self.c3_c4 = capsule_link_start_end(self.c3, self.c4, self.radius)
+            # self.c4_c1 = capsule_link_start_end(self.c4, self.c1, self.radius)
+            # self.t_c1.attach_to(base)
+            # self.t_c2.attach_to(base)
+            # self.t_c3.attach_to(base)
+            # self.t_c4.attach_to(base)
+            # self.b_c1.attach_to(base)
+            # self.b_c2.attach_to(base)
+            # self.b_c3.attach_to(base)
+            # self.b_c4.attach_to(base)
+            # self.c1_c2.attach_to(base)
+            # self.c2_c3.attach_to(base)
+            # self.c3_c4.attach_to(base)
+            # self.c4_c1.attach_to(base)
+            # base.run()
         if self.secondlayer and "origin_sen" in self.node.keys():
             self.t_c1_sen = capsule_link_start_end(self.t_sen, self.c1_sen, self.radius)
             self.t_c2_sen = capsule_link_start_end(self.t_sen, self.c2_sen, self.radius)
@@ -333,8 +437,6 @@ class Element(object):
             self.c2_c3_sen.attach_to(base)
             self.c3_c4_sen.attach_to(base)
             self.c4_c1_sen.attach_to(base)
-
-
 
 
         self.supportoffset = 0.015
@@ -410,31 +512,37 @@ class Element(object):
             t3_objtrm.export(f"{file}t_c3.stl")
 
         else:
-            t_c1_objtrm = self.t_c1.objtrm
-            t_c2_objtrm = self.t_c2.objtrm
-            t_c3_objtrm = self.t_c3.objtrm
-            t_c4_objtrm = self.t_c4.objtrm
-            b_c1_objtrm = self.b_c1.objtrm
-            b_c2_objtrm = self.b_c2.objtrm
-            b_c3_objtrm = self.b_c3.objtrm
-            b_c4_objtrm = self.b_c4.objtrm
-            c1_c2_objtrm = self.c1_c2.objtrm
-            c2_c3_objtrm = self.c2_c3.objtrm
-            c3_c4_objtrm = self.c3_c4.objtrm
-            c4_c1_objtrm = self.c4_c1.objtrm
-
-            t_c1_objtrm.export(f"{file}t_c1.stl")
-            t_c2_objtrm.export(f"{file}t_c2.stl")
-            t_c3_objtrm.export(f"{file}t_c3.stl")
-            t_c4_objtrm.export(f"{file}t_c4.stl")
-            b_c1_objtrm.export(f"{file}b_c1.stl")
-            b_c2_objtrm.export(f"{file}b_c2.stl")
-            b_c3_objtrm.export(f"{file}b_c3.stl")
-            b_c4_objtrm.export(f"{file}b_c4.stl")
-            c1_c2_objtrm.export(f"{file}c1_c2.stl")
-            c2_c3_objtrm.export(f"{file}c2_c3.stl")
-            c3_c4_objtrm.export(f"{file}c3_c4.stl")
-            c4_c1_objtrm.export(f"{file}c4_c1.stl")
+            t1_objtrm = self.t1.objtrm
+            t2_objtrm = self.t2.objtrm
+            t3_objtrm = self.t3.objtrm
+            t1_objtrm.export(f"{file}t_c1.stl")
+            t2_objtrm.export(f"{file}t_c2.stl")
+            t3_objtrm.export(f"{file}t_c3.stl")
+            # t_c1_objtrm = self.t_c1.objtrm
+            # t_c2_objtrm = self.t_c2.objtrm
+            # t_c3_objtrm = self.t_c3.objtrm
+            # t_c4_objtrm = self.t_c4.objtrm
+            # b_c1_objtrm = self.b_c1.objtrm
+            # b_c2_objtrm = self.b_c2.objtrm
+            # b_c3_objtrm = self.b_c3.objtrm
+            # b_c4_objtrm = self.b_c4.objtrm
+            # c1_c2_objtrm = self.c1_c2.objtrm
+            # c2_c3_objtrm = self.c2_c3.objtrm
+            # c3_c4_objtrm = self.c3_c4.objtrm
+            # c4_c1_objtrm = self.c4_c1.objtrm
+            #
+            # t_c1_objtrm.export(f"{file}t_c1.stl")
+            # t_c2_objtrm.export(f"{file}t_c2.stl")
+            # t_c3_objtrm.export(f"{file}t_c3.stl")
+            # t_c4_objtrm.export(f"{file}t_c4.stl")
+            # b_c1_objtrm.export(f"{file}b_c1.stl")
+            # b_c2_objtrm.export(f"{file}b_c2.stl")
+            # b_c3_objtrm.export(f"{file}b_c3.stl")
+            # b_c4_objtrm.export(f"{file}b_c4.stl")
+            # c1_c2_objtrm.export(f"{file}c1_c2.stl")
+            # c2_c3_objtrm.export(f"{file}c2_c3.stl")
+            # c3_c4_objtrm.export(f"{file}c3_c4.stl")
+            # c4_c1_objtrm.export(f"{file}c4_c1.stl")
 
         if self.secondlayer and "origin_sen" in self.node.keys():
             t_c1_sen_objtrm = self.t_c1_sen.objtrm
@@ -484,43 +592,38 @@ class Element(object):
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960, h=540, lookat_pos=[0, 0, 0.0])
-    gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
-
-    # p=np.array([[0.010, 0,0],[0.007,0.007,0],[0,0.01,0],[-0.007,0.007,0],[-0.01,0,0],[-0.007,-0.007,0],[0,-0.01,0],[0.007,-0.007,0],[0.010, 0 ,0],[0.007,0.007,0]])
-    # p = np.array(
-    #     [[0.010, 0, 0], [0.007, 0.007, 0], [0, 0.01, 0], [-0.007, 0.007, 0], [-0.01, 0, 0], [-0.007, -0.007, 0],
-    #      [0, -0.01, 0]])
-    # a = gm.gen_curveline(p,0.001, 16)
-    # a.set_rgba([1,0,0,1])
-    # a.attach_to(base)
-    # center = np.array([0.0+0.05,0.0+0.05,0.0+0.05])
-    # points = np.array([[0.02+0.05,0+0.05,0+0.05],[0+0.05,0.01+0.05,0.01+0.05],[-0.02+0.05,0+0.05,0+0.05],[0+0.05,-0.01+0.05,0.01+0.05]])
-    # gm.gen_ellipse(center,points,0.001,15).attach_to(base)
+    # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.005
+    height = 0.005
+    # height = 0.008
+    origin_offset = 0.0015
+    radius = 0.0003
     # len_num = 39
     # wid_num = 39
-    len_num =9
-    wid_num = 9
-    n = 32
-    r = 0.04
-    height_layer = 32
-    matrix = [[np.array([interval * x, interval * y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
-    matrix_second = [[np.array([interval * x, interval * y, 2*interval]) for x in range(len_num)] for y in range(wid_num)]
+    len_num = 3+4
+    wid_num = 5+4
+    n = 12
+    r = 0.006
+    height_layer = 6
+    # matrix = [[np.array([interval * x, interval * y, 0.000]) for y in range(wid_num)] for x in range(len_num)]
+    matrix = []
+    for item in range(0, n):
+        array = []
+        for layer in range(0,height_layer):
+            x = np.cos(item * 2 * np.pi / (n - 4)) * r
+            z = np.sin(item * 2 * np.pi / (n - 4)) * r
+            array.append([x, layer * interval, z])
+        matrix.append(array)
+
+    # matrix_second = [[np.array([interval * x, interval * y, 2*interval]) for x in range(len_num)] for y in range(wid_num)]
     cut_list = []
 
     grid = Grid(np.array(matrix), interval)
-    node = Node(grid, height=0.003, origin_offset=0.0008)
+    node = Node(grid, height= height, origin_offset=origin_offset)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], dict="thin",radius=0.0006, id = key, cut = cut_list, support = False, secondlayer = False)
-
-    # grid_double = Grid(np.array(matrix_second), interval)
-    # node_double = Node(grid_double , height=0.006, origin_offset=0.001)
-    # matrix_infos = node_double.node_matrix_infos
-    # for key in matrix_infos.keys():
-    #     element = Element(matrix_infos[key], dict="5-5", radius=0.0006, id=key, cut=cut_list, support=False,
-    #                       secondlayer=False)
+        element = Element(matrix_infos[key], dict="thin",radius=radius, id = key, cut = cut_list, support = False, secondlayer = False)
 
     def update(textNode, task):
         if textNode[0] is not None:

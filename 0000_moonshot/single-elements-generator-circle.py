@@ -50,7 +50,7 @@ class Grid(object):
         self.wid_num = position_matrix.shape[1]
         self.len_num = position_matrix.shape[0]
         self.defaut_dis = defaut_dis
-        # self.show()
+        self.show()
     def get_origin(self, x, y):
         if 0<= x < self.len_num and 0<= y < self.wid_num:
             return self.position_matrix[y][x]

@@ -817,13 +817,13 @@ def gen_curveline(pseq, r, section=5,  toggledebug=False):
         return rotseq
 
     rotseq = get_rotseq_by_pseq(pseq)
-    gen_sphere(pseq[0], radius=0.0002, rgba=[0, 1, 0, 1]).attach_to(base)
+    # gen_sphere(pseq[0], radius=0.0002, rgba=[0, 1, 0, 1]).attach_to(base)
     return GeometricModel(trihelper.gen_curveline(pseq, rotseq, r, section, toggledebug))
 
 def gen_ellipse(center, points, r, section, toggledebug=False):
     a = np.linalg.norm(points[0]-center)
     b = np.linalg.norm(points[1]-center)
-    import humath as hm
+    import hu.humath as hm
     surface = hm.getsurfacefrom3pnt(points[:3])
     normal = np.asarray(surface[:3])
     rotmat = rm.rotmat_between_vectors(np.array([0,0,1]), normal)
@@ -842,7 +842,35 @@ def gen_ellipse(center, points, r, section, toggledebug=False):
 
     return gen_curveline(curve, r, section=section, toggledebug=False)
 
+def gen_halfellipse(points, r, section, toggledebug=False):
+    center = 0.5*(points[0]+points[2])
 
+    a = np.linalg.norm(points[0]-center)
+    b = np.linalg.norm(points[1]-center)
+    import hu.humath as hm
+    surface = hm.getsurfacefrom3pnt(points[:3])
+    normal = np.asarray(surface[:3])
+    a_unit = rm.unit_vector(points[0]-center)
+    b_unit = rm.unit_vector(points[1] - center)
+    rotmat = np.array([[a_unit[0],b_unit[0],normal[0]],
+              [a_unit[1],b_unit[1],normal[1]],
+              [a_unit[2],b_unit[2],normal[2]]])
+    # rotmat = rm.rotmat_between_vectors(np.array([0,0,1]), normal)
+    pos = center
+    # pos = 0.5*(points[0]-points[2])
+    homomat = rm.homomat_from_posrot(pos, rotmat)
+    def ellipse_curve(a = 0.01, b=0.02, homomat = np.eye(4)):
+        disc = 50
+        theta_list = np.linspace(0,1*np.pi*(disc+1)/disc,disc+1)
+        xy_list = []
+        for theta in theta_list:
+            r = (a*b)/(np.sqrt((b*b*np.cos(theta)*np.cos(theta))+(a*a*np.sin(theta)*np.sin(theta))))
+            coordinat = rm.homomat_transform_points(homomat,np.array([r*np.cos(theta),r*np.sin(theta),0]))
+            xy_list.append(coordinat)
+        return xy_list
+    curve = ellipse_curve(a, b, homomat)
+
+    return gen_curveline(curve, r, section=section, toggledebug=False)
 
 def gen_dashtorus(axis=np.array([1, 0, 0]),
                   portion=.5,

@@ -279,7 +279,6 @@ class Element(object):
             self.t2.attach_to(base)
             self.t3.attach_to(base)
 
-
         else:
             self.t_c1 = capsule_link_start_end(self.t, self.c1, self.radius)
             self.t_c2 = capsule_link_start_end(self.t, self.c2, self.radius)
