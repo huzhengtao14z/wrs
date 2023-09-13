@@ -498,19 +498,19 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960, h=540, lookat_pos=[0, 0, 0.0])
     gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
-    # interval = 0.0044
-    # height = 0.0045
-    # origin_offset = 0.00155
-    # radius = 0.0006
-
-    interval = 0.005
-    height = 0.005
-    origin_offset = 0.002
+    interval = 0.0044
+    height = 0.0045
+    origin_offset = 0.00155
     radius = 0.0006
+
+    # interval = 0.005
+    # height = 0.005
+    # origin_offset = 0.002
+    # radius = 0.0006
     # len_num = 39
     # wid_num = 39
-    len_num = 21+4
-    wid_num = 5+4
+    len_num = 33+4
+    wid_num = 7+4
     n = 32
     r = 0.04
     height_layer = 32
