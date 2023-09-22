@@ -22,7 +22,7 @@ import robot_sim._kinematics.collision_checker as cc
 import robot_sim.end_effectors.grippers.gripper_interface as gi
 # import robot_sim.
 import os
-def capsule_link_start_end(start, end, radius = 0.0003, rgba = (1,1,0,1)):
+def capsule_link_start_end(start, end, radius = 0.0003, rgba = (.5,0.5,.5,1)):
     start = start
     end = end
     radius = radius
@@ -223,7 +223,7 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
-                self.get_stl()
+                # self.get_stl()
 
     def construct(self):
         # self.bar_list = []
@@ -374,10 +374,10 @@ if __name__ == '__main__':
     interval = 0.006
     # len_num = 45+6
     # wid_num = 45+6
-    len_num = 11+4
-    wid_num = 11+4
-    # len_num =9
-    # wid_num =9
+    # len_num = 11+4
+    # wid_num = 11+4
+    len_num =9
+    wid_num =9
     matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
 
     # c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
