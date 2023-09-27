@@ -19,8 +19,8 @@ import os
 import pickle
 import basis.data_adapter as da
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
-import slope
-import Sptpolygoninfo as sinfo
+# import slope
+# import Sptpolygoninfo as sinfo
 import basis.trimesh as trimeshWan
 import trimesh as trimesh
 from panda3d.core import NodePath

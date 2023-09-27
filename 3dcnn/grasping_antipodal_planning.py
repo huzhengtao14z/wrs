@@ -13,12 +13,13 @@ base = wd.World(cam_pos=[1, 1, 1],w=960,
 gm.gen_frame().attach_to(base)
 # object
 # name = 'Tortoise_800_tex'
-name = 'CatLying_800_tex'
+name = 'thinsheet.stl'
 # address = "3dcnnobj/"+name+".stl"
 
 # address = "3dcnnobj/"+name+".stl"
-address = "kit_model/"+name+".obj"
+# address = "kit_model/"+name+".obj"
 # address = "3dcnnobj/"
+address = "objects"
 mesh = tw.TrimeshHu(meshpath = address, name = name )
 m =mesh.outputTrimesh
 object = cm.CollisionModel(m)

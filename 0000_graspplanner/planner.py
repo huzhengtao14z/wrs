@@ -257,8 +257,8 @@ class GraspPlanner():
                         gripper.grip_at_with_jcpose((anchor + anchor_opposite) / 2, gl_jaw_center_rotmat=rotmat,
                                                     jaw_width=jaw_width)
                         if not gripper.is_mesh_collided([self.collision_model]):
-                            # gripper.gen_meshmodel(toggle_tcpcs=False, rgba=(0,1,0,0.1)).attach_to(base)
-                            gripper.gen_meshmodel(toggle_tcpcs=False).attach_to(base)
+                            gripper.gen_meshmodel(toggle_tcpcs=False, rgba=(0,1,0,0.1)).attach_to(base)
+                            # gripper.gen_meshmodel(toggle_tcpcs=False).attach_to(base)
                             break
 
                 else:
@@ -271,11 +271,13 @@ if __name__ == '__main__':
     # gm.gen_frame().attach_to(base)
     this_dir, this_filename = os.path.split(__file__)
     # objpath = "kit_model_stl/Amicelli_800_tex.stl"
+    # objpath = "kit_model_stl/CoffeeBox_800_tex.stl"
+    objpath = "kit_model_stl/Dog_800_tex.stl"
     # objpath = "test_obj/tetrahedron.stl"
     # objpath = "kit_model_stl/RedCup_800_tex.stl"
     # objpath = "test_obj/ratchet.stl"
     # objpath = "kit_model_stl/InstantSoup_800_tex.stl"
-    objpath = "test_obj/cupramen.stl"
+    # objpath = "test_obj/cupramen.stl"
     graspplanner = GraspPlanner(objpath)
 
     # gm.gen_frame().attach_to(base)

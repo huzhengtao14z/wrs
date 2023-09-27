@@ -33,101 +33,141 @@ import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
 import open3d as o3d
 # import open3d.geometry as o3dg
 import vision.depth_camera.pcd_data_adapter as vdda
-
+import time
 class GraspPlanner():
-    def __init__(self, objpath, show_sample_contact = True):
-        Mesh = o3d.io.read_triangle_mesh(objpath)
+    def __init__(self, objpath, objname, show_sample_contact = True):
+        #load collsion model
+        self.objname = objname
         self.collision_model = cm.CollisionModel(objpath)
         self.collision_model.set_rgba((0.5, 0.5, 0.5, 1))
+        # self.collision_model.set_scale((2, 2, 2))
         self.collision_model.attach_to(base)
         # base.run()
+        #load mesh and down sample
+        Mesh = o3d.io.read_triangle_mesh(objpath)
         Mesh.compute_vertex_normals()
         pcd = Mesh.sample_points_poisson_disk(number_of_points=10000)
         self.pcd, ind = pcd.remove_radius_outlier(nb_points=50, radius=0.05)
+        self.pcd_tree = o3d.geometry.KDTreeFlann(self.pcd)
         # number_of_points=5000
         # nb_points=50, radius=0.05
         self.pcd_np = vdda.o3dpcd_to_parray(pcd)
         self.pcd_normal_np = np.asarray(pcd.normals)[:, :]
-
         # self.showobj_pcd()
-
         # base.run()
-        self._sample_contact(rate = 0.05, show = True)
-        self.detect_edge()
+        self.pcd_sample, self.pcd_sample_np = self._sample_contact(rate = 0.05, everynum=2, show = False)
+        t_edge_start = time.time()
+        self.detect_edge(r = 0.005, load = False)
+        t_edge_end = time.time()
+        t_vertex_start = time.time()
+        self.detect_vertex(r = 0.005, load = False)
+        t_vertex_end = time.time()
+        print(f"Edge detection: {t_edge_end - t_edge_start}")
+        print(f"vertex detection: {t_vertex_end - t_vertex_start}")
+        # self.detect_edge(load=True)
+        # self.detect_vertex(load=True)
+        t_grasp_start = time.time()
         self.show_edge_pcd()
+        t_grasp_end = time.time()
+        print(f"grasp: {t_grasp_end - t_grasp_start}")
         base.run()
         self.plan_poses()
 
-    def detect_edge(self, width_detect=0.005, length_detect=0.09, show_neighber=False):
-        self.edge_pnt = []
-        self.edge_normal = []
-        self.surface_pnt = []
-        self.surface_normal = []
-        for anchor in self.pcd_sample_np:
-            anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np = self._get_neibour_detect(anchor)
-            # anchor_normal = pcd_neighber_normal_np.mean(axis=0)
-            if show_neighber:
-                # gm.gen_arrow(anchor, anchor + anchor_normal * 0.02, thickness=0.001).attach_to(base)
-                for i, pnt in enumerate(pcd_neighber_np):
-                    edge_cm = cm.gen_sphere(pos=pnt, radius=0.0005)
-                    edge_cm.set_rgba((0, 1, 0, 0.5))
-                    edge_cm.attach_to(base)
+    def detect_edge(self, width_detect=0.005, length_detect=0.09, r = 0.003, show_neighber=False, load = False):
+        r = r
+        if load:
+            self.edge_pnt = self.importinfo(f"debug_data/{self.objname}/edge_pnt.pickle")
+            self.edge_normal = self.importinfo(f"debug_data/{self.objname}/edge_pnt.pickle")
+            self.surface_pnt = self.importinfo(f"debug_data/{self.objname}/edge_pnt.pickle")
+            self.surface_normal = self.importinfo(f"debug_data/{self.objname}/edge_pnt.pickle")
+        else:
+            self.edge_pnt = []
+            self.edge_normal = []
+            self.surface_pnt = []
+            self.surface_normal = []
+            self.convex = []
+            for anchor in self.pcd_sample_np:
+                anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np = self._get_neibour_detect(anchor, radius=r)
+                # anchor_normal = pcd_neighber_normal_np.mean(axis=0)
+                if show_neighber:
+                    # gm.gen_arrow(anchor, anchor + anchor_normal * 0.02, thickness=0.001).attach_to(base)
+                    for i, pnt in enumerate(pcd_neighber_np):
+                        edge_cm = cm.gen_sphere(pos=pnt, radius=r)
+                        edge_cm.set_rgba((0, 1, 0, 0.5))
+                        edge_cm.attach_to(base)
+            self.outputinfo(f"debug_data/{self.objname}/edge_pnt.pickle", self.edge_pnt)
+            self.outputinfo(f"debug_data/{self.objname}/edge_normal.pickle", self.edge_normal)
+            self.outputinfo(f"debug_data/{self.objname}/surface_pnt.pickle", self.surface_pnt)
+            self.outputinfo(f"debug_data/{self.objname}/surface_normal.pickle", self.surface_normal)
+
+    def outputinfo(self, name, data):
+        with open(name, "wb") as file:
+            pickle.dump(data, file)
+    def importinfo(self, name):
+        with open(name, "rb") as file:
+            f = pickle.load(file)
+        return  f
 
     def showobj_pcd(self):
         gm.gen_pointcloud(self.pcd_np).attach_to(base)
 
+    def detect_vertex(self, r = 0.003, load=False):
+        r = r
+        if load:
+            self.vertex_pnt_clustered = self.importinfo(f"debug_data/{self.objname}/vertex_pnt_clustered.pickle")
+        else:
+            self.vertex_pnt = []
+            # edge_pnt_pcd = vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt))
+            # edge_pnt_pcd.remove_radius_outlier(20, 0.001)
+            # edge_pnt_np = vdda.o3dpcd_to_parray(edge_pnt_pcd)
+            # gm.gen_pointcloud(edge_pnt_np, pntsize=10).attach_to(base)
+
+            for pnt in self.edge_pnt:
+                # range_ball_cm = cm.gen_sphere(pos=pnt, radius=0.005)
+                # range_ball_cm.set_rgba((1, 0.3, 0.6, 0.2))
+                # range_ball_cm.attach_to(base)
+                try:
+                    self.edge_pcd_tree = o3d.geometry.KDTreeFlann(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))
+                    [k, idx, _] = self.edge_pcd_tree.search_radius_vector_3d(pnt, r)
+                    pcd_neighber_normal_np = np.asarray([self.edge_normal[i] for i in idx])
+                    pcd_neighber_np = vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))[idx[1:]]
+                    anchor_normal = pcd_neighber_normal_np.mean(axis=0)
+                    if self._is_vertex(pcd_neighber_np):
+                        self.vertex_pnt.append(pnt)
+                        # cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 0.3), radius=0.005).attach_to(base)
+                except:
+                    pass
+            vertex_pnt_o3d = vdda.nparray_to_o3dpcd(np.asarray(self.vertex_pnt))
+            labels = np.array(vertex_pnt_o3d.cluster_dbscan(eps=0.01, min_points=1, print_progress=True))
+            max_label = labels.max()
+            print(f"point cloud has {max_label + 1} clusters")
+            print(labels)
+
+            self.vertex_pnt_clustered = []
+            unique_groups = np.unique(labels)
+            for j in unique_groups:
+                mid = []
+                for i, item in enumerate(self.vertex_pnt):
+                    if labels[i] == j:
+                        mid.append(item)
+                mean_mid = np.mean(np.asarray(mid), axis=0)
+                self.vertex_pnt_clustered.append(mean_mid)
+            print(self.vertex_pnt_clustered)
+            # for item in self.vertex_pnt_clustered:
+            #     gm.gen_sphere(pos=item, rgba=(1,0,0,1), radius=0.0025).attach_to(base)
+            # for i, item in enumerate(self.vertex_pnt):
+            #     # self.vertex_pnt_clustered[labels[i]]=np.append(self.vertex_pnt_clustered[label[i]], item )
+            #     np.random.seed(abs(labels[i]))
+            #     random_elements = np.random.rand(3)
+            #     one_element = np.array([0.3])
+            #     result_array = np.concatenate((random_elements, one_element))
+            #     # cm.gen_sphere(pos=item, rgba=result_array, radius=0.005).attach_to(base)
+            self.outputinfo(f"debug_data/{self.objname}/vertex_pnt_clustered.pickle", self.vertex_pnt_clustered)
+
     def show_edge_pcd(self):
-        edge_pnt_pcd = vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt))
-        edge_pnt_pcd.remove_statistical_outlier(3, 0.001)
-        edge_pnt_np = vdda.o3dpcd_to_parray(edge_pnt_pcd)
 
-        gm.gen_pointcloud(edge_pnt_np, pntsize=3).attach_to(base)
-
-        self.vertex_pnt = []
-        for pnt in self.edge_pnt:
-            range_ball_cm = cm.gen_sphere(pos=pnt, radius=0.005)
-            # range_ball_cm.set_rgba((1, 0.3, 0.6, 0.2))
-            # range_ball_cm.attach_to(base)
-            try:
-                self.edge_pcd_tree = o3d.geometry.KDTreeFlann(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))
-                [k, idx, _] = self.edge_pcd_tree.search_radius_vector_3d(pnt, 0.005)
-                pcd_neighber_normal_np = np.asarray([self.edge_normal[i] for i in idx])
-                pcd_neighber_np = vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))[idx[1:]]
-                anchor_normal = pcd_neighber_normal_np.mean(axis=0)
-                if self._is_vertex(pcd_neighber_np):
-                    self.vertex_pnt.append(pnt)
-                    # cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 0.3), radius=0.005).attach_to(base)
-            except:
-                pass
-
-        # base.run()
-        vertex_pnt_o3d = vdda.nparray_to_o3dpcd(np.asarray(self.vertex_pnt))
-        labels = np.array(vertex_pnt_o3d.cluster_dbscan(eps=0.01, min_points=2, print_progress=True))
-        max_label = labels.max()
-        print(f"point cloud has {max_label + 1} clusters")
-        print(labels)
-
-        self.vertex_pnt_clustered = []
-        unique_groups = np.unique(labels)
-        for j in unique_groups:
-            mid = []
-            for i,item in enumerate(self.vertex_pnt):
-                if labels[i]==j:
-                    mid.append(item)
-            mean_mid = np.mean(np.asarray(mid), axis=0)
-            self.vertex_pnt_clustered.append(mean_mid)
-        print(self.vertex_pnt_clustered)
-        # print(group_means)
         # shape = (max_label + 1, 1, 3)
         # self.vertex_pnt_clustered = np.zeros(shape)
-
-        for i, item in enumerate(self.vertex_pnt):
-            # self.vertex_pnt_clustered[labels[i]]=np.append(self.vertex_pnt_clustered[label[i]], item )
-            np.random.seed(abs(labels[i]))
-            random_elements = np.random.rand(3)
-            one_element = np.array([0.3])
-            result_array = np.concatenate((random_elements, one_element))
-            # cm.gen_sphere(pos=item, rgba=result_array, radius=0.005).attach_to(base)
 
         # for item in self.vertex_pnt_clustered:
         #     cm.gen_sphere(pos=item, rgba=(1,0,0,1), radius=0.002).attach_to(base)
@@ -135,16 +175,16 @@ class GraspPlanner():
 
     def vertex_grasp(self):
         import itertools
-        # combinations = list(itertools.combinations(self.vertex_pnt_clustered, 2))
-        combinations = list(itertools.combinations(list(vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.vertex_pnt)).uniform_down_sample(20))),2))
-
+        combinations = list(itertools.combinations(self.vertex_pnt_clustered, 2))
+        # combinations = list(itertools.combinations(list(vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.vertex_pnt)).uniform_down_sample(20))),2))
+        gripper = rtq85.Robotiq85()
         # print(combinations)
         for pair in combinations:
             # cm.gen_sphere(pos=pair[0], rgba=(1, 0, 0, 1), radius=0.002).attach_to(base)
             # cm.gen_sphere(pos=pair[1], rgba=(1, 0, 0, 1), radius=0.002).attach_to(base)
             # gm.gen_stick(pair[0], pair[1], thickness=0.003, rgba=(1, 0,0,1)).attach_to(base)
             center = (pair[0]+pair[1])/2
-            gripper = rtq85.Robotiq85()
+
             # gripper = rtq140.Robotiq140()
             gripper_y = rm.unit_vector(pair[0] - pair[1])
             t_ar = rm.rotmat_between_vectors(np.array([0, 1, 0]), gripper_y)
@@ -159,21 +199,47 @@ class GraspPlanner():
                         # gripper.gen_meshmodel(rgba=(1,0,0,0.2)).attach_to(base)
                         continue
                     else:
+                        print("check 1")
+                        [k, idx, _] = self.pcd_tree.search_radius_vector_3d(pair[0], 0.012)
+                        contact_a_normal_np = np.asarray([self.pcd.normals[i] for i in idx])
+                        contact_a_neighber_np = vdda.o3dpcd_to_parray(self.pcd)[idx[1:]]
+                        for i, pnt in enumerate(contact_a_neighber_np):
+                            range_ball_cm = cm.gen_sphere(pos=pnt, radius=0.001)
+                            # print(abs(np.dot(pnt-pair[0], rm.unit_vector(pair[0] - pair[1]))))
+                            if abs(np.dot(pair[0]-pnt, rm.unit_vector(pair[1] - pair[0])))<0.001 and np.dot(rm.unit_vector(pair[1] - pair[0]), contact_a_normal_np[i])<0:
+                                range_ball_cm.set_rgba((1, 0.3, 0.6, 1))
+                            else:
+                                range_ball_cm.set_rgba((1, 0.3, 0.6, 0.05))
+                            range_ball_cm.attach_to(base)
+
+                        [k, idx, _] = self.pcd_tree.search_radius_vector_3d(pair[1], 0.012)
+                        contact_b_normal_np = np.asarray([self.pcd.normals[i] for i in idx])
+                        contact_b_neighber_np = vdda.o3dpcd_to_parray(self.pcd)[idx[1:]]
+                        for i, pnt in enumerate(contact_b_neighber_np):
+                            range_ball_cm = cm.gen_sphere(pos=pnt, radius=0.001)
+                            # print(abs(np.dot(pnt - pair[1], rm.unit_vector(pair[0] - pair[1]))))
+                            if abs(np.dot(pair[1]-pnt , rm.unit_vector(pair[0] - pair[1]))) < 0.001 and np.dot(rm.unit_vector(pair[0] - pair[1]), contact_b_normal_np[i])<0:
+                                range_ball_cm.set_rgba((1, 0.3, 0.6, 1))
+                            else:
+                                range_ball_cm.set_rgba((1, 0.3, 0.6, 0.05))
+                            range_ball_cm.attach_to(base)
+
                         gripper.gen_meshmodel().attach_to(base)
                         break
-                        gripper.gen_meshmodel(rgba=(0, 1, 0, 0.2)).attach_to(base)
+                        # gripper.gen_meshmodel(rgba=(0, 1, 0, 0.2)).attach_to(base)
                         # break
 
 
-    def _sample_contact(self, rate = 0.01, show = True):
+    def _sample_contact(self, rate = 0.01, everynum = 3, show = True):
         # self.pcd_sample = self.pcd.random_down_sample(rate)
-        self.pcd_sample = self.pcd.uniform_down_sample(3)
-        self.pcd_sample_np = vdda.o3dpcd_to_parray(self.pcd_sample)
+        pcd_sample = self.pcd.uniform_down_sample(everynum)
+        pcd_sample_np = vdda.o3dpcd_to_parray(pcd_sample)
         if show:
-            for pnt in self.pcd_sample_np:
+            for pnt in pcd_sample_np:
                 # edge_cm = cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 1), radius=0.001).attach_to(base)
                 edge_cm = cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 0.3), radius=0.005)
-                # edge_cm.attach_to(base)
+                edge_cm.attach_to(base)
+        return pcd_sample, pcd_sample_np
 
     def _get_neibour(self, anchor, radius= 0.0025,show=True):
         # anchor = pcd_sample_np[0]
@@ -210,31 +276,17 @@ class GraspPlanner():
         return anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np
 
     def _get_neibour_detect(self, anchor, radius= 0.0025,show=True):
-
-        # anchor = pcd_sample_np[0]
-        range_ball_cm = cm.gen_sphere(pos=anchor, radius=radius)
-        range_ball_cm.set_rgba((1, 0.3, 0.6, 0.2))
+        # range_ball_cm = cm.gen_sphere(pos=anchor, radius=radius)
+        # range_ball_cm.set_rgba((1, 0.3, 0.6, 0.2))
         # range_ball_cm.attach_to(base)
-        self.pcd_tree = o3d.geometry.KDTreeFlann(self.pcd)
         [k, idx, _] = self.pcd_tree.search_radius_vector_3d(anchor, radius)
         pcd_neighber_normal_np = np.asarray([self.pcd.normals[i] for i in idx])
         pcd_neighber_np = vdda.o3dpcd_to_parray(self.pcd)[idx[1:]]
         anchor_normal = pcd_neighber_normal_np.mean(axis=0)
-        # if show:
-        #     for i, pnt in enumerate(pcd_neighber_np):
-        #         edge_cm = cm.gen_sphere(pos=pnt, radius=0.0005)
-        #         edge_cm.set_rgba((0, 1, 0, 0.5))
-        #         edge_cm.attach_to(base)
-
-
-                # gm.gen_arrow(pnt, pnt + pcd_neighber_normal_np[i] * 0.010, thickness=0.0004).attach_to(base)
-            # gm.gen_arrow(anchor, anchor + anchor_normal * 0.015, rgba=(1, 0, 0, 1), thickness=0.001).attach_to(
-            #     base)
-        # base.run()
 
         pcd_neighber_np, pcd_neighber_normal_np, is_surface = self._tune_sample(pcd_neighber_np, pcd_neighber_normal_np)
         # anchor = pcd_neighber_np.mean(axis=0)
-        anchor = anchor
+        # anchor = anchor
         anchor_normal = pcd_neighber_normal_np.mean(axis=0)
         if show:
             # for i, pnt in enumerate(pcd_neighber_np):
@@ -245,10 +297,9 @@ class GraspPlanner():
             # gm.gen_arrow(anchor, anchor + anchor_normal * 0.015, rgba=(0,1,1,1), thickness=0.001).attach_to(
             #     base)
             if is_surface:
-                edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
-                edge_cm.set_rgba((0,1,1, 1))
+                # edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
+                # edge_cm.set_rgba((0,1,1, 1))
                 # edge_cm.attach_to(base)
-
                 self.surface_pnt.append(anchor)
                 self.surface_normal.append(anchor_normal)
                 #     # gm.gen_arrow(pnt, pnt+ pcd_neighber_normal_np[i] * 0.01, rgba=(0,0,1,1), thickness=0.0004).attach_to(base)
@@ -256,11 +307,23 @@ class GraspPlanner():
             else:
                 edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
                 edge_cm.set_rgba((1, 1, 0, 1))
-                # edge_cm.set_rgba((247/255, 122/255, 132/255, 1))
-                # edge_cm.attach_to(base)
 
                 self.edge_pnt.append(anchor)
                 self.edge_normal.append(anchor_normal)
+
+                b = []
+                for neighber in pcd_neighber_np:
+                    a = neighber - anchor
+                    b.append(a)
+                c = np.asarray(b).mean(axis=0)
+                if np.dot(c, anchor_normal) >0:
+                    edge_cm.set_rgba((247 / 255, 122 / 255, 132 / 255, 1))
+                else:
+                    # edge_cm.set_rgba((247 / 255, 122 / 255, 132 / 255, 1))
+                    edge_cm.set_rgba((7 / 25, 122 / 255, 132 / 255, 1))
+                edge_cm.attach_to(base)
+
+
                 #     # gm.gen_arrow(pnt, pnt+ pcd_neighber_normal_np[i] * 0.01, rgba=(0,0,1,1), thickness=0.0004).attach_to(base)
                 # gm.gen_arrow(anchor, anchor + anchor_normal * 0.015, rgba=(1, 1, 0, 1), thickness=0.001).attach_to(base)
 
@@ -303,7 +366,9 @@ class GraspPlanner():
         # else:
         #     is_vertex = True
         lower = 0.051
-        higher = 40
+        higher = 20
+        # lower = 0.1
+        # higher = 10
         if lower < eigen_vals[1] / eigen_vals[0] <higher and  lower < eigen_vals[2] / eigen_vals[0] < higher and  lower < eigen_vals[2] / eigen_vals[1] < higher:
             # print(eigen_vals)
             # print("it is surface, ratio:", eigen_vals[1] / eigen_vals[0])
@@ -344,7 +409,6 @@ class GraspPlanner():
             is_surface = False
         # is_surface = self._is_surface(pcd_neighber_np)
         if is_surface == False:
-
             # print(eigen_vals)
             # print("start edge refine")
             if searchmaxPCA:
@@ -495,8 +559,15 @@ if __name__ == '__main__':
     # objpath = "kit_model_stl/RedCup_800_tex.stl"
     # objpath = "test_obj/ratchet.stl"
     # objpath = "kit_model_stl/InstantSoup_800_tex.stl"
-    objpath = "test_obj/cupramen.stl"
-    graspplanner = GraspPlanner(objpath)
+    # objname = "cupramen"
+    # objname = "tetrahedron"
+    # objname = "Amicelli_800_tex"
+    # objpath = f"test_obj/{objname}.stl"
+    # objname = "CatSitting_800_tex"
+    objname = "CatLying_800_tex"
+    # objname = "CoffeeBox_800_tex"
+    objpath = f"kit_model_stl/{objname}.stl"
+    graspplanner = GraspPlanner(objpath, objname)
 
     # gm.gen_frame().attach_to(base)
     base.run()
