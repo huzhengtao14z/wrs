@@ -26,7 +26,7 @@ def capsule_link_start_end(start, end, radius = 0.0003, rgba = (.5,0.5,.5,1)):
     start = start
     end = end
     radius = radius
-    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[5, 5],  rgba = rgba)
+    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[30, 30],  rgba = rgba)
     return capsule
 
 def cylinder_link_start_end(start, end,  radius = 0.0003):
@@ -71,25 +71,67 @@ class Grid(object):
         return self.len_num
 
     def show(self, thickness = 0.0003):
-        for y in range(self.wid_num):
-            for x in range(self.len_num):
-                gm.gen_sphere(pos = self.position_matrix[y][x], radius = 0.0003, rgba=(0,0,0,1)).attach_to(base)
-                if x == self.len_num - 1 and y < self.wid_num - 1:
-                    # print("check")
+        r = 0.0005
+        # surface = cm.gen_box(extent=[(self.wid_num-3)* self.defaut_dis, (self.len_num-3)* self.defaut_dis, .00001],
+        #                 homomat=rm.homomat_from_posrot([self.defaut_dis * 4, self.defaut_dis * 4, 0], rm.rotmat_from_axangle([0, 0, 1], 0)),
+        #                 rgba=[241/255, 167/255, 56/255, 0.4]).attach_to(base)
+
+
+        for y in range(1, self.wid_num-1):
+            for x in range(1, self.len_num-1):
+                # gm.gen_sphere(pos=self.position_matrix[y][x], radius=0.0005, rgba=(0.7,0.7, 0.7, 1)).attach_to(base)
+                def drawnode():
+                    if (x % 2) == 0 and (y % 2) == 0:
+                        gm.gen_sphere(pos = self.position_matrix[y][x], radius = r, rgba=(0,0,0,1)).attach_to(base)
+                    elif (x % 2) == 1 and (y % 2) == 1:
+                        gm.gen_sphere(pos = self.position_matrix[y][x], radius = r, rgba=(255/255,65/255,148/255,1)).attach_to(base)
+                    elif (x % 2) == 0 and (y % 2) == 1:
+                        gm.gen_sphere(pos = self.position_matrix[y][x], radius = r, rgba=(0/255,227/255,121/255,1)).attach_to(base)
+                    elif (x % 2) == 1 and (y % 2) == 0:
+                        gm.gen_sphere(pos = self.position_matrix[y][x], radius = r, rgba=(0/255,227/255,121/255,1)).attach_to(base)
+
+                if x == self.len_num - 2 and y < self.wid_num - 2:
+                    gm.gen_sphere(pos = self.position_matrix[y][x], radius = r, rgba=(0.7,0.7,0.7,1)).attach_to(base)
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1], rgba=(0.7, 0.7, 0.7, 1),
+                                 thickness=thickness).attach_to(base)
+
+                elif y == self.wid_num - 2 and x < self.len_num-2:
+                    gm.gen_sphere(pos = self.position_matrix[y][x], radius = r, rgba=(0.7,0.7,0.7,1)).attach_to(base)
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x + 1][y],rgba=(0.7, 0.7, 0.7, 1),
+                                 thickness=thickness).attach_to(base)
+
+
+                elif y == 1 and  1< x < self.len_num-2:
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x + 1][y],rgba=(0.7, 0.7, 0.7, 1),
+                                 thickness=thickness).attach_to(base)
                     gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1],
                                  thickness=thickness).attach_to(base)
-                elif y == self.wid_num - 1 and x < self.len_num-1:
-                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x + 1][y],
+                    gm.gen_sphere(pos=self.position_matrix[y][x], radius=r, rgba=(0.7, 0.7, 0.7, 1)).attach_to(base)
+
+                elif x == 1 and  1<y < self.wid_num - 2:
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x + 1][y],thickness=thickness).attach_to(base)
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1],rgba=(0.7, 0.7, 0.7, 1),
                                  thickness=thickness).attach_to(base)
-                elif x < self.len_num-1 and y < self.wid_num - 1:
+                    gm.gen_sphere(pos=self.position_matrix[y][x], radius=r, rgba=(0.7, 0.7, 0.7, 1)).attach_to(base)
+                # 80 / 255, 185 / 255, 1, 1
+                elif x == 1 and  y==1:
+                    gm.gen_sphere(pos=self.position_matrix[y][x], radius=r, rgba=(0.7, 0.7, 0.7, 1)).attach_to(
+                        base)
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x + 1][y],rgba=(0.7, 0.7, 0.7, 1),thickness=thickness).attach_to(base)
+                    gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y + 1],rgba=(0.7, 0.7, 0.7, 1),thickness=thickness).attach_to(base)
+                elif x == self.len_num-2 and y == self.wid_num - 2:
+                    gm.gen_sphere(pos=self.position_matrix[y][x], radius=r, rgba=(0.7, 0.7, 0.7, 1)).attach_to(
+                        base)
+
+                elif x < self.len_num-2 and y < self.wid_num - 2:
+                    drawnode()
                     print("x:",x,"====", "y:",y)
                     print(self.position_matrix.shape)
                     gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x+1][y], thickness=thickness).attach_to(
                         base)
                     gm.gen_stick(self.position_matrix[x][y], self.position_matrix[x][y+1], thickness=thickness).attach_to(
                         base)
-                # elif x == self.len_num - 1 and y < self.wid_num - 1:
-                #     pass
+
 
         # for y in range(self.wid_num):
         #     gm.gen_stick(self.position_matrix[y][0], self.position_matrix[y][-1], thickness = thickness).attach_to(base)
@@ -194,12 +236,13 @@ class Node(object):
 
 
 class Element(object):
-    def __init__(self, node, radius = 0.01, manualset = False, id = None, cut = None, support = None):
+    def __init__(self, node, radius = 0.01, manualset = False, id = None, cut = None, support = None, filename = "41-41"):
         # self.construct()
         self.radius = radius
         self.id = id
         self.parity = node["parity"]
         self.support = support
+        self.filename = filename
         if cut:
             a = cm.gen_sphere(node["origin"], radius = 0.001)
             if a.is_mcdwith(objcm_list=cut):
@@ -255,7 +298,7 @@ class Element(object):
         if self.support:
             if self.parity == "even-even":
                 self.stage = cylinder_link_start_end(self.c4+np.array([0,0, 0.001]), self.c4+np.array([0,0, -0.0006]), 2.1*self.radius)
-                # self.stage.attach_to(base)
+                self.stage.attach_to(base)
 
             elif self.parity == "even-odd":
                 # self.pillar_a_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
@@ -269,8 +312,8 @@ class Element(object):
                 self.pillar_a_2 = cylinder_link_start_end(self.c4 ,
                                                           np.array([self.c4[0],self.c4[1],-0.0056]),
                                                           self.radius *2.1)
-                # self.pillar_a_1.attach_to(base)
-                # self.pillar_a_2.attach_to(base)
+                self.pillar_a_1.attach_to(base)
+                self.pillar_a_2.attach_to(base)
 
             elif self.parity == "odd-even":
                 # self.pillar_b_1 = cylinder_link_start_end(self.c3 + np.array([0, 0, 0.001]), self.c3 + np.array([0, 0, -(0.005-0.006*0.707)-0.0006]),
@@ -284,8 +327,8 @@ class Element(object):
                 self.pillar_b_2 = cylinder_link_start_end(self.c4,
                                                           np.array([self.c4[0],self.c4[1],-0.0056]),
                                                           self.radius *2.1)
-                # self.pillar_b_1.attach_to(base)
-                # self.pillar_b_2.attach_to(base)
+                self.pillar_b_1.attach_to(base)
+                self.pillar_b_2.attach_to(base)
         else:
             pass
 
@@ -305,7 +348,7 @@ class Element(object):
 
         this_dir, this_filename = os.path.split(__file__)
         # file = f"{this_dir}/space_boolean/{self.id}-"
-        file = f"{this_dir}/3-3/{self.id}-"
+        file = f"{this_dir}/{self.filename}/{self.id}-"
 
         t_c1_objtrm.export(f"{file}t_c1.stl")
         t_c2_objtrm.export(f"{file}t_c2.stl")
@@ -320,30 +363,30 @@ class Element(object):
         c3_c4_objtrm.export(f"{file}c3_c4.stl")
         c4_c1_objtrm.export(f"{file}c4_c1.stl")
 
-        t_c1_objtrm_temp = trimesh.load("space_boolean/t_c1.stl")
-
-        t_c2_objtrm_temp = trimesh.load("space_boolean/t_c2.stl")
-        # temp = tb.union([t_c1_objtrm, t_c2_objtrm],engine="blender")
-        t_c3_objtrm_temp = trimesh.load("space_boolean/t_c3.stl")
-        # temp = tb.union([temp, t_c3_objtrm], engine="blender")
-        t_c4_objtrm_temp = trimesh.load("space_boolean/t_c4.stl")
-        # temp = tb.union([temp, t_c4_objtrm], engine="blender")
-        b_c1_objtrm_temp = trimesh.load("space_boolean/b_c1.stl")
-        # temp = tb.union([temp, b_c1_objtrm], engine="blender")
-        b_c2_objtrm_temp = trimesh.load("space_boolean/b_c2.stl")
-        # temp = tb.union([temp, b_c2_objtrm ], engine="blender")
-        b_c3_objtrm_temp = trimesh.load("space_boolean/b_c3.stl")
-        # temp = tb.union([temp, b_c3_objtrm], engine="blender")
-        b_c4_objtrm_temp = trimesh.load("space_boolean/b_c4.stl")
-        # temp = tb.union([temp, b_c4_objtrm], engine="blender")
-        c1_c2_objtrm_temp = trimesh.load("space_boolean/c1_c2.stl")
-        # temp = tb.union([temp, c1_c2_objtrm], engine="blender")
-        c2_c3_objtrm_temp = trimesh.load("space_boolean/c2_c3.stl")
-        # temp = tb.union([temp, c2_c3_objtrm], engine="blender")
-        c3_c4_objtrm_temp = trimesh.load("space_boolean/c3_c4.stl")
-        # temp = tb.union([temp, c3_c4_objtrm], engine="blender")
-        c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
-        # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
+        # t_c1_objtrm_temp = trimesh.load("space_boolean/t_c1.stl")
+        #
+        # t_c2_objtrm_temp = trimesh.load("space_boolean/t_c2.stl")
+        # # temp = tb.union([t_c1_objtrm, t_c2_objtrm],engine="blender")
+        # t_c3_objtrm_temp = trimesh.load("space_boolean/t_c3.stl")
+        # # temp = tb.union([temp, t_c3_objtrm], engine="blender")
+        # t_c4_objtrm_temp = trimesh.load("space_boolean/t_c4.stl")
+        # # temp = tb.union([temp, t_c4_objtrm], engine="blender")
+        # b_c1_objtrm_temp = trimesh.load("space_boolean/b_c1.stl")
+        # # temp = tb.union([temp, b_c1_objtrm], engine="blender")
+        # b_c2_objtrm_temp = trimesh.load("space_boolean/b_c2.stl")
+        # # temp = tb.union([temp, b_c2_objtrm ], engine="blender")
+        # b_c3_objtrm_temp = trimesh.load("space_boolean/b_c3.stl")
+        # # temp = tb.union([temp, b_c3_objtrm], engine="blender")
+        # b_c4_objtrm_temp = trimesh.load("space_boolean/b_c4.stl")
+        # # temp = tb.union([temp, b_c4_objtrm], engine="blender")
+        # c1_c2_objtrm_temp = trimesh.load("space_boolean/c1_c2.stl")
+        # # temp = tb.union([temp, c1_c2_objtrm], engine="blender")
+        # c2_c3_objtrm_temp = trimesh.load("space_boolean/c2_c3.stl")
+        # # temp = tb.union([temp, c2_c3_objtrm], engine="blender")
+        # c3_c4_objtrm_temp = trimesh.load("space_boolean/c3_c4.stl")
+        # # temp = tb.union([temp, c3_c4_objtrm], engine="blender")
+        # c4_c1_objtrm_temp = trimesh.load("space_boolean/c4_c1.stl")
+        # # temp = tb.union([temp, c4_c1_objtrm], engine="blender")
 
         if self.support:
             if self.parity == "even-even":
@@ -367,15 +410,16 @@ class Element(object):
         # cm.CollisionModel("space_boolean/element.stl").attach_to(base)
 
 if __name__ == '__main__':
-    base = wd.World(cam_pos=[0.06, 0.03, 0.09], w=960, h=540, lookat_pos=[0, 0, 0.0])
+    base = wd.World(cam_pos=[0.075, 0.08, 0.050], w=960, h=540, lookat_pos=[0, 0, 0.0])
     # gm.gen_frame(length=.01, thickness=.0005,).attach_to(base)
 
     interval = 0.006
-    len_num = 15
-    wid_num = 15
-    # len_num =9
-    # wid_num = 9
-    # matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
+    # len_num = 45+6
+    # wid_num = 45+6
+    # len_num = 11+4
+    # wid_num = 11+4
+    len_num =13
+    wid_num =13
     matrix = []
     for y in range(wid_num):
         temp = []
@@ -384,91 +428,36 @@ if __name__ == '__main__':
             para_y = (y - 5) / 5
             temp.append(np.array([interval * x + x * para_x * 0.002, interval * y + y * para_y * 0.002, 0.000]))
         matrix.append(temp)
-
-    # offset_matrix = np.array([[0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.006,0.006,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.0065,0.0065,0.0065,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.0068,0.0068,0.0068,0.0068,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.0065,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.006,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.005,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003],
-    #                          [0.003,0.005,0.006,0.0065,0.0068,0.0065,0.006,0.005,0.003]])
-    # offset_matrix = [[[0, 0, 0.008*math.sqrt(abs(8*8-(x-4.5)*(x-4.5)-(y-4.5)*(y-4.5)))] for x in range(len_num)] for y in range(wid_num)]
-    # for y in range(len_num):
-    #     for x in range(wid_num):
-    #         matrix[y][x] = matrix[y][x] + offset_matrix[y][x]
-
-            #
-            # if x ==1 :
-            #     matrix[y][x] = matrix[y][x]+np.array([0, 0, 0.003+0.001])
-            # elif x ==2:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
-            # elif x ==3:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
-            # elif x ==4:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
-            # elif x ==5:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0068+0.011])
-            # elif x == 6:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.0065+0.010])
-            # elif x == 7:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.006+0.008])
-            # elif x == 8:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.005+0.005])
-            # elif x == 9:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, 0.003+0.001])
-
-
-
-            # if x ==11 :
-            #     matrix[y][x] = matrix[y][x]+np.array([0, 0, -0.003-0.001])
-            # elif x ==12:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.005-0.005])
-            # elif x ==13:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.006-0.008])
-            # elif x ==14:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0065-0.010])
-            # elif x ==15:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0068-0.011])
-            # elif x ==16:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.0065-0.010])
-            # elif x == 17:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.006-0.008])
-            # elif x == 18:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.005-0.005])
-            # elif x == 19:
-            #     matrix[y][x] = matrix[y][x] + np.array([0, 0, -0.003-0.001])
-
-    c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
-    c2 = cm.gen_box(extent=[.006*18.5, 0.006*12, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*29,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
-    c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
-               rgba=[0, 0, 0, 0.2])
-    c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
-
-    # c1 = cm.gen_box(extent=[.006 * 20, 0.006 * 30, .001], homomat=rm.homomat_from_posrot([0.006 * 19, 0.006 * 4.5, 0],
-    #                                                                                       rm.rotmat_from_axangle(
-    #                                                                                           [0, 0, 1],
-    #                                                                                           0 * np.pi / 2)),
-    #                                                                                             rgba=[0, 0, 0, 0.2])
-    # c2 = cm.gen_box(extent=[.006 * 3, 0.006 * 3, .001], homomat=rm.homomat_from_posrot([0.006 * 4, 0.006 * 12, 0],
-    #                                                                                      rm.rotmat_from_axangle(
-    #                                                                                          [0, 0, 1],
-    #                                                                                          0 * np.pi / 2)),
-    #                 rgba=[0, 0, 0, 0.2])
+    # c1 = cm.gen_box(extent=[.006*18.5, 0.006*9, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*6.5,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0,0,0,0.2])
+    # c2 = cm.gen_box(extent=[.006*18.5, 0.006*12, .001], homomat=rm.homomat_from_posrot([0.006*18,0.006*29,0], rm.rotmat_from_axangle([0,0,1], 0*np.pi/2)),rgba=[0, 0, 0, 0.2])
+    # c3 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0, 0.02, 0], rm.rotmat_from_axangle([0, 0, 1], np.pi / 2)),
+    #            rgba=[0, 0, 0, 0.2])
+    # c4 = cm.gen_box(extent=[.010, .050, .001], homomat=rm.homomat_from_posrot([0.02,0,0], rm.rotmat_from_axangle([0,0,1], 0)), rgba=[0, 0, 0, 0.2])
+    #
     # cut_list = [c1,c2]
-    # cut_list = [c1]
+    # # cut_list = [c1]
+
     # gm.gen_frame(pos = matrix[0][0], length=.01, thickness=.0005, ).attach_to(base)
+
     cut_list = []
     for model in cut_list:
         model.attach_to(base)
     grid = Grid(np.array(matrix), interval)
     node = Node(grid, height=0.006, origin_offset=0.001)
     matrix_infos = node.node_matrix_infos
-    for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], radius=0.0006, id = key, cut = cut_list, support = True)
+    for id, key in enumerate(matrix_infos.keys()):
+        # print("hi", id, key)
+        element = Element(matrix_infos[key], radius=0.00045, id=key, cut=cut_list, support=False, filename="11-11-0.9")
+        # if id ==1:
+        #     element = Element(matrix_infos[key], radius=0.00045, id = key, cut = cut_list, support = False, filename ="11-11-0.9")
+        #     gm.gen_sphere(pos=element.t, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
+        #     gm.gen_sphere(pos=element.b, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
+        #     gm.gen_sphere(pos=element.c1, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
+        #     gm.gen_sphere(pos=element.c2, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
+        #     gm.gen_sphere(pos=element.c3, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
+        #     gm.gen_sphere(pos=element.c4, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
         # element.get_stl()
-
+        # break
     def update(textNode, task):
         if textNode[0] is not None:
             textNode[0].detachNode()

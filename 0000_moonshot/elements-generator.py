@@ -243,17 +243,17 @@ if __name__ == '__main__':
     wid_num = 5
     #----------------------
     #even matrix
-    matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
+    # matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
     #----------------------
-    #uneven matrix
-    # matrix = []
-    # for y in range(wid_num):
-    #     temp = []
-    #     for x in range(len_num):
-    #         para_x = (x-5)/5
-    #         para_y = (y - 5) / 5
-    #         temp.append(np.array([interval * x + x*para_x*0.002, interval * y + y*para_y*0.002, 0.000]))
-    #     matrix.append(temp)
+    # uneven matrix
+    matrix = []
+    for y in range(wid_num):
+        temp = []
+        for x in range(len_num):
+            para_x = (x-5)/5
+            para_y = (y - 5) / 5
+            temp.append(np.array([interval * x + x*para_x*0.002, interval * y + y*para_y*0.002, 0.000]))
+        matrix.append(temp)
     # ----------------------
     #place curve matrix
     # matrix = [[np.array([interval * x, interval * y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
