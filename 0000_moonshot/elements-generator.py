@@ -239,21 +239,21 @@ if __name__ == '__main__':
     #                     "center4": np.array([0.005, -0.004/1.414, 0.004/1.414]),
     #                     }
     interval = 0.005
-    len_num = 5
-    wid_num = 5
+    len_num = 9
+    wid_num = 9
     #----------------------
     #even matrix
-    matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
+    # matrix = [[np.array([interval*x, interval*y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
     #----------------------
-    #uneven matrix
-    # matrix = []
-    # for y in range(wid_num):
-    #     temp = []
-    #     for x in range(len_num):
-    #         para_x = (x-5)/5
-    #         para_y = (y - 5) / 5
-    #         temp.append(np.array([interval * x + x*para_x*0.002, interval * y + y*para_y*0.002, 0.000]))
-    #     matrix.append(temp)
+    # uneven matrix
+    matrix = []
+    for y in range(wid_num):
+        temp = []
+        for x in range(len_num):
+            para_x = (x-5)/5
+            para_y = (y - 5) / 5
+            temp.append(np.array([interval * x + x*para_x*0.002, interval * y + y*para_y*0.002, 0.000]))
+        matrix.append(temp)
     # ----------------------
     #place curve matrix
     # matrix = [[np.array([interval * x, interval * y, 0.000]) for x in range(len_num)] for y in range(wid_num)]
@@ -301,8 +301,8 @@ if __name__ == '__main__':
     node = Node(grid)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        if key == "2-2":
-            element = Element(matrix_infos[key], radius=0.0002)
+        # if key == "2-2":
+        element = Element(matrix_infos[key], radius=0.0006)
 
 
 
