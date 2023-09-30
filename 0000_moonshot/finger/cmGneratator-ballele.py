@@ -271,7 +271,7 @@ class Element(object):
                 self.get_stl(dict)
 
     def construct(self):
-        section = 24
+        section =20
         if self.parity == "even-even":
 
             self.t1 = gm.gen_ellipse(self.o, [self.t, self.c1,self.b,self.c3], self.radius, section)
@@ -317,31 +317,38 @@ class Element(object):
             # self.c4_c1.attach_to(base)
 
         if self.secondlayer and "origin_sen" in self.node.keys():
-            self.t_c1_sen = capsule_link_start_end(self.t_sen, self.c1_sen, self.radius)
-            self.t_c2_sen = capsule_link_start_end(self.t_sen, self.c2_sen, self.radius)
-            self.t_c3_sen = capsule_link_start_end(self.t_sen, self.c3_sen, self.radius)
-            self.t_c4_sen = capsule_link_start_end(self.t_sen, self.c4_sen, self.radius)
-            self.b_c1_sen = capsule_link_start_end(self.b_sen, self.c1_sen, self.radius)
-            self.b_c2_sen = capsule_link_start_end(self.b_sen, self.c2_sen, self.radius)
-            self.b_c3_sen = capsule_link_start_end(self.b_sen, self.c3_sen, self.radius)
-            self.b_c4_sen = capsule_link_start_end(self.b_sen, self.c4_sen, self.radius)
-            self.c1_c2_sen = capsule_link_start_end(self.c1_sen, self.c2_sen, self.radius)
-            self.c2_c3_sen = capsule_link_start_end(self.c2_sen, self.c3_sen, self.radius)
-            self.c3_c4_sen = capsule_link_start_end(self.c3_sen, self.c4_sen, self.radius)
-            self.c4_c1_sen = capsule_link_start_end(self.c4_sen, self.c1_sen, self.radius)
-            self.t_c1_sen.attach_to(base)
-            self.t_c2_sen.attach_to(base)
-            self.t_c3_sen.attach_to(base)
-            self.t_c4_sen.attach_to(base)
-            self.b_c1_sen.attach_to(base)
-            self.b_c2_sen.attach_to(base)
-            self.b_c3_sen.attach_to(base)
-            self.b_c4_sen.attach_to(base)
-            self.c1_c2_sen.attach_to(base)
-            self.c2_c3_sen.attach_to(base)
-            self.c3_c4_sen.attach_to(base)
-            self.c4_c1_sen.attach_to(base)
+            # self.t_c1_sen = capsule_link_start_end(self.t_sen, self.c1_sen, self.radius)
+            # self.t_c2_sen = capsule_link_start_end(self.t_sen, self.c2_sen, self.radius)
+            # self.t_c3_sen = capsule_link_start_end(self.t_sen, self.c3_sen, self.radius)
+            # self.t_c4_sen = capsule_link_start_end(self.t_sen, self.c4_sen, self.radius)
+            # self.b_c1_sen = capsule_link_start_end(self.b_sen, self.c1_sen, self.radius)
+            # self.b_c2_sen = capsule_link_start_end(self.b_sen, self.c2_sen, self.radius)
+            # self.b_c3_sen = capsule_link_start_end(self.b_sen, self.c3_sen, self.radius)
+            # self.b_c4_sen = capsule_link_start_end(self.b_sen, self.c4_sen, self.radius)
+            # self.c1_c2_sen = capsule_link_start_end(self.c1_sen, self.c2_sen, self.radius)
+            # self.c2_c3_sen = capsule_link_start_end(self.c2_sen, self.c3_sen, self.radius)
+            # self.c3_c4_sen = capsule_link_start_end(self.c3_sen, self.c4_sen, self.radius)
+            # self.c4_c1_sen = capsule_link_start_end(self.c4_sen, self.c1_sen, self.radius)
+            # self.t_c1_sen.attach_to(base)
+            # self.t_c2_sen.attach_to(base)
+            # self.t_c3_sen.attach_to(base)
+            # self.t_c4_sen.attach_to(base)
+            # self.b_c1_sen.attach_to(base)
+            # self.b_c2_sen.attach_to(base)
+            # self.b_c3_sen.attach_to(base)
+            # self.b_c4_sen.attach_to(base)
+            # self.c1_c2_sen.attach_to(base)
+            # self.c2_c3_sen.attach_to(base)
+            # self.c3_c4_sen.attach_to(base)
+            # self.c4_c1_sen.attach_to(base)
 
+            self.t1_sen = gm.gen_ellipse(self.o_sen, [self.t_sen, self.c1_sen, self.b_sen, self.c3_sen], self.radius, section)
+            self.t2_sen = gm.gen_ellipse(self.o_sen, [self.c2_sen, self.c1_sen, self.c4_sen, self.c3_sen], self.radius, section)
+            self.t3_sen = gm.gen_ellipse(self.o_sen, [self.t_sen, self.c2_sen, self.b_sen, self.c4_sen], self.radius, section)
+
+            self.t1_sen.attach_to(base)
+            self.t2_sen.attach_to(base)
+            self.t3_sen.attach_to(base)
 
         self.supportoffset = 0.015
         if self.support:
@@ -449,30 +456,37 @@ class Element(object):
             # c4_c1_objtrm.export(f"{file}c4_c1.stl")
 
         if self.secondlayer and "origin_sen" in self.node.keys():
-            t_c1_sen_objtrm = self.t_c1_sen.objtrm
-            t_c2_sen_objtrm = self.t_c2_sen.objtrm
-            t_c3_sen_objtrm = self.t_c3_sen.objtrm
-            t_c4_sen_objtrm = self.t_c4_sen.objtrm
-            b_c1_sen_objtrm = self.b_c1_sen.objtrm
-            b_c2_sen_objtrm = self.b_c2_sen.objtrm
-            b_c3_sen_objtrm = self.b_c3_sen.objtrm
-            b_c4_sen_objtrm = self.b_c4_sen.objtrm
-            c1_c2_sen_objtrm = self.c1_c2_sen.objtrm
-            c2_c3_sen_objtrm = self.c2_c3_sen.objtrm
-            c3_c4_sen_objtrm = self.c3_c4_sen.objtrm
-            c4_c1_sen_objtrm = self.c4_c1_sen.objtrm
-            t_c1_sen_objtrm.export(f"{file}t_c1_sen.stl")
-            t_c2_sen_objtrm.export(f"{file}t_c2_sen.stl")
-            t_c3_sen_objtrm.export(f"{file}t_c3_sen.stl")
-            t_c4_sen_objtrm.export(f"{file}t_c4_sen.stl")
-            b_c1_sen_objtrm.export(f"{file}b_c1_sen.stl")
-            b_c2_sen_objtrm.export(f"{file}b_c2_sen.stl")
-            b_c3_sen_objtrm.export(f"{file}b_c3_sen.stl")
-            b_c4_sen_objtrm.export(f"{file}b_c4_sen.stl")
-            c1_c2_sen_objtrm.export(f"{file}c1_c2_sen.stl")
-            c2_c3_sen_objtrm.export(f"{file}c2_c3_sen.stl")
-            c3_c4_sen_objtrm.export(f"{file}c3_c4_sen.stl")
-            c4_c1_sen_objtrm.export(f"{file}c4_c1_sen.stl")
+            # t_c1_sen_objtrm = self.t_c1_sen.objtrm
+            # t_c2_sen_objtrm = self.t_c2_sen.objtrm
+            # t_c3_sen_objtrm = self.t_c3_sen.objtrm
+            # t_c4_sen_objtrm = self.t_c4_sen.objtrm
+            # b_c1_sen_objtrm = self.b_c1_sen.objtrm
+            # b_c2_sen_objtrm = self.b_c2_sen.objtrm
+            # b_c3_sen_objtrm = self.b_c3_sen.objtrm
+            # b_c4_sen_objtrm = self.b_c4_sen.objtrm
+            # c1_c2_sen_objtrm = self.c1_c2_sen.objtrm
+            # c2_c3_sen_objtrm = self.c2_c3_sen.objtrm
+            # c3_c4_sen_objtrm = self.c3_c4_sen.objtrm
+            # c4_c1_sen_objtrm = self.c4_c1_sen.objtrm
+            t1_sen_objtrm = self.t1_sen.objtrm
+            t2_sen_objtrm = self.t2_sen.objtrm
+            t3_sen_objtrm = self.t3_sen.objtrm
+            t1_sen_objtrm.export(f"{file}t1_sen.stl")
+            t2_sen_objtrm.export(f"{file}t2_sen.stl")
+            t3_sen_objtrm.export(f"{file}t3_sen.stl")
+
+            # t_c1_sen_objtrm.export(f"{file}t_c1_sen.stl")
+            # t_c2_sen_objtrm.export(f"{file}t_c2_sen.stl")
+            # t_c3_sen_objtrm.export(f"{file}t_c3_sen.stl")
+            # t_c4_sen_objtrm.export(f"{file}t_c4_sen.stl")
+            # b_c1_sen_objtrm.export(f"{file}b_c1_sen.stl")
+            # b_c2_sen_objtrm.export(f"{file}b_c2_sen.stl")
+            # b_c3_sen_objtrm.export(f"{file}b_c3_sen.stl")
+            # b_c4_sen_objtrm.export(f"{file}b_c4_sen.stl")
+            # c1_c2_sen_objtrm.export(f"{file}c1_c2_sen.stl")
+            # c2_c3_sen_objtrm.export(f"{file}c2_c3_sen.stl")
+            # c3_c4_sen_objtrm.export(f"{file}c3_c4_sen.stl")
+            # c4_c1_sen_objtrm.export(f"{file}c4_c1_sen.stl")
 
         if self.support:
             if self.parity == "even-even":
@@ -509,20 +523,86 @@ if __name__ == '__main__':
     # radius = 0.0006
     # len_num = 39
     # wid_num = 39
-    len_num = 33+4
-    wid_num = 7+4
+    len_num = 15+4
+    wid_num = 15+4
     n = 32
     r = 0.04
     height_layer = 32
-    matrix = [[np.array([interval * x, interval * y, 0.000]) for y in range(wid_num)] for x in range(len_num)]
+    matrix0 = [[np.array([interval * x, interval * y, 2*interval * 0]) for y in range(wid_num)] for x in range(len_num)]
+    matrix1 = [[np.array([interval * x, interval * y, 2*interval * 1]) for y in range(wid_num)] for x in range(len_num)]
+    matrix2 = [[np.array([interval * x, interval * y, 2*interval * 2]) for y in range(wid_num)] for x in range(len_num)]
+    matrix3 = [[np.array([interval * x, interval * y, 2*interval * 3]) for y in range(wid_num)] for x in range(len_num)]
+    matrix4 = [[np.array([interval * x, interval * y, 2*interval * 4]) for y in range(wid_num)] for x in range(len_num)]
+    matrix5 = [[np.array([interval * x, interval * y, 2*interval * 5]) for y in range(wid_num)] for x in range(len_num)]
+    matrix6 = [[np.array([interval * x, interval * y, 2*interval * 6]) for y in range(wid_num)] for x in range(len_num)]
+    matrix7 = [[np.array([interval * x, interval * y, 2*interval * 7]) for y in range(wid_num)] for x in range(len_num)]
+    matrix8 = [[np.array([interval * x, interval * y, 2*interval * 8]) for y in range(wid_num)] for x in range(len_num)]
+    matrix9 = [[np.array([interval * x, interval * y, 2*interval * 9]) for y in range(wid_num)] for x in range(len_num)]
+    matrix10 = [[np.array([interval * x, interval * y, 2*interval * 10]) for y in range(wid_num)] for x in range(len_num)]
     # matrix_second = [[np.array([interval * x, interval * y, 2*interval]) for x in range(len_num)] for y in range(wid_num)]
     cut_list = []
 
-    grid = Grid(np.array(matrix), interval)
+    grid = Grid(np.array(matrix0), interval)
     node = Node(grid, height= height, origin_offset=origin_offset)
     matrix_infos = node.node_matrix_infos
     for key in matrix_infos.keys():
-        element = Element(matrix_infos[key], dict="thin",radius=radius, id = key, cut = cut_list, support = False, secondlayer = False)
+        element = Element(matrix_infos[key], dict="heart/0",radius=radius, id = key, cut = cut_list, support = False, secondlayer = True)
+
+    grid = Grid(np.array(matrix1), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/1", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix2), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/2", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix3), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/3", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix4), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/4", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix5), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/5", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix6), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/6", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix7), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/7", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
+
+    grid = Grid(np.array(matrix8), interval)
+    node = Node(grid, height=height, origin_offset=origin_offset)
+    matrix_infos = node.node_matrix_infos
+    for key in matrix_infos.keys():
+        element = Element(matrix_infos[key], dict="heart/8", radius=radius, id=key, cut=cut_list, support=False,
+                          secondlayer=True)
 
     def update(textNode, task):
         if textNode[0] is not None:

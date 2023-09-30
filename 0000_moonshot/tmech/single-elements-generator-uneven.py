@@ -26,7 +26,7 @@ def capsule_link_start_end(start, end, radius = 0.0003, rgba = (.5,0.5,.5,1)):
     start = start
     end = end
     radius = radius
-    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[30, 30],  rgba = rgba)
+    capsule = cm.gen_capsule(spos=start, epos=end, radius=radius, section=[8, 8],  rgba = rgba)
     return capsule
 
 def cylinder_link_start_end(start, end,  radius = 0.0003):
@@ -36,7 +36,7 @@ def cylinder_link_start_end(start, end,  radius = 0.0003):
     vector = rm.unit_vector(end - start)
     rot3 = rm.rotmat_between_vectors(np.array([0,0,1]),vector)
     rot4 = rm.homomat_from_posrot(pos = start, rot = rot3)
-    cylinder = cm.gen_cylinder(radius=radius, height=height, section=30, homomat=rot4)
+    cylinder = cm.gen_cylinder(radius=radius, height=height, section=8, homomat=rot4)
     return cylinder
 
 
@@ -265,7 +265,7 @@ class Element(object):
                 self.c3 = node["center3"]
                 self.c4 = node["center4"]
                 self.construct()
-                # self.get_stl()
+                self.get_stl()
 
     def construct(self):
         # self.bar_list = []
@@ -447,7 +447,7 @@ if __name__ == '__main__':
     matrix_infos = node.node_matrix_infos
     for id, key in enumerate(matrix_infos.keys()):
         # print("hi", id, key)
-        element = Element(matrix_infos[key], radius=0.00045, id=key, cut=cut_list, support=False, filename="11-11-0.9")
+        element = Element(matrix_infos[key], radius=0.0007, id=key, cut=cut_list, support=False, filename="uneven")
         # if id ==1:
         #     element = Element(matrix_infos[key], radius=0.00045, id = key, cut = cut_list, support = False, filename ="11-11-0.9")
         #     gm.gen_sphere(pos=element.t, radius=0.0006, rgba=(0, 1, 1, 1)).attach_to(base)
