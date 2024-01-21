@@ -2,7 +2,7 @@
 import numpy as np
 import math
 import itertools
-import hufunc as hf
+# import hufunc as hf
 
 
 def centerPoftrangle(a,b,c):

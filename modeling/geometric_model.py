@@ -428,7 +428,7 @@ def gen_linesegs(linesegs, thickness=0.001, rgba=[0, 0, 0, 1]):
 #     return ls_sgm
 
 
-def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1], subdivisions=2):
+def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1], subdivisions=3):
     """
     :param pos:
     :param radius:

@@ -95,18 +95,18 @@ class TrimeshHu(object):
         '''
         slide matrix
         '''
-        output_mat = np.zeros([self.scalerate+1,self.scalerate+1,self.scalerate+1,1])
-        mat_int = np.expand_dims(self.matrix.astype(np.int), axis = 3)
-        offset_0 = np.zeros([output_mat.shape[0]-mat_int.shape[0],mat_int.shape[1], mat_int.shape[2], 1])
-        offset_1 = np.zeros([output_mat.shape[0], output_mat.shape[1]-mat_int.shape[1], mat_int.shape[2], 1])
-        offset_2 = np.zeros([output_mat.shape[0], output_mat.shape[1], output_mat.shape[2]-mat_int.shape[2], 1])
-        mat_int = np.concatenate([mat_int, offset_0], axis = 0)
-        mat_int = np.concatenate([mat_int, offset_1], axis = 1)
-        mat_int = np.concatenate([mat_int, offset_2], axis = 2)
-        mat_int[0][0][0][0] = 1000
-        multipler = np.full((self.scalerate+1,self.scalerate+1,self.scalerate+1,1), self.blocksize)
-        output_mat = np.round(mat_int * multipler, decimals=7)
-        # print(mat_int.shape)
+        # output_mat = np.zeros([self.scalerate+1,self.scalerate+1,self.scalerate+1,1])
+        # mat_int = np.expand_dims(self.matrix.astype(np.int), axis = 3)
+        # offset_0 = np.zeros([output_mat.shape[0]-mat_int.shape[0],mat_int.shape[1], mat_int.shape[2], 1])
+        # offset_1 = np.zeros([output_mat.shape[0], output_mat.shape[1]-mat_int.shape[1], mat_int.shape[2], 1])
+        # offset_2 = np.zeros([output_mat.shape[0], output_mat.shape[1], output_mat.shape[2]-mat_int.shape[2], 1])
+        # mat_int = np.concatenate([mat_int, offset_0], axis = 0)
+        # mat_int = np.concatenate([mat_int, offset_1], axis = 1)
+        # mat_int = np.concatenate([mat_int, offset_2], axis = 2)
+        # mat_int[0][0][0][0] = 1000
+        # multipler = np.full((self.scalerate+1,self.scalerate+1,self.scalerate+1,1), self.blocksize)
+        # output_mat = np.round(mat_int * multipler, decimals=7)
+        # # print(mat_int.shape)
 
 
     def get_node_matrix(self):

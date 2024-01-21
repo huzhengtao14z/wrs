@@ -17,8 +17,8 @@ import manipulation.pick_place_planner as ppp
 import os
 import pickle
 import basis.data_adapter as da
-import slope
-import Sptpolygoninfo as sinfo
+# import slope
+# import Sptpolygoninfo as sinfo
 import basis.trimesh as trimeshWan
 import trimesh as trimesh
 from panda3d.core import NodePath
