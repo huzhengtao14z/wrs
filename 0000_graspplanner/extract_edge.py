@@ -14,15 +14,14 @@ if __name__ == '__main__':
     Mesh = o3d.io.read_triangle_mesh(objpath)
     collision_model = cm.CollisionModel(objpath)
     collision_model.set_rgba((0.5, 0.5, 0.5, 1))
-    # self.collision_model.attach_to(base)
-    # base.run()
+    collision_model.attach_to(base)
     Mesh.compute_vertex_normals()
     o3dpcd = Mesh.sample_points_poisson_disk(number_of_points=5000)
     # gm.gen_pointcloud(np.asarray(o3dpcd.points)).attach_to(base)
     # img, dep, pcd = pickle.load(open('../img/charger.pkl', 'rb'))
     # print(img)
     # cv2.imshow("hi", img)
-    # base.run()
+    base.run()
     # pcd = np.asarray(pcdu.remove_pcd_zeros(pcd))
     # o3dpcd = o3dh.nparray2o3dpcd(pcd)
     plane_model, inliers = o3dpcd.segment_plane(distance_threshold=0.0175,
@@ -37,13 +36,7 @@ if __name__ == '__main__':
     max_label = labels.max()
     print(f"point cloud has {max_label + 1} clusters")
 
-    plane_1_o3dpcd = o3dpcd.select_by_index(inliers)
-
-    # plane_o3dpcd.paint_uniform_color([1, 0, 0])
-
-
-
-
+    # plane_1_o3dpcd = o3dpcd.select_by_index(inliers)
 
     o3dpcd = o3dpcd.select_by_index(inliers, invert=True)
 

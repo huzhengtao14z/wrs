@@ -4,7 +4,7 @@ import math
 import visualization.panda.world as wd
 import modeling.collision_model as cm
 import humath as hm
-import hufunc as hf
+# import hufunc as hf
 import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as hnde
 from direct.gui.OnscreenText import OnscreenText
@@ -20,8 +20,8 @@ import manipulation.pick_place_planner as ppp
 import os
 import pickle
 import basis.data_adapter as da
-import slope
-import Sptpolygoninfo as sinfo
+# import slope
+# import Sptpolygoninfo as sinfo
 import basis.trimesh as trimeshWan
 import trimesh as trimesh
 from trimesh.sample import sample_surface
@@ -45,11 +45,11 @@ if __name__ == '__main__':
     obj.set_rgba([1, 1, 0, 0.5])
     obj.attach_to(base)
     obj.objtrm.export('kit_model_stl/Amicelli_800_tex.stl')
-    base.run()
+    # base.run()
     # obj.set_scale([1000, 1000,1000])
-    obj2 = cm.CollisionModel('edgenool.STL')
-    obj2.set_rgba([0, 1, 1, 1])
-    obj2.attach_to(base)
+    # obj2 = cm.CollisionModel('edgenool.STL')
+    # obj2.set_rgba([0, 1, 1, 1])
+    # obj2.attach_to(base)
     # base.run()
     Mesh = o3d.io.read_triangle_mesh('cutplane-intersectionEdgenool-1.stl')
     # Mesh.compute_vertex_normals()

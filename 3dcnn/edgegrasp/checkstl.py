@@ -4,7 +4,7 @@ import math
 import visualization.panda.world as wd
 import modeling.collision_model as cm
 import humath as hm
-import hufunc as hf
+# import hufunc as hf
 import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
 import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as hnde
 from direct.gui.OnscreenText import OnscreenText
@@ -20,8 +20,8 @@ import manipulation.pick_place_planner as ppp
 import os
 import pickle
 import basis.data_adapter as da
-import slope
-import Sptpolygoninfo as sinfo
+# import slope
+# import Sptpolygoninfo as sinfo
 import basis.trimesh as trimeshWan
 import trimesh as trimesh
 from trimesh.sample import sample_surface

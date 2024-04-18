@@ -33,18 +33,18 @@ import vision.depth_camera.pcd_data_adapter as vdda
 
 class GraspPlanner():
     def __init__(self, objpath, show_sample_contact = False):
-        Mesh = o3d.io.read_triangle_mesh(objpath)
         self.collision_model = cm.CollisionModel(objpath)
         self.collision_model.set_rgba((0.5, 0.5, 0.5, 1))
         self.collision_model.attach_to(base)
         # base.run()
+        Mesh = o3d.io.read_triangle_mesh(objpath)
         Mesh.compute_vertex_normals()
         pcd = Mesh.sample_points_poisson_disk(number_of_points=5000)
         self.pcd, ind = pcd.remove_radius_outlier(nb_points=50, radius=0.05)
         self.pcd_np = vdda.o3dpcd_to_parray(pcd)
         self.pcd_normal_np = np.asarray(pcd.normals)[:, :]
 
-        # self.showobj_pcd()
+        self.showobj_pcd()
         # base.run()
         self._sample_contact(rate = 0.005, show = show_sample_contact)
         # base.run()
