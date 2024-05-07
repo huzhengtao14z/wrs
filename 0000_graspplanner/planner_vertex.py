@@ -1,25 +1,17 @@
 import copy
 import math
-# from keras.models import Sequential, Model, load_model
 import visualization.panda.world as wd
 import modeling.collision_model as cm
 # import humath as hm
-
-import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
-import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as hnde
 from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import TextNode
 import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as gm
-import robot_sim.robots.ur3_dual.ur3_dual as ur3d
-import robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
-import robot_sim.robots.sda5f.sda5f as sda5
-import motion.probabilistic.rrt_connect as rrtc
-import manipulation.pick_place_planner as ppp
 import os
 import pickle
 import basis.data_adapter as da
+import itertools
 
 import basis.trimesh as trimeshWan
 import trimesh as trimesh
@@ -47,6 +39,7 @@ class GraspPlanner():
         Mesh = o3d.io.read_triangle_mesh(objpath)
         Mesh.compute_vertex_normals()
         pcd = Mesh.sample_points_poisson_disk(number_of_points=10000)
+        # pcd = Mesh.sample_points_uniformly(number_of_points=10000, use_triangle_normal=False)
         self.pcd, ind = pcd.remove_radius_outlier(nb_points=50, radius=0.05)
         self.pcd_tree = o3d.geometry.KDTreeFlann(self.pcd)
         # number_of_points=5000
@@ -55,25 +48,27 @@ class GraspPlanner():
         self.pcd_normal_np = np.asarray(pcd.normals)[:, :]
         # self.showobj_pcd()
         # base.run()
-        self.pcd_sample, self.pcd_sample_np = self._sample_contact(rate = 0.05, everynum=2, show = False)
+
+        self.pcd_sample, self.pcd_sample_np = self._sample_contact( everynum=2, show = False)
         t_edge_start = time.time()
-        self.detect_edge(r = 0.005, load = False)
+        self.detect_edge(threshold_u = 50, threshold_l=0.02, r = 0.005, load = True)
         t_edge_end = time.time()
         t_vertex_start = time.time()
-        self.detect_vertex(r = 0.005, load = False)
+        # base.run()
+        self.detect_vertex(threshold_u = 10, threshold_l=0.1, r = 0.01, load = False)
         t_vertex_end = time.time()
         print(f"Edge detection: {t_edge_end - t_edge_start}")
         print(f"vertex detection: {t_vertex_end - t_vertex_start}")
         # self.detect_edge(load=True)
         # self.detect_vertex(load=True)
-        t_grasp_start = time.time()
-        self.show_edge_pcd()
-        t_grasp_end = time.time()
-        print(f"grasp: {t_grasp_end - t_grasp_start}")
+        # t_grasp_start = time.time()
+        # self.show_edge_pcd()
+        # t_grasp_end = time.time()
+        # print(f"grasp: {t_grasp_end - t_grasp_start}")
         base.run()
         self.plan_poses()
 
-    def detect_edge(self, width_detect=0.005, length_detect=0.09, r = 0.003, show_neighber=False, load = False):
+    def detect_edge(self, threshold_u = 50, threshold_l=0.02, r = 0.003, show_neighber=False, load = False):
         r = r
         if load:
             self.edge_pnt = self.importinfo(f"debug_data/{self.objname}/edge_pnt.pickle")
@@ -85,9 +80,9 @@ class GraspPlanner():
             self.edge_normal = []
             self.surface_pnt = []
             self.surface_normal = []
-            self.convex = []
+            # self.convex = []
             for anchor in self.pcd_sample_np:
-                anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np = self._get_neibour_detect(anchor, radius=r)
+                anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np = self._get_neibour_detect(anchor, threshold_u, threshold_l, radius=r)
                 # anchor_normal = pcd_neighber_normal_np.mean(axis=0)
                 if show_neighber:
                     # gm.gen_arrow(anchor, anchor + anchor_normal * 0.02, thickness=0.001).attach_to(base)
@@ -111,7 +106,7 @@ class GraspPlanner():
     def showobj_pcd(self):
         gm.gen_pointcloud(self.pcd_np).attach_to(base)
 
-    def detect_vertex(self, r = 0.003, load=False):
+    def detect_vertex(self, threshold_u = 10, threshold_l = 0.1, r = 0.01, load=False):
         r = r
         if load:
             self.vertex_pnt_clustered = self.importinfo(f"debug_data/{self.objname}/vertex_pnt_clustered.pickle")
@@ -123,18 +118,19 @@ class GraspPlanner():
             # gm.gen_pointcloud(edge_pnt_np, pntsize=10).attach_to(base)
 
             for pnt in self.edge_pnt:
-                # range_ball_cm = cm.gen_sphere(pos=pnt, radius=0.005)
+                # range_ball_cm = cm.gen_sphere(pos=pnt, radius=r )
                 # range_ball_cm.set_rgba((1, 0.3, 0.6, 0.2))
                 # range_ball_cm.attach_to(base)
                 try:
                     self.edge_pcd_tree = o3d.geometry.KDTreeFlann(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))
-                    [k, idx, _] = self.edge_pcd_tree.search_radius_vector_3d(pnt, r)
+                    [k, idx, _] = self.edge_pcd_tree.search_radius_vector_3d(pnt, r )
                     pcd_neighber_normal_np = np.asarray([self.edge_normal[i] for i in idx])
-                    pcd_neighber_np = vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))[idx[1:]]
+                    # pcd_neighber_np = vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.edge_pnt)))[idx[1:]]
+                    pcd_neighber_np = np.asarray(self.edge_pnt)[idx[:]]
                     anchor_normal = pcd_neighber_normal_np.mean(axis=0)
-                    if self._is_vertex(pcd_neighber_np):
+                    if self._is_vertex(pcd_neighber_np, threshold_u, threshold_l):
                         self.vertex_pnt.append(pnt)
-                        # cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 0.3), radius=0.005).attach_to(base)
+                        cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 0.3), radius=r ).attach_to(base)
                 except:
                     pass
             vertex_pnt_o3d = vdda.nparray_to_o3dpcd(np.asarray(self.vertex_pnt))
@@ -169,12 +165,12 @@ class GraspPlanner():
         # shape = (max_label + 1, 1, 3)
         # self.vertex_pnt_clustered = np.zeros(shape)
 
-        # for item in self.vertex_pnt_clustered:
-        #     cm.gen_sphere(pos=item, rgba=(1,0,0,1), radius=0.002).attach_to(base)
-        self.vertex_grasp()
+        for item in self.vertex_pnt_clustered:
+            cm.gen_sphere(pos=item, rgba=(1,0,0,1), radius=0.002).attach_to(base)
+        # self.vertex_grasp()
 
     def vertex_grasp(self):
-        import itertools
+
         combinations = list(itertools.combinations(self.vertex_pnt_clustered, 2))
         # combinations = list(itertools.combinations(list(vdda.o3dpcd_to_parray(vdda.nparray_to_o3dpcd(np.asarray(self.vertex_pnt)).uniform_down_sample(20))),2))
         gripper = rtq85.Robotiq85()
@@ -199,7 +195,6 @@ class GraspPlanner():
                         # gripper.gen_meshmodel(rgba=(1,0,0,0.2)).attach_to(base)
                         continue
                     else:
-                        print("check 1")
                         [k, idx, _] = self.pcd_tree.search_radius_vector_3d(pair[0], 0.012)
                         contact_a_normal_np = np.asarray([self.pcd.normals[i] for i in idx])
                         contact_a_neighber_np = vdda.o3dpcd_to_parray(self.pcd)[idx[1:]]
@@ -230,7 +225,7 @@ class GraspPlanner():
                         # break
 
 
-    def _sample_contact(self, rate = 0.01, everynum = 3, show = True):
+    def _sample_contact(self, everynum = 3, show = True):
         # self.pcd_sample = self.pcd.random_down_sample(rate)
         pcd_sample = self.pcd.uniform_down_sample(everynum)
         pcd_sample_np = vdda.o3dpcd_to_parray(pcd_sample)
@@ -238,7 +233,7 @@ class GraspPlanner():
             for pnt in pcd_sample_np:
                 # edge_cm = cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 1), radius=0.001).attach_to(base)
                 edge_cm = cm.gen_sphere(pos=pnt, rgba=(1, 0, 0, 0.3), radius=0.005)
-                edge_cm.attach_to(base)
+                # edge_cm.attach_to(base)
         return pcd_sample, pcd_sample_np
 
     def _get_neibour(self, anchor, radius= 0.0025,show=True):
@@ -275,7 +270,7 @@ class GraspPlanner():
                 base)
         return anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np
 
-    def _get_neibour_detect(self, anchor, radius= 0.0025,show=True):
+    def _get_neibour_detect(self, anchor, threshold_u, threshold_l, radius= 0.0025,show=True):
         # range_ball_cm = cm.gen_sphere(pos=anchor, radius=radius)
         # range_ball_cm.set_rgba((1, 0.3, 0.6, 0.2))
         # range_ball_cm.attach_to(base)
@@ -284,7 +279,7 @@ class GraspPlanner():
         pcd_neighber_np = vdda.o3dpcd_to_parray(self.pcd)[idx[1:]]
         anchor_normal = pcd_neighber_normal_np.mean(axis=0)
 
-        pcd_neighber_np, pcd_neighber_normal_np, is_surface = self._tune_sample(pcd_neighber_np, pcd_neighber_normal_np)
+        pcd_neighber_np, pcd_neighber_normal_np, is_surface = self._tune_sample(pcd_neighber_np, pcd_neighber_normal_np, threshold_u, threshold_l)
         # anchor = pcd_neighber_np.mean(axis=0)
         # anchor = anchor
         anchor_normal = pcd_neighber_normal_np.mean(axis=0)
@@ -297,117 +292,80 @@ class GraspPlanner():
             # gm.gen_arrow(anchor, anchor + anchor_normal * 0.015, rgba=(0,1,1,1), thickness=0.001).attach_to(
             #     base)
             if is_surface:
-                # edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
-                # edge_cm.set_rgba((0,1,1, 1))
-                # edge_cm.attach_to(base)
                 self.surface_pnt.append(anchor)
                 self.surface_normal.append(anchor_normal)
-                #     # gm.gen_arrow(pnt, pnt+ pcd_neighber_normal_np[i] * 0.01, rgba=(0,0,1,1), thickness=0.0004).attach_to(base)
+                edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
+                edge_cm.set_rgba((0,1,1, 1))
+                edge_cm.attach_to(base)
+                # gm.gen_arrow(pnt, pnt+ pcd_neighber_normal_np[i] * 0.01, rgba=(0,0,1,1), thickness=0.0004).attach_to(base)
                 # gm.gen_arrow(anchor, anchor + anchor_normal * 0.015, rgba=(0,1,1,1), thickness=0.001).attach_to(base)
             else:
-                edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
-                edge_cm.set_rgba((1, 1, 0, 1))
-
                 self.edge_pnt.append(anchor)
                 self.edge_normal.append(anchor_normal)
-
+                edge_cm = cm.gen_sphere(pos=anchor, radius=0.00051)
+                # edge_cm.set_rgba((1, 1, 0, 1))
                 b = []
                 for neighber in pcd_neighber_np:
-                    a = neighber - anchor
-                    b.append(a)
-                c = np.asarray(b).mean(axis=0)
-                if np.dot(c, anchor_normal) >0:
-                    edge_cm.set_rgba((247 / 255, 122 / 255, 132 / 255, 1))
-                else:
+                    b.append(neighber - anchor)
+                if np.dot(np.asarray(b).mean(axis=0), anchor_normal) >0:
                     # edge_cm.set_rgba((247 / 255, 122 / 255, 132 / 255, 1))
-                    edge_cm.set_rgba((7 / 25, 122 / 255, 132 / 255, 1))
+                    edge_cm.set_rgba((1, 0, 0, 1))
+                else:
+                    edge_cm.set_rgba((247 / 255, 122 / 255, 132 / 255, 1))
+                    # edge_cm.set_rgba((7 / 255, 122 / 255, 132 / 255, 1))
                 edge_cm.attach_to(base)
-
-
-                #     # gm.gen_arrow(pnt, pnt+ pcd_neighber_normal_np[i] * 0.01, rgba=(0,0,1,1), thickness=0.0004).attach_to(base)
+                # gm.gen_arrow(pnt, pnt+ pcd_neighber_normal_np[i] * 0.01, rgba=(0,0,1,1), thickness=0.0004).attach_to(base)
                 # gm.gen_arrow(anchor, anchor + anchor_normal * 0.015, rgba=(1, 1, 0, 1), thickness=0.001).attach_to(base)
 
         return anchor, anchor_normal, pcd_neighber_np, pcd_neighber_normal_np
 
-    def _is_surface(self, pcd_neighber_np):
+    def _is_surface(self, pcd_neighber_np, threshold_u, threshold_l):
         datamean = pcd_neighber_np.mean(axis=0)
-        def pca(X):
-            # Data matrix X, assumes 0-centered
-            n, m = X.shape
-            assert np.allclose(X.mean(axis=0), np.zeros(m))  # 确保X已经中心化，每个维度的均值为0
-            C = np.dot(X.T, X) / (n - 1)
-            eigen_vals, eigen_vecs = np.linalg.eig(C)
-            return eigen_vals, eigen_vecs
-
-        eigen_vals, eigen_vecs = pca(pcd_neighber_np - datamean)
-        # print("ratio", eigen_vals[0] / eigen_vals[1])
-        if eigen_vals[0] / eigen_vals[1] < 0.01:
-            # print("ratio", eigen_vals[0] / eigen_vals[0])
-            is_surface = True
-        else:
-            is_surface = False
-        return is_surface
-
-    def _is_vertex(self, pcd_neighber_np):
-        datamean = pcd_neighber_np.mean(axis=0)
-        def pca(X):
-            # Data matrix X, assumes 0-centered
-            n, m = X.shape
-            assert np.allclose(X.mean(axis=0), np.zeros(m))  # 确保X已经中心化，每个维度的均值为0
-            C = np.dot(X.T, X) / (n - 1)
-            eigen_vals, eigen_vecs = np.linalg.eig(C)
-            return eigen_vals, eigen_vecs
-
-        eigen_vals, eigen_vecs = pca(pcd_neighber_np - datamean)
-
-
-        # if np.allclose(eigen_vals_normalized, reference, atol=1):
-        #     is_vertex = False
-        # else:
-        #     is_vertex = True
-        lower = 0.051
-        higher = 20
-        # lower = 0.1
-        # higher = 10
-        if lower < eigen_vals[1] / eigen_vals[0] <higher and  lower < eigen_vals[2] / eigen_vals[0] < higher and  lower < eigen_vals[2] / eigen_vals[1] < higher:
-            # print(eigen_vals)
-            # print("it is surface, ratio:", eigen_vals[1] / eigen_vals[0])
-            is_vertex = True
-            print("----is vertex")
-            print(eigen_vals)
-        # elif eigen_vals[2] / eigen_vals[0] < 0.9:
-        #     # print(eigen_vals)
-        #     # print("it is surface, ratio:", eigen_vals[2] / eigen_vals[0])
-        #     is_vertex = False
-        else:
-            # print("----Not vertex")
-            # print(eigen_vals)
-            is_vertex = False
-
-        return is_vertex
-
-    def _tune_sample(self, pcd_neighber_np, pcd_neighber_normal_np, searchmaxPCA = False):
-        datamean = pcd_neighber_np.mean(axis=0)
-        def pca(X):
-            # Data matrix X, assumes 0-centered
-            n, m = X.shape
-            assert np.allclose(X.mean(axis=0), np.zeros(m))  # 确保X已经中心化，每个维度的均值为0
-            C = np.dot(X.T, X) / (n - 1)
-            eigen_vals, eigen_vecs = np.linalg.eig(C)
-            return eigen_vals, eigen_vecs
-        eigen_vals, eigen_vecs = pca(pcd_neighber_np - datamean)
-        # print("ratio", eigen_vals[0] / eigen_vals[1])
-        if eigen_vals[0] / eigen_vals[1] < 0.01:
+        eigen_vals, eigen_vecs = self.pca(pcd_neighber_np - datamean)
+        # print("--------------")
+        # print("eigen_vals", eigen_vals)
+        if eigen_vals[0] / eigen_vals[1] < threshold_l or eigen_vals[0] / eigen_vals[1] > threshold_u:
             # print(eigen_vals)
             # print("it is surface, ratio:", eigen_vals[0] / eigen_vals[1])
             is_surface = True
-        elif eigen_vals[2] / eigen_vals[1] < 0.01:
+        elif eigen_vals[2] / eigen_vals[1] < threshold_l or eigen_vals[2] / eigen_vals[1] > threshold_u:
             # print(eigen_vals)
             # print("it is surface, ratio:", eigen_vals[2] / eigen_vals[1])
             is_surface = True
         else:
+            # print("it is edge, ratio:", eigen_vals[2] / eigen_vals[1])
             is_surface = False
-        # is_surface = self._is_surface(pcd_neighber_np)
+        # print("--------------")
+        return is_surface
+
+    def _is_vertex(self, pcd_neighber_np, threshold_u=20, threshold_l=0.05):
+        datamean = pcd_neighber_np.mean(axis=0)
+        eigen_vals, eigen_vecs = self.pca(pcd_neighber_np - datamean)
+        # if np.allclose(eigen_vals_normalized, reference, atol=1):
+        #     is_vertex = False
+        # else:
+        #     is_vertex = True
+        # lower = 0.051
+        # higher = 20
+        # lower = 0.1
+        # higher = 10
+        # lower = 0.01
+        # higher = 20
+        if threshold_l < eigen_vals[1] / eigen_vals[0] <threshold_u and  threshold_l < eigen_vals[2] / eigen_vals[0] < threshold_u and  threshold_l < eigen_vals[2] / eigen_vals[1] < threshold_u:
+            is_vertex = True
+            print("----is vertex")
+            print(eigen_vals)
+        else:
+            # print("----Not vertex")
+            # print(eigen_vals)
+            is_vertex = False
+        return is_vertex
+
+    def _tune_sample(self, pcd_neighber_np, pcd_neighber_normal_np, threshold_u = 50, threshold_l = 0.02, searchmaxPCA = False):
+        datamean = pcd_neighber_np.mean(axis=0)
+        eigen_vals, eigen_vecs = self.pca(pcd_neighber_np - datamean)
+        # print("ratio", eigen_vals[0] / eigen_vals[1])
+        is_surface = self._is_surface(pcd_neighber_np, threshold_u, threshold_l)
         if is_surface == False:
             # print(eigen_vals)
             # print("start edge refine")
@@ -421,30 +379,26 @@ class GraspPlanner():
                     tem_pcd_neighber_normal_np = np.asarray([self.pcd.normals[i] for i in idx])
                     tem_pcd_neighber_np = vdda.o3dpcd_to_parray(self.pcd)[idx[1:]]
                     datamean = tem_pcd_neighber_np.mean(axis=0)
-                    eigen_vals, eigen_vecs = pca(tem_pcd_neighber_np - datamean)
+                    eigen_vals, eigen_vecs = self.pca(tem_pcd_neighber_np - datamean)
                     if eigen_vals[0] / eigen_vals[1] > ratio:
                         pcd_neighber_np = tem_pcd_neighber_np
                         pcd_neighber_normal_np = tem_pcd_neighber_normal_np
 
-            if eigen_vals[0] / eigen_vals[1] < 0.01:
-                # print(eigen_vals)
-                # print("it is surface, ratio:", eigen_vals[0] / eigen_vals[1])
-                is_surface = True
-            elif eigen_vals[2] / eigen_vals[1] < 0.01:
-                # print(eigen_vals)
-                # print("it is surface, ratio:", eigen_vals[2] / eigen_vals[1])
-                is_surface = True
+            # if eigen_vals[0] / eigen_vals[1] < 0.01:
+            #     # print(eigen_vals)
+            #     # print("it is surface, ratio:", eigen_vals[0] / eigen_vals[1])
+            #     is_surface = True
+            # elif eigen_vals[2] / eigen_vals[1] < 0.01:
+            #     # print(eigen_vals)
+            #     # print("it is surface, ratio:", eigen_vals[2] / eigen_vals[1])
+            #     is_surface = True
             # print(eigen_vals)
             # print("update ratio = ", eigen_vals[0] / eigen_vals[1])
-
+            pass
         else:
             pass
             # print("it is surface, no fine tune")
         return pcd_neighber_np, pcd_neighber_normal_np, is_surface
-
-
-    # def plan_edgegrasp(self):
-
 
     def plan_poses(self, width_detect=0.005, length_detect=0.09, show_neighber=True):
         for anchor in self.pcd_sample_np:
@@ -547,6 +501,14 @@ class GraspPlanner():
                     pass
             else:
                 pass
+
+    def pca(self, X):
+        # Data matrix X, assumes 0-centered
+        n, m = X.shape
+        assert np.allclose(X.mean(axis=0), np.zeros(m))  # 确保X已经中心化，每个维度的均值为0
+        eigen_vals, eigen_vecs = np.linalg.eig(np.dot(X.T, X) / (n - 1))
+        return eigen_vals, eigen_vecs
+
 if __name__ == '__main__':
     base = wd.World(cam_pos=[0.2001557, 0.0637317, 0.1088133], w=960,
                     h=540, lookat_pos=[0, 0, 0])
@@ -561,10 +523,10 @@ if __name__ == '__main__':
     # objpath = "kit_model_stl/InstantSoup_800_tex.stl"
     # objname = "cupramen"
     # objname = "tetrahedron"
-    # objname = "Amicelli_800_tex"
+    objname = "Amicelli_800_tex"
     # objpath = f"test_obj/{objname}.stl"
     # objname = "CatSitting_800_tex"
-    objname = "CatLying_800_tex"
+    # objname = "CatLying_800_tex"
     # objname = "CoffeeBox_800_tex"
     objpath = f"kit_model_stl/{objname}.stl"
     graspplanner = GraspPlanner(objpath, objname)

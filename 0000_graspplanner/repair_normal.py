@@ -18,22 +18,8 @@ import robot_sim.robots.sda5f.sda5f as sda5
 import motion.probabilistic.rrt_connect as rrtc
 import manipulation.pick_place_planner as ppp
 import os
-import pickle
-import basis.data_adapter as da
-import slope
-import Sptpolygoninfo as sinfo
 import basis.trimesh as trimeshWan
 import trimesh as trimesh
-from trimesh.sample import sample_surface
-from panda3d.core import NodePath
-import trimeshwraper as tw
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq85
-import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtqhe
-import open3d as o3d
-# import open3d.geometry as o3dg
-import vision.depth_camera.pcd_data_adapter as vdda
-from sklearn.cluster import KMeans
 
 
 if __name__ == '__main__':
