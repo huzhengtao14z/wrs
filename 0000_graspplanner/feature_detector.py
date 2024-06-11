@@ -25,16 +25,16 @@ class FeatureDetector():
         self.objpath = objpath
         self._get_pcd(self.objpath, sample = "poisson", pcd_num = 5000, neighbour = 50, radius=0.05)
         # self.show_obj_pcd()
-        # self.show_obj_mesh(rgba = [0.5, 0.5, 0.5, 1])
+        self.show_obj_mesh(rgba = [0.5, 0.5, 0.5, 1])
         # base.run()
         self.pcd_sample, self.pcd_sample_np = self._sample_contact(show = False)
         print("ss")
         t_edge_start = time.time()
-        self.detect_edge(threshold_u = 50, threshold_l = 0.02, r = 0.005, load = False, save=False)
+        self.detect_edge(threshold_u = 50, threshold_l = 0.02, r = 0.005, load = True, save = False)
         t_edge_end = time.time()
         t_vertex_start = time.time()
-        base.run()
-        self.detect_vertex(threshold_u = 10, threshold_l= 0.1, r = 0.01, load = False)
+        # base.run()
+        self.detect_vertex(threshold_u = 10, threshold_l= 0.1, r = 0.01, load = False, show=True)
         t_vertex_end = time.time()
         print(f"Edge detection: {t_edge_end - t_edge_start}")
         print(f"vertex detection: {t_vertex_end - t_vertex_start}")
@@ -151,21 +151,26 @@ class FeatureDetector():
 
             self.vertex_pnt_clustered = []
             self.vertex_normal_clustered = []
+            self.vertex_id_clustered = []
             unique_groups = np.unique(labels)
             for j in unique_groups:
                 temp_pnt= []
                 temp_normal = []
+                temp_id = []
                 for i, item in enumerate(self.vertex_pnt):
                     if labels[i] == j:
-
                         temp_pnt.append(item)
                         temp_normal.append(self.vertex_normal[i])
-
+                        temp_id.append(self.vertex_id[i])
                 mean_temp_pnt = np.mean(np.asarray(temp_pnt), axis=0)
-                dist_list = [np.linalg.norm(pnt - mean_temp_pnt) for pnt in temp_pnt]
-                mean_temp_normal = np.mean(np.asarray(temp_pnt), axis=0)
-                self.vertex_pnt_clustered.append(np.asarray(dist_list).min)
-                self.vertex_normal_clustered.append(mean_temp_normal)
+                dist_list = []
+                for i in range(len(temp_pnt)):
+                    dist_list = [np.linalg.norm(pnt - mean_temp_pnt) for pnt in temp_pnt]
+                shortest_dist_id=np.argmin(dist_list)
+                # mean_temp_normal = np.mean(temp_pnt[shortest_dist_id])
+                self.vertex_pnt_clustered.append(temp_pnt[shortest_dist_id])
+                self.vertex_normal_clustered.append(temp_normal[shortest_dist_id])
+                self.vertex_id_clustered.append(shortest_dist_id)
             print(self.vertex_pnt_clustered)
             # for item in self.vertex_pnt_clustered:
             #     gm.gen_sphere(pos=item, rgba=(1,0,0,1), radius=0.0025).attach_to(base)
@@ -176,9 +181,12 @@ class FeatureDetector():
             #     one_element = np.array([0.3])
             #     result_array = np.concatenate((random_elements, one_element))
             #     # cm.gen_sphere(pos=item, rgba=result_array, radius=0.005).attach_to(base)
+            for pnt in self.vertex_pnt_clustered:
+                gm.gen_sphere(pos=pnt, rgba=(0, 1, 0, 1), radius=r/5).attach_to(base)
             if save:
                 self.outputinfo(f"debug_data/{self.objname}/vertex_pnt_clustered.pickle", self.vertex_pnt_clustered)
-                self.outputinfo(f"debug_data/{self.objname}/vertex_normal_clustered.pickle", self.vertex_pnt_clustered)
+                self.outputinfo(f"debug_data/{self.objname}/vertex_normal_clustered.pickle", self.vertex_normal_clustered)
+                self.outputinfo(f"debug_data/{self.objname}/vertex_id_clustered.pickle", self.vertex_id_clustered)
 
     # def show_edge_pcd(self):
     #     # shape = (max_label + 1, 1, 3)
