@@ -104,6 +104,38 @@ def gen_capsule(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), radius=0.0
     homomat = rm.homomat_from_posrot(pos, rotmat)
     return tp.Capsule(height=height, radius=radius, count=count, homomat=homomat)
 
+def gen_section(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), height_vec =np.array([0, 0, 1]), height = 0.01, angle=30, section=8):
+    """
+    :param spos:
+    :param epos:
+    :param thickness:
+    :return: a Trimesh object (Primitive)
+    author: weiwei
+    date: 20191228osaka
+    """
+    pos = spos
+    direction = rm.unit_vector(epos - spos)
+    length = np.linalg.norm(epos - spos)
+    height = height
+    if np.allclose(height, 0):
+        rotmat_goal = np.eye(3)
+    else:
+        rotmat_goal = rm.rotmat_from_two_axis(direction, rm.unit_vector(height_vec), "xz")
+    rotmat = rotmat_goal
+    homomat = rm.homomat_from_posrot(pos, rotmat)
+    center_offset = pos - (rotmat[:,2]*height/2)
+    center_offset_homo = rm.homomat_from_posrot(center_offset, np.eye(3))
+    homomat = center_offset_homo.dot(homomat)
+    # homomat = rm.homomat_from_posrot(pos-np.array([0,0,0.5*height]), np.eye(3)).dot(center_homomat)
+    angle_rad = np.deg2rad(angle)
+    direction_boundary = np.dot(rm.rotmat_from_axangle(np.array([0, 0, 1]),-angle_rad/2), direction)
+    curve_pnts = [(pos + np.dot(rm.rotmat_from_axangle(np.array([0, 0, 1]),i*angle_rad/section),direction_boundary)*length)[:2] for i in range(section+1)]
+    curve_pnts.append(pos[:2])
+    extrude_polygon = shpg.Polygon(curve_pnts)
+    extrude_transform = homomat
+    extrude_height = height
+    return tp.Extrusion(extrude_polygon = extrude_polygon, extrude_transform = extrude_transform, extrude_height = extrude_height)
+
 
 def gen_dashstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, lsolid=None, lspace=None,
                   sections=8, sticktype="rect"):
@@ -621,6 +653,9 @@ if __name__ == "__main__":
         gen_dumbbell()
     toc = time.time()
     print("mine", toc - tic)
+    objcm = gm.GeometricModel(gen_section(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), height_vec =np.array([0, 0, 1]), height = 0.01, angle=30, section=8))
+    objcm.attach_to(base)
+    base.run()
     objcm = gm.GeometricModel(gen_dashstick(lsolid=.005, lspace=.005))
     objcm = gm.GeometricModel(gen_dashtorus(portion=1))
     objcm.set_rgba([1, 0, 0, 1])

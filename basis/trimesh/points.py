@@ -230,8 +230,8 @@ def remove_close_withfaceid(points, face_index, radius):
     """
     from scipy.spatial import cKDTree as KDTree
     tree = KDTree(points)
-    consumed = np.zeros(len(points), dtype=np.bool)
-    unique = np.zeros(len(points), dtype=np.bool)
+    consumed = np.zeros(len(points), dtype=bool)
+    unique = np.zeros(len(points), dtype=bool)
     for i in range(len(points)):
         if consumed[i]: continue
         neighbors = tree.query_ball_point(points[i], r=radius)

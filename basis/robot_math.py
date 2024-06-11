@@ -121,6 +121,33 @@ def rotmat_from_euler(ai, aj, ak, axes='sxyz'):
     """
     return _euler_matrix(ai, aj, ak, axes)[:3, :3]
 
+def rotmat_from_two_axis(a, b, axis="xy"):
+    """
+    :param x: unit vector
+    :param y: unit vector
+
+    :return:
+        rotmat
+    author: weiwei
+    date: 20190504
+    """
+    if axis == "xy":
+        x = a
+        y = b
+        z = np.cross(x, y)
+    elif axis == "xz":
+        x = a
+        z = b
+        y = np.cross(x, z)
+    else:
+        y = a
+        z = b
+        x = np.cross(y, z)
+    rotmat = np.array([[x[0],y[0],z[0]],
+                       [x[1],y[1],z[1]],
+                       [x[2],y[2],z[2]]])
+    return rotmat
+
 
 def rotmat_to_euler(rotmat, axes='sxyz'):
     """

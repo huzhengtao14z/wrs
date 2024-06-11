@@ -590,6 +590,26 @@ def gen_cone(spos=np.array([0, 0, 0]),
     cone_sgm.set_rgba(rgba=rgba)
     return cone_sgm
 
+def gen_section(spos=np.array([0, 0, 0]),
+             epos=np.array([0.1, 0, 0]),
+             rgba=np.array([.7, .7, .7, .3]),
+             height_vec =np.array([0, 0, 1]), height = 0.01, angle=30, section=8):
+    """
+    :param spos:
+    :param epos:
+    :param radius:
+    :param sections:
+    :return:
+    author: hu
+    date: 20240611
+    """
+
+    section_trm = trihelper.gen_section(spos=spos, epos=epos, height_vec =height_vec, height = height, angle=angle, section=section)
+    # print(section_trm.faces)
+    section_sgm = GeometricModel(section_trm)
+    section_sgm.set_rgba(rgba=rgba)
+    return section_sgm
+
 def gen_arrow(spos=np.array([0, 0, 0]),
               epos=np.array([.1, 0, 0]),
               thickness=.005, rgba=[1, 0, 0, 1],
@@ -1062,6 +1082,16 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
+
+    section=gen_section(spos=np.array([0, 0, 0]),
+             epos=np.array([0.1, 0, 0]),
+             rgba=np.array([.7, .7, .7, .3]),
+             height_vec =np.array([0, 0, 1]), height = 0.01, angle=90, section=8)
+    section.attach_to(base)
+
+    base.run()
+
+
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
     bunnygm.set_rgba([0.7, 0.7, 0.0, 1.0])
