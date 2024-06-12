@@ -30,10 +30,10 @@ class FeatureDetector():
         self.pcd_sample, self.pcd_sample_np = self._sample_contact(show = False)
         print("ss")
         t_edge_start = time.time()
-        self.detect_edge(threshold_u = 50, threshold_l = 0.02, r = 0.005, load = True, save = False)
+        self.detect_edge(threshold_u = 50, threshold_l = 0.02, r = 0.005, load = False, save = False)
         t_edge_end = time.time()
         t_vertex_start = time.time()
-        # base.run()
+        base.run()
         self.detect_vertex(threshold_u = 10, threshold_l= 0.1, r = 0.01, load = False, show=True)
         t_vertex_end = time.time()
         print(f"Edge detection: {t_edge_end - t_edge_start}")
@@ -45,7 +45,7 @@ class FeatureDetector():
         # t_grasp_end = time.time()
         # print(f"grasp: {t_grasp_end - t_grasp_start}")
         base.run()
-        self.plan_poses()
+        # self.plan_poses()
 
     def show_obj_pcd(self):
         gm.gen_pointcloud(self.pcd_np).attach_to(base)
