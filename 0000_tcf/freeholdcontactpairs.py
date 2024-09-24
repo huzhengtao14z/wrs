@@ -8,10 +8,7 @@ import visualization.panda.world as wd
 import numpy as np
 import copy
 import modeling.geometric_model as gm
-from panda3d.bullet import BulletRigidBodyNode
-from panda3d.bullet import BulletTriangleMesh
-from panda3d.bullet import BulletTriangleMeshShape
-from panda3d.bullet import BulletWorld
+
 from panda3d.core import *
 from shapely.geometry import Point
 from shapely.geometry import Polygon
@@ -20,8 +17,6 @@ from sklearn.neighbors import RadiusNeighborsClassifier
 # import environment.collisionmodel as cm
 import modeling.collision_model as cm
 # import pandaplotutils.pandactrl as pandactrl
-import trimesh.sample as sample
-import sys
 import basis.trimesh as trimesh
 # from utiltools import robotmath
 import pickle
@@ -51,7 +46,10 @@ class FreeholdContactpairs(object):
         """
 
         self.objcm = cm.CollisionModel(initor=objpath, name=os.path.splitext(os.path.basename(objpath))[0])
+
         self.objcm.set_scale([0.001, 0.001, 0.001])
+        self.objcm.attach_to(base)
+        base.run()
         self.objtrimesh = self.objcm.objtrm  #trimesh the STL files
         self.com = self.objtrimesh.center_mass
         # print("check faces","there are",len(self.objtrimesh.faces),self.objtrimesh.faces)
@@ -492,7 +490,7 @@ if __name__=='__main__':
     #     align=TextNode.ALeft, mayChange=1)
 
     this_dir, this_filename = os.path.split(__file__)
-    objpath = os.path.join(this_dir, "objects", "tjunction-s-c.STL")
+    objpath = os.path.join(this_dir, "objects", "lshape.STL")
     objpath = objpath.replace('\\', '/')  # Windows os needs this replacement
     freehold = FreeholdContactpairs(objpath)
     freehold.getFacetsCenter()
