@@ -49,7 +49,7 @@ class FreeholdContactpairs(object):
 
         self.objcm.set_scale([0.001, 0.001, 0.001])
         self.objcm.attach_to(base)
-        base.run()
+        # base.run()
         self.objtrimesh = self.objcm.objtrm  #trimesh the STL files
         self.com = self.objtrimesh.center_mass
         # print("check faces","there are",len(self.objtrimesh.faces),self.objtrimesh.faces)

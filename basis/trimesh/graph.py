@@ -346,7 +346,7 @@ def facets_over_segmentation(mesh, faceangle=.9, segangle=.9):
             knownfacetnormals = np.hstack((knownfacetnormals, facetnormal))
         knownfacets.append(adjidlist)
         knowncurvature.append(curvature)
-    return [np.array(knownfacets), np.array(knownfacetnormals), np.array(knowncurvature)]
+    return [np.array(knownfacets, dtype="object"), np.array(knownfacetnormals), np.array(knowncurvature)]
 
     # plot using panda3d
     #     for j in adjidlist:
